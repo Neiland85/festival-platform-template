@@ -1,0 +1,72 @@
+{
+  "name": "solarisnerja",
+  "version": "0.1.0",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE",
+  "author": "Neiland85 <bookingnadarecords@gmail.com>",
+  "scripts": {
+    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "audit:prod": "pnpm audit --prod --audit-level=moderate",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint src --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier -w .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@sentry/nextjs": "^10.43.0",
+    "zod": "^3.24.4",
+    "@upstash/ratelimit": "^2.0.5",
+    "@upstash/redis": "^1.34.3",
+    "next": "16.1.6",
+    "drizzle-orm": "^0.44.0",
+    "pg": "^8.18.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "minimatch@<3.1.4": "3.1.4",
+      "minimatch@>=9.0.0 <9.0.7": "9.0.7",
+      "ajv@<6.14.0": "6.14.0",
+      "serialize-javascript@<=7.0.2": "7.0.3",
+      "esbuild@<=0.24.2": "0.25.0"
+    },
+    "onlyBuiltDependencies": [
+      "@sentry/nextjs",
+      "@sentry/cli",
+      "@tailwindcss/oxide",
+      "@playwright/test"
+    ]
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^20",
+    "@types/pg": "^8.16.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "eslint-plugin-tailwindcss": "^3.18.2",
+    "jsdom": "^28.1.0",
+    "prettier": "^3.8.1",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vite-tsconfig-paths": "^6.1.1",
+    "drizzle-kit": "^0.31.9",
+    "vitest": "^4.0.18"
+  }
+}

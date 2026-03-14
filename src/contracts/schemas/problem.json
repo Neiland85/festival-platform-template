@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.solarisnerja.com/schemas/problem.json",
+  "title": "Problem Details (RFC7807)",
+  "type": "object",
+  "required": ["type", "title", "status"],
+  "properties": {
+    "type": { "type": "string", "format": "uri" },
+    "title": { "type": "string" },
+    "status": { "type": "integer", "minimum": 100, "maximum": 599 },
+    "detail": { "type": "string" },
+    "instance": { "type": "string" }
+  },
+  "additionalProperties": false
+}
