@@ -4,18 +4,19 @@ import EventosGrid from "@/ui/components/EventosGrid"
 import type { EventGridItem } from "@/ui/components/EventosGrid"
 import type { Locale } from "@/i18n/routing"
 
-export const dynamic = "force-dynamic"
-
 /**
  * EventosSection — Festival lineup.
  *
  * Source-of-truth strategy (via getEvents orchestrator):
- *   1. Sanity CMS (if configured) → richest data, localized
+ *   1. Sanity CMS (if configured) → uses cache tags for on-demand revalidation
  *   2. PostgreSQL database → existing DB events
  *   3. Config file (src/config/events.ts) → hardcoded fallback
  *
  * Each level enriches or falls back to the next.
  * The template works with ZERO external services.
+ *
+ * Caching: Sanity queries use `next: { tags: ["events"] }` so this component
+ * benefits from Next.js cache. On-demand revalidation via /api/v1/revalidate.
  */
 export default async function EventosSection() {
   const t = await getTranslations("events")
@@ -32,6 +33,7 @@ export default async function EventosSection() {
     logo: e.logo,
     eventDate: e.eventDate,
     time: e.time,
+    priceCents: e.priceCents,
   }))
 
   return (

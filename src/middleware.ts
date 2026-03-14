@@ -55,8 +55,8 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
-  // --- Sanity webhook: skip auth (uses its own secret) ---
-  if (pathname === "/api/v1/revalidate") {
+  // --- Webhooks: skip CSRF/auth (each uses its own secret verification) ---
+  if (pathname === "/api/v1/revalidate" || pathname === "/api/v1/webhooks/stripe") {
     const response = NextResponse.next()
     response.headers.set("x-request-id", requestId)
     return response

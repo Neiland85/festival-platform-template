@@ -32,21 +32,21 @@ export async function POST(req: NextRequest) {
     // Revalidate based on document type
     switch (body._type) {
       case "event":
-        revalidateTag("events")
+        revalidateTag("events", "default")
         if (body.eventId) {
-          revalidateTag(`event-${body.eventId}`)
+          revalidateTag(`event-${body.eventId}`, "default")
         }
         break
       case "siteConfig":
-        revalidateTag("siteConfig")
+        revalidateTag("siteConfig", "default")
         break
       case "artist":
-        revalidateTag("artists")
+        revalidateTag("artists", "default")
         break
       default:
         // Revalidate everything for unknown types
-        revalidateTag("events")
-        revalidateTag("siteConfig")
+        revalidateTag("events", "default")
+        revalidateTag("siteConfig", "default")
     }
 
     return NextResponse.json({ revalidated: true, type: body._type })

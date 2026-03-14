@@ -21,6 +21,7 @@ export type EventGridItem = {
   logo?: string | null
   eventDate?: string | null
   time?: string | null
+  priceCents?: number | null
 }
 
 type Props = {

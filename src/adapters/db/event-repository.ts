@@ -62,3 +62,37 @@ export async function deleteEvent(id: string): Promise<boolean> {
   )
   return (result.rowCount ?? 0) > 0
 }
+
+export async function incrementTicketsSold(eventId: string, quantity: number): Promise<void> {
+  const pool = getPool()
+  await pool.query(
+    `UPDATE events SET tickets_sold = tickets_sold + $2 WHERE id = $1`,
+    [eventId, quantity]
+  )
+}
+
+export async function findEventWithPricing(eventId: string): Promise<{
+  id: string
+  title: string
+  priceCents: number | null
+  capacity: number | null
+  ticketsSold: number
+  active: boolean
+} | null> {
+  const pool = getPool()
+  const result = await pool.query(
+    `SELECT id, title, price_cents, capacity, tickets_sold, active
+     FROM events WHERE id = $1`,
+    [eventId]
+  )
+  if (result.rows.length === 0) return null
+  const row = result.rows[0] as Record<string, unknown>
+  return {
+    id: row["id"] as string,
+    title: row["title"] as string,
+    priceCents: (row["price_cents"] as number) ?? null,
+    capacity: (row["capacity"] as number) ?? null,
+    ticketsSold: (row["tickets_sold"] as number) ?? 0,
+    active: row["active"] as boolean,
+  }
+}

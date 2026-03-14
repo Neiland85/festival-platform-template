@@ -41,6 +41,9 @@ SECURITY-*.md
 PRODUCTION-*.md
 IMAGE-EXPORT-GUIDE.md
 
+# k6 load test results
+k6/results/
+
 # Playwright
 /test-results/
 /playwright-report/

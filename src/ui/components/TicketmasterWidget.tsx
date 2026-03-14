@@ -3,24 +3,68 @@
 import { useState } from "react"
 import { useTranslations } from "next-intl"
 import { trackEvent } from "@/lib/tracking"
+import { StripeCheckoutButton } from "./StripeCheckoutButton"
 
 type Props = {
   eventId: string
   ticketUrl: string
+  /** If set and Stripe is configured, shows Stripe checkout instead of Ticketmaster */
+  priceCents?: number | null
+  /** Current locale for Stripe checkout */
+  locale?: string
+  /** Event title for Stripe line item */
+  eventTitle?: string
 }
 
 /**
- * Ticket purchase widget.
- * - If ticketUrl is a valid Universe/Ticketmaster URL → shows embedded iframe checkout
- * - If ticketUrl is "#" or empty → shows "Próximamente" state
- * - Always provides fallback direct link
+ * Ticket purchase widget with payment provider degradation:
+ *
+ *   1. priceCents set + STRIPE configured → StripeCheckoutButton
+ *   2. ticketUrl is a Universe/Ticketmaster URL → embedded iframe / direct link
+ *   3. No URL and no price → "Coming soon" state
  */
-export function TicketmasterWidget({ eventId, ticketUrl }: Props) {
+export function TicketmasterWidget({
+  eventId,
+  ticketUrl,
+  priceCents,
+  locale = "es",
+  eventTitle = "",
+}: Props) {
   const t = useTranslations("tickets")
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [iframeError, setIframeError] = useState(false)
 
   const hasRealUrl = ticketUrl && ticketUrl !== "#"
+  const hasStripePrice = priceCents != null && priceCents > 0
+
+  // If Stripe price is configured, show Stripe button
+  // (StripeCheckoutButton will handle the API call which returns 503 if Stripe is not configured)
+  if (hasStripePrice) {
+    return (
+      <div className="mt-10 space-y-6">
+        <StripeCheckoutButton
+          eventId={eventId}
+          eventTitle={eventTitle}
+          priceCents={priceCents}
+          locale={locale}
+        />
+        {/* Fallback to external ticket URL if available */}
+        {hasRealUrl && (
+          <div className="text-center">
+            <a
+              href={ticketUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => trackEvent("ticket_fallback_click", { eventId })}
+              className="text-sm text-(--sn-muted) underline hover:text-white transition"
+            >
+              {t("openNewTab")}
+            </a>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   // Detect Universe URL and convert to embed format
   const embedUrl = hasRealUrl ? toEmbedUrl(ticketUrl) : null
