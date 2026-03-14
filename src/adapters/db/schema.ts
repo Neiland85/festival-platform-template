@@ -24,6 +24,7 @@ import {
 /* ─── Enums ─── */
 
 export const userRoleEnum = pgEnum("user_role", ["admin", "editor", "viewer"])
+export const orderStatusEnum = pgEnum("order_status", ["pending", "completed", "cancelled", "refunded"])
 
 /* ─── Events ─── */
 
@@ -40,6 +41,10 @@ export const events = pgTable("events", {
   // 003: metadata
   eventDate: date("event_date"),
   logo: text("logo"),
+  // 006: pricing
+  priceCents: integer("price_cents"),
+  stripeProductId: text("stripe_product_id"),
+  ticketsSold: integer("tickets_sold").notNull().default(0),
 }, (table) => [
   index("idx_events_created_at").on(table.createdAt),
 ])
@@ -68,6 +73,25 @@ export const leads = pgTable("leads", {
   index("idx_leads_event_id").on(table.eventId),
   index("idx_leads_created_at").on(table.createdAt),
   index("leads_source_idx").on(table.source),
+])
+
+/* ─── Orders (006: Stripe Checkout) ─── */
+
+export const orders = pgTable("orders", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  stripeSessionId: text("stripe_session_id").unique(),
+  eventId: varchar("event_id", { length: 255 }).notNull().references(() => events.id),
+  customerEmail: text("customer_email").notNull(),
+  amountCents: integer("amount_cents").notNull(),
+  currency: varchar("currency", { length: 3 }).notNull().default("EUR"),
+  status: orderStatusEnum("status").notNull().default("pending"),
+  quantity: integer("quantity").notNull().default(1),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index("idx_orders_event_id").on(table.eventId),
+  index("idx_orders_status").on(table.status),
+  index("idx_orders_created_at").on(table.createdAt),
 ])
 
 /* ─── Users (005: RBAC) ─── */

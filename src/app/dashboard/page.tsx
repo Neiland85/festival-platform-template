@@ -170,7 +170,7 @@ export default function DashboardPage() {
 
       <AttendanceForecastCard data={state.forecast} />
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-3 gap-6">
         <Link
           href="/dashboard/events"
           className="bg-white border border-[var(--sn-border)] p-8 hover:border-black transition"
@@ -185,6 +185,14 @@ export default function DashboardPage() {
         >
           <p className="editorial-label mb-2">marketing</p>
           <p className="text-lg font-medium">leads</p>
+        </Link>
+
+        <Link
+          href="/dashboard/orders"
+          className="bg-white border border-[var(--sn-border)] p-8 hover:border-black transition"
+        >
+          <p className="editorial-label mb-2">commerce</p>
+          <p className="text-lg font-medium">orders</p>
         </Link>
       </div>
     </div>

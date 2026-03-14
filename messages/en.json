@@ -118,6 +118,24 @@
     "comingSoonDesc": "Coming soon via Ticketmaster",
     "openNewTab": "Open official sale in new tab"
   },
+  "checkout": {
+    "buyTicket": "Buy Ticket",
+    "buyTickets": "Buy {quantity} Tickets",
+    "price": "€{price}",
+    "soldOut": "Sold Out",
+    "notAvailable": "Not Available",
+    "processing": "Processing...",
+    "successTitle": "Purchase Complete!",
+    "successMessage": "You will receive a confirmation email with your tickets.",
+    "successBack": "Back to festival",
+    "cancelTitle": "Purchase Cancelled",
+    "cancelMessage": "Your purchase has been cancelled. No charges were made.",
+    "cancelRetry": "Try again",
+    "cancelBack": "Back to festival",
+    "emailPlaceholder": "you@email.com",
+    "emailRequired": "Email is required",
+    "stripePayment": "Secure payment via Stripe"
+  },
   "stickyCta": {
     "label": "View lineup"
   },

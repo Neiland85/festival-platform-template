@@ -118,6 +118,24 @@
     "comingSoonDesc": "Próximamente disponible a través de Ticketmaster",
     "openNewTab": "Abrir venta oficial en nueva pestaña"
   },
+  "checkout": {
+    "buyTicket": "Comprar Entrada",
+    "buyTickets": "Comprar {quantity} Entradas",
+    "price": "{price} €",
+    "soldOut": "Agotado",
+    "notAvailable": "No disponible",
+    "processing": "Procesando...",
+    "successTitle": "¡Compra completada!",
+    "successMessage": "Recibirás un email de confirmación con tus entradas.",
+    "successBack": "Volver al festival",
+    "cancelTitle": "Compra cancelada",
+    "cancelMessage": "Tu compra ha sido cancelada. No se ha realizado ningún cargo.",
+    "cancelRetry": "Intentar de nuevo",
+    "cancelBack": "Volver al festival",
+    "emailPlaceholder": "tu@email.com",
+    "emailRequired": "El email es obligatorio",
+    "stripePayment": "Pago seguro con Stripe"
+  },
   "stickyCta": {
     "label": "Ver programación"
   },
