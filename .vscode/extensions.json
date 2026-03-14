@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    "github.copilot",
+    "github.copilot-chat",
+    "42crunch.vscode-openapi",
+    "redhat.vscode-yaml"
+  ]
+}

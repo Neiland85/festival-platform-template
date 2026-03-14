@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.solarisnerja.com/schemas/event.update.json",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "highlight": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "ticketUrl": {
+      "type": "string",
+      "format": "uri",
+      "maxLength": 500
+    },
+    "active": {
+      "type": "boolean"
+    }
+  },
+  "minProperties": 1,
+  "additionalProperties": false
+}

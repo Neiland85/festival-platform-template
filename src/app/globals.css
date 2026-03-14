@@ -1,0 +1,335 @@
+@import "tailwindcss";
+
+/* =========================
+   SolarisNerja Design Tokens
+   Festival Editorial — Minimal
+   ========================= */
+
+:root {
+  /* Base — Light editorial */
+  --sn-bg: #ffffff;
+  --sn-surface: #f5f5f5;
+  --sn-surface-2: #ebebeb;
+  --sn-text: #0a0a0a;
+  --sn-muted: #717171;
+
+  /* Brand — Solaris palette */
+  --sn-solar: #FF3300;
+  --sn-solar-glow: #FF5C33;
+  --sn-deep-blue: #4141C6;
+  --sn-deep-blue-light: #5C5CD6;
+
+  /* Borders */
+  --sn-border: rgba(0, 0, 0, 0.08);
+  --sn-border-2: rgba(0, 0, 0, 0.16);
+}
+
+/* ─── Golden Hour theme transition ─── */
+/* Smooth 800ms crossfade when useSolarisTheme swaps CSS variables */
+:root {
+  transition:
+    --sn-bg 800ms ease,
+    --sn-surface 800ms ease,
+    --sn-surface-2 800ms ease,
+    --sn-text 800ms ease,
+    --sn-muted 800ms ease,
+    --sn-solar 800ms ease,
+    --sn-solar-glow 800ms ease,
+    --sn-deep-blue 800ms ease,
+    --sn-deep-blue-light 800ms ease,
+    --sn-border 800ms ease,
+    --sn-border-2 800ms ease;
+}
+
+/* Register custom properties so they can transition (Chrome 111+) */
+@property --sn-bg          { syntax: "<color>"; inherits: true; initial-value: #ffffff }
+@property --sn-surface     { syntax: "<color>"; inherits: true; initial-value: #f5f5f5 }
+@property --sn-surface-2   { syntax: "<color>"; inherits: true; initial-value: #ebebeb }
+@property --sn-text        { syntax: "<color>"; inherits: true; initial-value: #0a0a0a }
+@property --sn-muted       { syntax: "<color>"; inherits: true; initial-value: #717171 }
+@property --sn-solar       { syntax: "<color>"; inherits: true; initial-value: #FF3300 }
+@property --sn-solar-glow  { syntax: "<color>"; inherits: true; initial-value: #FF5C33 }
+@property --sn-deep-blue   { syntax: "<color>"; inherits: true; initial-value: #4141C6 }
+@property --sn-deep-blue-light { syntax: "<color>"; inherits: true; initial-value: #5C5CD6 }
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    transition: none;
+  }
+}
+
+/* Base */
+html, body {
+  height: 100%;
+}
+
+body {
+  background: var(--sn-bg);
+  color: var(--sn-text);
+  transition: background-color 800ms ease, color 800ms ease;
+}
+
+/* Selection */
+::selection {
+  background: var(--sn-text);
+  color: var(--sn-bg);
+}
+
+/* Focus outlines (accessible) */
+:focus-visible {
+  outline: 2px solid var(--sn-text);
+  outline-offset: 3px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* ─── Solaris parallax textures ─── */
+
+.solaris-parallax-sun {
+  background-image:
+    radial-gradient(
+      circle at 60% -20%,
+      rgba(255,150,80,0.07),
+      rgba(255,150,80,0.03) 40%,
+      transparent 70%
+    );
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+.solaris-parallax-sand {
+  background-image:
+    radial-gradient(
+      circle at 20% 120%,
+      rgba(210,180,140,0.08),
+      transparent 60%
+    );
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+.solaris-parallax-horizon {
+  background-image:
+    radial-gradient(
+      circle at 50% -10%,
+      rgba(255,145,60,0.06),
+      transparent 65%
+    );
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+/* Blur solar difuso (pseudo-element) */
+.solaris-parallax-sun {
+  position: relative;
+}
+.solaris-parallax-sun::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 60% -20%, rgba(255,150,80,0.1), transparent 60%);
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+/* ─── Solaris horizon texture (programación section) ─── */
+
+.solaris-horizon-texture {
+  position: relative;
+  background-color: #ffffff;
+  color: #1a1a1a;
+  --sn-bg: #ffffff;
+  --sn-text: #1a1a1a;
+  --sn-muted: #6b6b6b;
+  --sn-border: #e5e5e5;
+  --sn-border-2: #d4d4d4;
+}
+
+.solaris-horizon-texture::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse at 50% 60%,
+      rgba(255, 51, 0, 0.04),
+      rgba(255, 51, 0, 0.015) 40%,
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(65, 65, 198, 0.02) 70%,
+      rgba(65, 65, 198, 0.04) 100%
+    );
+  pointer-events: none;
+}
+
+.solaris-horizon-texture::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: 50%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(65, 65, 198, 0.1),
+    rgba(255, 51, 0, 0.15),
+    rgba(65, 65, 198, 0.1),
+    transparent
+  );
+  pointer-events: none;
+}
+
+/* ─── Editorial typography ─── */
+
+.font-editorial {
+  font-family: var(--font-editorial), system-ui, sans-serif;
+}
+
+.editorial-h1 {
+  font-size: clamp(3rem, 6vw, 5rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.editorial-h2 {
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.editorial-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+/* ─── Editorial rhythm ─── */
+
+.section-editorial {
+  padding-top: 10rem;
+  padding-bottom: 10rem;
+}
+
+/* ─── Editorial grid (12-col Swiss) ─── */
+
+.editorial-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: 2rem;
+}
+
+/* ─── Program ticker ─── */
+
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll 28s linear infinite;
+}
+
+.ticker-item {
+  padding: 1rem 3rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.ticker-item::after {
+  content: "☀";
+  margin-left: 3rem;
+  opacity: 0.3;
+}
+
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track {
+    animation: none;
+  }
+}
+
+/* ─── Editorial divider ─── */
+
+.section-divider {
+  border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+/* ─── ArtistModal sheet — desktop overrides ─── */
+
+@media (min-width: 640px) {
+  .artist-modal-sheet {
+    border-radius: 12px !important;
+    max-height: 90dvh !important;
+  }
+}
+
+/* Hide sticky CTA when modal is open (avoids z-index stacking) */
+[role="dialog"][aria-modal="true"] ~ .sticky-mobile-cta {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* ─── ArtistModal CTA pulse ─── */
+
+@keyframes artistModalPulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.025); }
+  100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [role="dialog"][aria-modal="true"],
+  [role="dialog"][aria-modal="true"] * {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+    transition-delay: 0ms !important;
+    animation-delay: 0ms !important;
+  }
+}
+
+/* ─── Site credit ─── */
+
+.site-credit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 80px;
+  font-family: var(--font-space-mono), "Space Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  opacity: 0.15;
+  transition: opacity 0.4s ease;
+}
+
+footer:hover .site-credit {
+  opacity: 0.6;
+}
+
+.site-credit::before,
+.site-credit::after {
+  content: "";
+  flex-shrink: 0;
+  height: 1px;
+  width: 60px;
+  background: currentColor;
+  margin: 0 12px;
+  opacity: 0.4;
+}
+
+.site-credit::after {
+  background: linear-gradient(90deg, currentColor 30%, #FF3300, transparent);
+}

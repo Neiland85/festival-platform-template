@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conceptos Creativos — Evento Empresas Locales Málaga</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface-hover: #1a1a1a;
+    --text: #f0ece4;
+    --text-muted: #8a8578;
+    --accent-gold: #c4a44a;
+    --accent-terracotta: #c2654a;
+    --accent-olive: #7a8c4a;
+    --accent-sea: #4a7a8c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 30% 50%, rgba(196,164,74,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 50%, rgba(122,140,74,0.04) 0%, transparent 50%);
+    animation: drift 20s ease-in-out infinite;
+  }
+
+  @keyframes drift {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(-2%, 1%); }
+  }
+
+  .hero-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent-gold);
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 400;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent-gold);
+  }
+
+  .hero-sub {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    max-width: 600px;
+    position: relative;
+    z-index: 1;
+    font-weight: 300;
+  }
+
+  .brief-bar {
+    display: flex;
+    gap: 2rem;
+    margin-top: 3rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .brief-item {
+    text-align: center;
+    padding: 1rem 1.5rem;
+    border: 1px solid rgba(196,164,74,0.15);
+    border-radius: 8px;
+  }
+
+  .brief-item span {
+    display: block;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.3rem;
+  }
+
+  .brief-item strong {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+
+  /* SCROLL HINT */
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  .scroll-hint svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--text-muted);
+  }
+
+  /* CONCEPT SECTIONS */
+  .concept {
+    min-height: 100vh;
+    padding: 6rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .concept-inner {
+    max-width: 1100px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+
+  @media (max-width: 800px) {
+    .concept-inner { grid-template-columns: 1fr; gap: 2rem; }
+  }
+
+  .concept-number {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  .concept-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 400;
+    line-height: 1.05;
+    margin-bottom: 0.5rem;
+  }
+
+  .concept-tagline {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+  }
+
+  .concept-section {
+    margin-bottom: 1.8rem;
+  }
+
+  .concept-section h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+
+  .concept-section p {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: #d0ccc4;
+    font-weight: 300;
+  }
+
+  /* VISUAL CARD */
+  .visual-card {
+    aspect-ratio: 4/5;
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 2rem;
+  }
+
+  .visual-card .card-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-bottom: 0.3rem;
+  }
+
+  .visual-card .card-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    line-height: 1.1;
+  }
+
+  /* CONCEPT 1 - LA ALMAZARA */
+  .c1 { background: linear-gradient(135deg, #1a1608 0%, #2a2410 40%, #1a1a0a 100%); }
+  .c1 .concept-number { color: var(--accent-gold); }
+  .c1 .concept-section h3 { color: var(--accent-gold); }
+
+  .card-almazara {
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(196,164,74,0.25) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 80%, rgba(160,140,60,0.15) 0%, transparent 40%),
+      linear-gradient(170deg, #1f1b0e 0%, #0f0d06 100%);
+  }
+
+  .card-almazara::before {
+    content: '';
+    position: absolute;
+    top: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(196,164,74,0.4) 0%, rgba(196,164,74,0.1) 40%, transparent 70%);
+    filter: blur(1px);
+  }
+
+  .card-almazara::after {
+    content: '◉';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -80%);
+    font-size: 5rem;
+    color: rgba(196,164,74,0.15);
+  }
+
+  /* CONCEPT 2 - TERRAL */
+  .c2 { background: linear-gradient(135deg, #1a0e0a 0%, #2a1810 40%, #1a0a0a 100%); }
+  .c2 .concept-number { color: var(--accent-terracotta); }
+  .c2 .concept-section h3 { color: var(--accent-terracotta); }
+
+  .card-terral {
+    background:
+      repeating-linear-gradient(
+        -25deg,
+        transparent,
+        transparent 8px,
+        rgba(194,101,74,0.06) 8px,
+        rgba(194,101,74,0.06) 9px
+      ),
+      linear-gradient(170deg, #1a100c 0%, #0f0806 100%);
+  }
+
+  .card-terral::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -20%;
+    width: 70%;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(194,101,74,0.12) 0%, transparent 60%);
+    transform: skewX(-15deg);
+  }
+
+  /* CONCEPT 3 - EL PATIO */
+  .c3 { background: linear-gradient(135deg, #0a1a14 0%, #102a1a 40%, #0a1a0a 100%); }
+  .c3 .concept-number { color: var(--accent-olive); }
+  .c3 .concept-section h3 { color: var(--accent-olive); }
+
+  .card-patio {
+    background:
+      radial-gradient(circle at 50% 50%, rgba(122,140,74,0.1) 0%, transparent 50%),
+      linear-gradient(170deg, #0f1a0e 0%, #060f06 100%);
+    border: 1px solid rgba(122,140,74,0.15);
+  }
+
+  .card-patio::before {
+    content: '';
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    right: 10%;
+    bottom: 40%;
+    border: 1px solid rgba(122,140,74,0.12);
+    border-radius: 8px;
+  }
+
+  .card-patio::after {
+    content: '';
+    position: absolute;
+    top: 20%;
+    left: 20%;
+    right: 20%;
+    bottom: 50%;
+    border: 1px solid rgba(122,140,74,0.08);
+    border-radius: 4px;
+  }
+
+  /* CONCEPT 4 - COSECHA */
+  .c4 { background: linear-gradient(135deg, #0a1218 0%, #0e1a24 40%, #0a0e14 100%); }
+  .c4 .concept-number { color: var(--accent-sea); }
+  .c4 .concept-section h3 { color: var(--accent-sea); }
+
+  .card-cosecha {
+    background:
+      radial-gradient(ellipse at 50% 100%, rgba(74,122,140,0.2) 0%, transparent 60%),
+      linear-gradient(170deg, #0c1418 0%, #06090c 100%);
+  }
+
+  .card-cosecha::before {
+    content: '';
+    position: absolute;
+    bottom: 30%;
+    left: 15%;
+    right: 15%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(74,122,140,0.3), transparent);
+  }
+
+  /* TAGS */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .tag {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    padding: 0.3rem 0.7rem;
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-muted);
+  }
+
+  /* COMPARISON TABLE */
+  .comparison {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 6rem 2rem;
+  }
+
+  .comparison h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+
+  .comparison-sub {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 3rem;
+    font-weight: 300;
+  }
+
+  .comp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  .comp-table th {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-muted);
+  }
+
+  .comp-table td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    vertical-align: top;
+    line-height: 1.5;
+    font-weight: 300;
+  }
+
+  .comp-table tr:hover td {
+    background: rgba(255,255,255,0.02);
+  }
+
+  .comp-table .name-cell {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+  }
+
+  .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .dot-gold { background: var(--accent-gold); }
+  .dot-terracotta { background: var(--accent-terracotta); }
+  .dot-olive { background: var(--accent-olive); }
+  .dot-sea { background: var(--accent-sea); }
+
+  /* FOOTER */
+  .footer {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-label">Propuesta Creativa · Marzo 2026</div>
+  <h1>Encuentro de Empresas<br>Locales de <em>Málaga</em></h1>
+  <p class="hero-sub">Cuatro direcciones conceptuales para un evento que conecta hostelería, turismo, aceite de oliva y cultura mediterránea con networking, feria, charlas y sesiones de DJ.</p>
+
+  <div class="brief-bar">
+    <div class="brief-item">
+      <span>Sector</span>
+      <strong>Hostelería · Turismo · AOVE</strong>
+    </div>
+    <div class="brief-item">
+      <span>Formato</span>
+      <strong>Networking + Feria + Talks + DJ</strong>
+    </div>
+    <div class="brief-item">
+      <span>Tono</span>
+      <strong>Informal · Premium · Local</strong>
+    </div>
+    <div class="brief-item">
+      <span>Territorio</span>
+      <strong>Málaga</strong>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    4 conceptos
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+  </div>
+</section>
+
+<!-- CONCEPTO 1: LA ALMAZARA -->
+<section class="concept c1">
+  <div class="concept-inner">
+    <div>
+      <div class="concept-number"><span class="dot dot-gold"></span> Concepto 01</div>
+      <h2 class="concept-name">La Almazara</h2>
+      <p class="concept-tagline">Donde lo crudo se convierte en oro</p>
+
+      <div class="concept-section">
+        <h3>Insight</h3>
+        <p>La almazara es la máquina que transforma la aceituna en oro líquido. Presión, calor, tiempo — y de lo bruto nace lo extraordinario. Así funciona este encuentro: empresas locales entran con ideas en bruto y salen con conexiones destiladas, negocio puro, esencia concentrada.</p>
+      </div>
+
+      <div class="concept-section">
+        <h3>Dirección Visual</h3>
+        <p>Dorados profundos, negros, texturas de piedra de molino. Tipografía con carácter artesanal pero contemporánea. Fotografía macro de aceite fluyendo. El logo: una prensa estilizada que también es un punto de encuentro — dos fuerzas que presionan y en el centro nace algo valioso.</p>
+      </div>
+
+      <div class="concept-section">
+        <h3>Tono de Comunicación</h3>
+        <p>Orgulloso, táctil, sensorial. "No vienes a una feria. Vienes a una prensada." El lenguaje conecta lo industrial-artesanal con lo premium. Habla de proceso, de transformación, de lo que sale cuando juntas presión y materia prima de calidad.</p>
+      </div>
+
+      <div class="tags">
+        <span class="tag">Artesanal-Premium</span>
+        <span class="tag">Transformación</span>
+        <span class="tag">Oro líquido</span>
+        <span class="tag">Raíz + Modernidad</span>
+      </div>
+    </div>
+
+    <div class="visual-card card-almazara">
+      <div class="card-label">Mood Reference</div>
+      <div class="card-title">Presión.<br>Calor.<br>Oro.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CONCEPTO 2: TERRAL -->
+<section class="concept c2">
+  <div class="concept-inner">
+    <div class="visual-card card-terral">
+      <div class="card-label">Mood Reference</div>
+      <div class="card-title">El viento<br>que mueve<br>Málaga.</div>
+    </div>
+
+    <div>
+      <div class="concept-number"><span class="dot dot-terracotta"></span> Concepto 02</div>
+      <h2 class="concept-name">Terral</h2>
+      <p class="concept-tagline">El viento caliente que lo cambia todo</p>
+
+      <div class="concept-section">
+        <h3>Insight</h3>
+        <p>El Terral es el viento que solo conocen los malagueños. Llega del interior, sube la temperatura, cambia el ambiente de la ciudad entera. Es inconfundiblemente local y es una fuerza que no puedes ignorar. Estas empresas SON el Terral de la economía de Málaga: fuerza cálida, local, que transforma el paisaje.</p>
+      </div>
+
+      <div class="concept-section">
+        <h3>Dirección Visual</h3>
+        <p>Terracota, ocres ardientes, líneas diagonales de movimiento. Efecto de distorsión por calor en las imágenes. Tipografía inclinada, itálica, como si el viento la empujara. Motion graphics con partículas. El logo: líneas de aire caliente que convergen — se pueden leer como caminos, como ondas sonoras (DJ), como surcos de olivar.</p>
+      </div>
+
+      <div class="concept-section">
+        <h3>Tono de Comunicación</h3>
+        <p>Enérgico, imparable, orgulloso de lo local. "Cuando sopla el Terral, toda Málaga lo siente." El claim conecta con la idea de que cuando estas empresas se mueven juntas, generan una fuerza que cambia la ciudad. Cada charla es una ráfaga. Cada sesión de DJ, una ola de calor.</p>
+      </div>
+
+      <div class="tags">
+        <span class="tag">Identidad local pura</span>
+        <span class="tag">Energía</span>
+        <span class="tag">Movimiento</span>
+        <span class="tag">Fuerza colectiva</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONCEPTO 3: EL PATIO -->
+<section class="concept c3">
+  <div class="concept-inner">
+    <div>
+      <div class="concept-number"><span class="dot dot-olive"></span> Concepto 03</div>
+      <h2 class="concept-name">El Patio</h2>
+      <p class="concept-tagline">El negocio se cierra mirando al cielo</p>
+
+      <div class="concept-section">
+        <h3>Insight</h3>
+        <p>El patio andaluz es el espacio donde todo sucede: la conversación, el acuerdo, la fiesta. Es íntimo pero abierto al cielo. Es privado pero comunitario. Cada empresa es una maceta, con su color y su raíz, pero todas comparten el mismo suelo, las mismas paredes, la misma luz cenital. El patio es el coworking original de Andalucía.</p>
+      </div>
+
+      <div class="concept-section">
+        <h3>Dirección Visual</h3>
+        <p>Verdes oliva, blancos encalados, toques de azulejo geométrico. Juego de luces y sombras como las que proyecta un toldo. Vistas cenitales (planta) de patios reinterpretados como planos de networking. El logo: un patio visto desde arriba — parece un layout de feria, parece un circuito, parece un olivar en cuadrícula.</p>
+      </div>
+
+      <div class="concept-section">
+        <h3>Tono de Comunicación</h3>
+        <p>Cercano, acogedor pero con ambición. "Pasa al patio. Quédate al negocio." El lenguaje invita, no vende. Usa la familiaridad del patio para bajar la barrera de entrada. Las charlas son "conversaciones de patio". El DJ suena "bajo las estrellas del patio". El aceite se cata "a la sombra".</p>
+      </div>
+
+      <div class="tags">
+        <span class="tag">Comunidad</span>
+        <span class="tag">Andalucía</span>
+        <span class="tag">Intimidad + Apertura</span>
+        <span class="tag">Acogedor</span>
+      </div>
+    </div>
+
+    <div class="visual-card card-patio">
+      <div class="card-label">Mood Reference</div>
+      <div class="card-title">Pasa.<br>Quédate.<br>Crece.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CONCEPTO 4: COSECHA -->
+<section class="concept c4">
+  <div class="concept-inner">
+    <div class="visual-card card-cosecha">
+      <div class="card-label">Mood Reference</div>
+      <div class="card-title">Lo mejor<br>de esta<br>tierra.</div>
+    </div>
+
+    <div>
+      <div class="concept-number"><span class="dot dot-sea"></span> Concepto 04</div>
+      <h2 class="concept-name">Cosecha</h2>
+      <p class="concept-tagline">Recogemos lo mejor que da esta tierra</p>
+
+      <div class="concept-section">
+        <h3>Insight</h3>
+        <p>La cosecha es el momento en el que recoges lo que has sembrado durante meses. El olivar, el viñedo, la huerta — pero también el restaurante que lleva un año creciendo, el hotel que acaba de reformar, la almazara que ha invertido en nueva maquinaria. Este evento es la cosecha colectiva: el momento de recoger, compartir y celebrar lo que Málaga produce.</p>
+      </div>
+
+      <div class="concept-section">
+        <h3>Dirección Visual</h3>
+        <p>Paleta tierra-mar: azules profundos de la costa malagueña con ocres de interior. Fotografía de producto (aceites, platos, espacios hoteleros) tratada como bodegón contemporáneo. Texturas de arpillera, madera de olivo, cerámica. El logo: una mano abierta que sostiene — puede ser una aceituna, un sol, un punto de encuentro.</p>
+      </div>
+
+      <div class="concept-section">
+        <h3>Tono de Comunicación</h3>
+        <p>Celebratorio, generoso, con peso. "Es tiempo de Cosecha." El lenguaje habla de abundancia merecida, de resultado, de compartir con orgullo. Cada stand es "una parcela". Cada charla, "una cata". Las sesiones de DJ son "la fiesta después de recoger" — la tradición real de celebrar tras la cosecha.</p>
+      </div>
+
+      <div class="tags">
+        <span class="tag">Celebración</span>
+        <span class="tag">Abundancia</span>
+        <span class="tag">Tierra + Mar</span>
+        <span class="tag">Orgullo local</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TABLA COMPARATIVA -->
+<section class="comparison">
+  <h2>Comparativa rápida</h2>
+  <p class="comparison-sub">Cada concepto resuelve el brief desde un ángulo distinto</p>
+
+  <table class="comp-table">
+    <thead>
+      <tr>
+        <th>Concepto</th>
+        <th>Idea Fuerza</th>
+        <th>Paleta</th>
+        <th>Conexión AOVE</th>
+        <th>Conexión DJ</th>
+        <th>Riesgo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="name-cell"><span class="dot dot-gold"></span>La Almazara</td>
+        <td>Transformación: lo bruto → lo premium</td>
+        <td>Dorado, negro, piedra</td>
+        <td style="color: var(--accent-gold);">★★★★★ Directa</td>
+        <td>★★★☆☆ Ritmo industrial</td>
+        <td>Puede parecer nicho solo AOVE</td>
+      </tr>
+      <tr>
+        <td class="name-cell"><span class="dot dot-terracotta"></span>Terral</td>
+        <td>Fuerza local imparable</td>
+        <td>Terracota, ocre, arena</td>
+        <td>★★★☆☆ Viento del olivar</td>
+        <td style="color: var(--accent-terracotta);">★★★★★ Energía, onda</td>
+        <td>Nombre poco conocido fuera de MLG</td>
+      </tr>
+      <tr>
+        <td class="name-cell"><span class="dot dot-olive"></span>El Patio</td>
+        <td>Comunidad, encuentro, raíz</td>
+        <td>Verde oliva, blanco, azulejo</td>
+        <td>★★★★☆ Cata a la sombra</td>
+        <td>★★★★☆ Fiesta bajo las estrellas</td>
+        <td>Puede parecer "demasiado costumbrista"</td>
+      </tr>
+      <tr>
+        <td class="name-cell"><span class="dot dot-sea"></span>Cosecha</td>
+        <td>Celebrar lo que producimos</td>
+        <td>Azul costa, ocre interior</td>
+        <td>★★★★★ Recolección literal</td>
+        <td>★★★★☆ Fiesta post-cosecha</td>
+        <td>Estacional (otoño), ¿encaja con fecha?</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<footer class="footer">
+  Propuesta confidencial · Solaris · Marzo 2026
+</footer>
+
+</body>
+</html>

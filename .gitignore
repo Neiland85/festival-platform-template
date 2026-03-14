@@ -1,0 +1,55 @@
+# macOS
+.DS_Store
+
+# Node / Next
+node_modules
+.pnpm-store
+.next
+dist
+out
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Misc
+*.tsbuildinfo
+.vercel
+.env*.local
+
+# Previews / temp artifacts
+vinyl-preview.html
+*.tmp
+*.patch
+
+# Scripts de fix one-off
+fix-*.sh
+deploy-*.sh
+
+# Audit artifacts (keep in local, not in repo)
+*.pdf
+AUDIT-*.md
+PERFORMANCE-*.md
+SECURITY-*.md
+PRODUCTION-*.md
+IMAGE-EXPORT-GUIDE.md
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Sentry
+.sentryclirc
+
+# Claude worktrees
+.claude
+.next
