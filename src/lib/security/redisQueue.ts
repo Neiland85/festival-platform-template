@@ -1,7 +1,7 @@
 import { getRedis } from "@/lib/redis/client"
 import type { Lead } from "@/domain/leads/create-lead"
 
-const QUEUE_KEY = "solaris:lead_queue"
+const QUEUE_KEY = "festival:lead_queue"
 
 function requireRedis() {
   const client = getRedis()

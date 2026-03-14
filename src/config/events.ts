@@ -1,5 +1,12 @@
+/**
+ * EXAMPLE DATA - Replace with your festival events
+ *
+ * Each event needs: id, title, time, description, highlight, ticketUrl
+ * Set ticketUrl to "#" if tickets are not yet available.
+ */
+
 export const HEADER_TICKER =
-"19/06 Chambao · 20/06 Bresh Nerja · 21/06 Oh See Málaga · 23/06 Solaris Ritual · 24/06 Injerto Flamenco · 25/06 Injerto Flamenco · 26/06 GOA · 27/06 Tropicalia · 28/06 Techno Flamenco"
+"19/06 Chambao · 20/06 Bresh · 21/06 Oh See · 23/06 Ritual · 24/06 Injerto Flamenco · 25/06 Injerto Flamenco · 26/06 GOA · 27/06 Tropicalia · 28/06 Techno Flamenco"
 
 export type EventConfig = {
   id: string
@@ -12,54 +19,55 @@ export type EventConfig = {
   logo?: string
 }
 
+// EXAMPLE DATA - Replace with your festival events
 export const EVENTS: EventConfig[] = [
   {
     id: "chambao",
     title: "Chambao",
     time: "19/06",
-    description: "Concierto de flamenco chill en Solaris Nerja.",
+    description: "Flamenco chill concert at the festival.",
     highlight: "Flamenco chill",
-    ticketUrl: "https://www.ticketmaster.com/solaris-nerja-tickets/artist/4275554"
+    ticketUrl: "#"
   },
   {
     id: "bresh",
-    title: "Bresh Nerja",
+    title: "Bresh",
     time: "20/06",
-    description: "La fiesta más viral llega a la Costa del Sol.",
-    highlight: "Fiesta internacional",
-    ticketUrl: "https://www.universe.com/events/bresh-tickets-0K4Y3W"
+    description: "The most viral party arrives at the festival.",
+    highlight: "International party",
+    ticketUrl: "#"
   },
   {
     id: "ohsee",
-    title: "Oh See Málaga",
+    title: "Oh See",
     time: "21/06",
-    description: "Electrónica contemporánea frente al mar.",
-    highlight: "Electrónica",
-    ticketUrl: "https://www.universe.com/events/oh-see-tickets-ZM38BC"
+    description: "Contemporary electronic music by the sea.",
+    highlight: "Electronic",
+    ticketUrl: "#"
   },
   {
     id: "goa",
     title: "GOA",
     time: "26/06",
-    description: "Sesión electrónica underground.",
-    highlight: "Electrónica underground",
-    ticketUrl: "https://www.ticketmaster.com/solaris-nerja-tickets/artist/4275554"
+    description: "Underground electronic session.",
+    highlight: "Underground electronic",
+    ticketUrl: "#"
   },
   {
     id: "tropicalia",
     title: "Tropicalia",
     time: "27/06",
-    description: "Música veraniega y ambiente tropical.",
+    description: "Summer music and tropical vibes.",
     highlight: "Summer music",
-    ticketUrl: "https://www.ticketmaster.com/solaris-nerja-tickets/artist/4275554"
+    ticketUrl: "#"
   },
   {
     id: "tecnoflamenco",
     title: "Techno Flamenco",
     time: "28/06",
-    description: "Fusión de flamenco y electrónica.",
-    highlight: "Flamenco electrónico",
-    ticketUrl: "https://www.ticketmaster.com/solaris-nerja-tickets/artist/4275554"
+    description: "Flamenco and electronic fusion.",
+    highlight: "Electronic flamenco",
+    ticketUrl: "#"
   }
 ]
 

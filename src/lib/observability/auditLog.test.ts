@@ -252,7 +252,7 @@ describe("auditLog", () => {
         actor: "admin",
         ip: "85.23.45.67",
         resource: "leads-list",
-        details: { query: "nerja", resultCount: 15 },
+        details: { query: "festival", resultCount: 15 },
       })
 
       // Verify all GDPR-required fields present

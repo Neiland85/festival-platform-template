@@ -1,5 +1,8 @@
 import type { NextConfig } from "next"
 import { withSentryConfig } from "@sentry/nextjs"
+import createNextIntlPlugin from "next-intl/plugin"
+
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts")
 
 const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
@@ -45,8 +48,10 @@ const hasSentry = !!(
   process.env["SENTRY_DSN"] || process.env["NEXT_PUBLIC_SENTRY_DSN"]
 )
 
+const configWithIntl = withNextIntl(nextConfig)
+
 export default hasSentry
-  ? withSentryConfig(nextConfig, {
+  ? withSentryConfig(configWithIntl, {
       // Upload source maps for better stack traces
       sourcemaps: {
         deleteSourcemapsAfterUpload: true,
@@ -56,4 +61,4 @@ export default hasSentry
       // Tunnel Sentry events through the app to avoid ad-blockers
       tunnelRoute: "/monitoring",
     })
-  : nextConfig
+  : configWithIntl

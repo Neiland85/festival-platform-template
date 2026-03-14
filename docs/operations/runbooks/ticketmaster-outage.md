@@ -10,7 +10,7 @@ Ticket links return error.
 
 ## Impact
 
-Solaris website continues operating.
+Festival website continues operating.
 
 Ticket purchase temporarily unavailable.
 

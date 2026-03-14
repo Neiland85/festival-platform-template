@@ -1,5 +1,6 @@
 import { findAllEvents } from "@/adapters/db/event-repository"
 import { EVENTS } from "@/config/events"
+import { getTranslations } from "next-intl/server"
 import EventosGrid from "@/ui/components/EventosGrid"
 import type { EventGridItem } from "@/ui/components/EventosGrid"
 
@@ -40,6 +41,8 @@ function toGridItem(e: {
 }
 
 export default async function EventosSection() {
+  const t = await getTranslations("events")
+
   /* ── 1. Build canonical lineup from config ── */
   const lineupItems: EventGridItem[] = EVENTS.map((e) =>
     toGridItem({
@@ -103,9 +106,9 @@ export default async function EventosSection() {
   }
 
   return (
-    <section id="programacion" className="solaris-horizon-texture py-24 px-6">
+    <section id="programacion" className="festival-horizon-texture py-24 px-6">
       <div className="max-w-6xl mx-auto space-y-16">
-        <h2 className="editorial-h2 text-center">Programación</h2>
+        <h2 className="editorial-h2 text-center">{t("heading")}</h2>
         <EventosGrid events={lineupItems} />
       </div>
     </section>

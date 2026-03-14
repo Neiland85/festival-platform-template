@@ -20,7 +20,7 @@ export async function GET(req: NextRequest, context: RouteContext) {
 
     if (!event) {
       return problem({
-        type: "https://www.solarisnerja.com/problems/not-found",
+        type: "https://www.your-festival.com/problems/not-found",
         title: "Not Found",
         status: 404,
         detail: `Event ${id} not found`,
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest, context: RouteContext) {
     Sentry.captureException(error, { tags: { route: `/api/v1/events/${id}`, method: "GET" } })
 
     return problem({
-      type: "https://www.solarisnerja.com/problems/internal",
+      type: "https://www.your-festival.com/problems/internal",
       title: "Internal Server Error",
       status: 500,
       detail: "Unexpected error",
@@ -60,7 +60,7 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
     if (!parsed.success) {
       log("warn", "event_update_validation_failed", { requestId, errors: parsed.error.issues })
       return problem({
-        type: "https://www.solarisnerja.com/problems/validation",
+        type: "https://www.your-festival.com/problems/validation",
         title: "Validation error",
         status: 400,
         detail: "Invalid payload",
@@ -71,7 +71,7 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
     const existing = await findEventById(id)
     if (!existing) {
       return problem({
-        type: "https://www.solarisnerja.com/problems/not-found",
+        type: "https://www.your-festival.com/problems/not-found",
         title: "Not Found",
         status: 404,
         detail: `Event ${id} not found`,
@@ -92,7 +92,7 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
     Sentry.captureException(error, { tags: { route: `/api/v1/events/${id}`, method: "PATCH" } })
 
     return problem({
-      type: "https://www.solarisnerja.com/problems/internal",
+      type: "https://www.your-festival.com/problems/internal",
       title: "Internal Server Error",
       status: 500,
       detail: "Unexpected error",
@@ -115,7 +115,7 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
 
     if (!deleted) {
       return problem({
-        type: "https://www.solarisnerja.com/problems/not-found",
+        type: "https://www.your-festival.com/problems/not-found",
         title: "Not Found",
         status: 404,
         detail: `Event ${id} not found`,
@@ -133,7 +133,7 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
     Sentry.captureException(error, { tags: { route: `/api/v1/events/${id}`, method: "DELETE" } })
 
     return problem({
-      type: "https://www.solarisnerja.com/problems/internal",
+      type: "https://www.your-festival.com/problems/internal",
       title: "Internal Server Error",
       status: 500,
       detail: "Unexpected error",

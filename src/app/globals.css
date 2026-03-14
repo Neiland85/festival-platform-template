@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 /* =========================
-   SolarisNerja Design Tokens
-   Festival Editorial — Minimal
+   Festival Design Tokens
+   Editorial — Minimal
    ========================= */
 
 :root {
@@ -13,7 +13,7 @@
   --sn-text: #0a0a0a;
   --sn-muted: #717171;
 
-  /* Brand — Solaris palette */
+  /* Brand palette — TODO: customize these colors */
   --sn-solar: #FF3300;
   --sn-solar-glow: #FF5C33;
   --sn-deep-blue: #4141C6;
@@ -25,7 +25,7 @@
 }
 
 /* ─── Golden Hour theme transition ─── */
-/* Smooth 800ms crossfade when useSolarisTheme swaps CSS variables */
+/* Smooth 800ms crossfade when theme provider swaps CSS variables */
 :root {
   transition:
     --sn-bg 800ms ease,
@@ -85,9 +85,9 @@ html {
   scroll-behavior: smooth;
 }
 
-/* ─── Solaris parallax textures ─── */
+/* ─── Parallax textures ─── */
 
-.solaris-parallax-sun {
+.festival-parallax-sun {
   background-image:
     radial-gradient(
       circle at 60% -20%,
@@ -99,7 +99,7 @@ html {
   background-repeat: no-repeat;
 }
 
-.solaris-parallax-sand {
+.festival-parallax-sand {
   background-image:
     radial-gradient(
       circle at 20% 120%,
@@ -110,7 +110,7 @@ html {
   background-repeat: no-repeat;
 }
 
-.solaris-parallax-horizon {
+.festival-parallax-horizon {
   background-image:
     radial-gradient(
       circle at 50% -10%,
@@ -122,10 +122,10 @@ html {
 }
 
 /* Blur solar difuso (pseudo-element) */
-.solaris-parallax-sun {
+.festival-parallax-sun {
   position: relative;
 }
-.solaris-parallax-sun::before {
+.festival-parallax-sun::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -135,9 +135,9 @@ html {
   pointer-events: none;
 }
 
-/* ─── Solaris horizon texture (programación section) ─── */
+/* ─── Horizon texture (lineup section) ─── */
 
-.solaris-horizon-texture {
+.festival-horizon-texture {
   position: relative;
   background-color: #ffffff;
   color: #1a1a1a;
@@ -148,7 +148,7 @@ html {
   --sn-border-2: #d4d4d4;
 }
 
-.solaris-horizon-texture::before {
+.festival-horizon-texture::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -168,7 +168,7 @@ html {
   pointer-events: none;
 }
 
-.solaris-horizon-texture::after {
+.festival-horizon-texture::after {
   content: "";
   position: absolute;
   left: 10%;

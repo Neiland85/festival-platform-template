@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://www.solarisnerja.com/schemas/event.create.json",
+  "$id": "https://www.your-festival.com/schemas/event.create.json",
   "type": "object",
   "required": ["title", "description", "highlight", "ticketUrl"],
   "properties": {

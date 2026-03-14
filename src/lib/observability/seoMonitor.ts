@@ -10,7 +10,7 @@
  *   const report = validateSEOHealth(pages, sitemapEntries, robotsConfig)
  *
  * Integración CI:
- *   curl -H "Cookie: admin_session=$TOKEN" https://solarisnerja.com/api/admin/seo
+ *   curl -H "Cookie: admin_session=$TOKEN" https://your-festival.com/api/admin/seo
  */
 
 // ── Types ───────────────────────────────────────────────
@@ -83,7 +83,7 @@ export function validateSEOHealth(
   pages: PageMeta[],
   sitemapEntries: SitemapEntry[],
   robotsConfig: RobotsConfig,
-  baseUrl: string = "https://solarisnerja.com"
+  baseUrl: string = "https://www.your-festival.com"
 ): SEOHealthReport {
   const issues: SEOIssue[] = []
   let totalChecks = 0

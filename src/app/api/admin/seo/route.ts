@@ -6,7 +6,7 @@
  *
  * Integración CI (post-deploy):
  *   curl -s -H "Cookie: admin_session=$TOKEN" \
- *     https://solarisnerja.com/api/admin/seo | jq '.score, .grade'
+ *     https://your-festival.com/api/admin/seo | jq '.score, .grade'
  *
  * Response:
  * {
@@ -25,7 +25,8 @@ import {
 } from "@/lib/observability/seoMonitor"
 import { EVENTS } from "@/config/events"
 
-const BASE_URL = "https://solarisnerja.com"
+// TODO: Set NEXT_PUBLIC_SITE_URL in your environment
+const BASE_URL = process.env["NEXT_PUBLIC_SITE_URL"] ?? "https://www.your-festival.com"
 
 export async function GET(req: NextRequest) {
   if (!requireAdmin(req)) {
@@ -39,8 +40,8 @@ export async function GET(req: NextRequest) {
   const pages: PageMeta[] = [
     {
       path: "/",
-      title: "Solaris Nerja",
-      description: "Festival cultural y musical en la Costa del Sol",
+      title: "Festival Name",
+      description: "Cultural and music festival",
       lang: "es",
     },
     {
@@ -50,9 +51,9 @@ export async function GET(req: NextRequest) {
     },
     {
       path: "/ubicacion",
-      title: "Dónde es Solaris Nerja | El Playazo Costa del Sol",
+      title: "Location | Festival",
       description:
-        "Solaris Nerja se celebra en El Playazo, Costa del Sol. Más de 20.000 m² frente al mar con Village libre y Arena de conciertos.",
+        "Find the festival venue. Explore the venue areas including the main stage and creative market.",
     },
     {
       path: "/privacidad",

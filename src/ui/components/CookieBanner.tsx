@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import Link from "next/link"
+import { Link } from "@/i18n/navigation"
+import { useTranslations } from "next-intl"
 
 const COOKIE_KEY = "sn_cookie_consent"
 
@@ -20,6 +21,7 @@ function setConsent(value: "accepted" | "rejected") {
 }
 
 export function CookieBanner() {
+  const t = useTranslations("cookie")
   const [dismissed, setDismissed] = useState(hasConsent)
 
   const handleAccept = useCallback(() => {
@@ -37,7 +39,7 @@ export function CookieBanner() {
   return (
     <div
       role="dialog"
-      aria-label="Consentimiento de cookies"
+      aria-label={t("ariaLabel")}
       className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6"
     >
       <div className="max-w-3xl mx-auto border border-[var(--sn-border-2)]
@@ -45,12 +47,12 @@ export function CookieBanner() {
         <div className="flex flex-col md:flex-row md:items-center gap-4">
           <div className="flex-1">
             <p className="text-xs text-[var(--sn-muted)] leading-relaxed">
-              Usamos cookies para mejorar tu experiencia.{" "}
+              {t("message")}{" "}
               <Link
                 href="/privacidad"
                 className="underline hover:text-[var(--sn-text)] transition-colors"
               >
-                Política de privacidad
+                {t("privacyPolicy")}
               </Link>
             </p>
           </div>
@@ -61,7 +63,7 @@ export function CookieBanner() {
                 border border-[var(--sn-border-2)] text-[var(--sn-muted)]
                 hover:text-[var(--sn-text)] hover:border-[var(--sn-text)] transition-colors"
             >
-              Rechazar
+              {t("reject")}
             </button>
             <button
               onClick={handleAccept}
@@ -69,7 +71,7 @@ export function CookieBanner() {
                 bg-[var(--sn-text)] text-white
                 hover:bg-[var(--sn-muted)] transition-colors"
             >
-              Aceptar
+              {t("accept")}
             </button>
           </div>
         </div>

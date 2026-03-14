@@ -1,10 +1,14 @@
+import createIntlMiddleware from "next-intl/middleware"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { verifySignedToken, looksLikeSignedToken } from "@/lib/auth/signedSession"
+import { routing } from "@/i18n/routing"
 
+const intlMiddleware = createIntlMiddleware(routing)
+
+// TODO: Replace with your production domain(s)
 const ALLOWED_ORIGINS = new Set([
-  "https://www.solarisnerja.com",
-  "https://solarisnerja.com",
+  process.env["NEXT_PUBLIC_SITE_URL"] ?? "https://www.your-festival.com",
 ])
 
 const UUID_V4_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -15,33 +19,37 @@ function isAllowedOrigin(origin: string | null): boolean {
   return ALLOWED_ORIGINS.has(origin)
 }
 
-/**
- * Verifica autenticación admin.
- *
- * Signed token (producción): verifica HMAC + expiración en edge.
- * UUID token (desarrollo sin SESSION_SECRET): solo valida formato.
- */
 async function isAdminAuthenticated(req: NextRequest): Promise<boolean> {
   const token = req.cookies.get("admin_session")?.value
   if (!token) return false
 
-  // Signed token — verify HMAC + expiry at edge
   if (looksLikeSignedToken(token)) {
     const payload = await verifySignedToken(token)
     return payload !== null
   }
 
-  // Legacy UUID token (dev mode without SESSION_SECRET)
   return UUID_V4_RE.test(token)
 }
 
-export async function proxy(req: NextRequest) {
+export default async function middleware(req: NextRequest) {
   const requestId = crypto.randomUUID()
   const origin = req.headers.get("origin")
   const { pathname } = req.nextUrl
 
+  // --- Skip locale routing for API, dashboard, login, studio, _next ---
+  const skipIntl =
+    pathname.startsWith("/api/") ||
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/studio") ||
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/monitoring") ||
+    pathname === "/favicon.ico" ||
+    pathname === "/robots.txt" ||
+    pathname === "/sitemap.xml"
+
   // --- Dashboard pages: redirect to login if not authenticated ---
-  if (pathname.startsWith("/dashboard")) {
+  if (pathname.startsWith("/dashboard") || pathname.startsWith("/studio")) {
     if (!(await isAdminAuthenticated(req))) {
       return NextResponse.redirect(new URL("/login", req.url))
     }
@@ -72,6 +80,13 @@ export async function proxy(req: NextRequest) {
     })
   }
 
+  // --- For locale-routed pages, use next-intl middleware ---
+  if (!skipIntl) {
+    const response = intlMiddleware(req)
+    response.headers.set("x-request-id", requestId)
+    return response
+  }
+
   // --- Default: pass through with request ID and CORS header ---
   const response = NextResponse.next()
   response.headers.set("x-request-id", requestId)
@@ -84,5 +99,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|webp|svg|mp4|ico)$).*)"],
 }

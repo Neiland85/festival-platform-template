@@ -1,0 +1,140 @@
+{
+  "meta": {
+    "title": "{siteName} — Festival Cultural 2026",
+    "titleTemplate": "{title} — {siteName}",
+    "description": "Festival cultural y musical. Conciertos en vivo, gastronomía y experiencias únicas.",
+    "ogDescription": "Festival cultural y musical. Conciertos en vivo y experiencias únicas.",
+    "ogAlt": "{siteName} Festival 2026"
+  },
+  "hero": {
+    "title": "{siteName}",
+    "subtitle": "18 — 28 Junio",
+    "cta": "ENTRADAS"
+  },
+  "nav": {
+    "events": "eventos",
+    "market": "mercado",
+    "location": "ubicación"
+  },
+  "events": {
+    "heading": "Programación",
+    "buyTickets": "Comprar Entradas",
+    "moreInfo": "Más información"
+  },
+  "promo": {
+    "label": "Promoción verano 2026",
+    "ctaButton": "Promociones limitadas",
+    "ctaDescription": "Consigue acceso a promociones exclusivas del festival",
+    "rgpdTitle": "Accede a promociones limitadas del festival",
+    "rgpdIntro": "Protección de tus datos personales",
+    "rgpdDescription": "Nos comprometemos a proteger tu privacidad. Antes de continuar, queremos que sepas exactamente cómo tratamos tus datos:",
+    "rgpdNoSell": "No vendemos ni compartimos tus datos",
+    "rgpdNoSellDesc": "con empresas externas, anunciantes ni terceros con fines comerciales.",
+    "rgpdCookies": "Solo usamos cookies técnicas y analíticas",
+    "rgpdCookiesDesc": "para mejorar tu experiencia de navegación. Las cookies de marketing (Facebook Pixel, Google Analytics) solo se activan si tú las aceptas expresamente en el banner de cookies.",
+    "rgpdSecure": "Tus datos se almacenan de forma segura",
+    "rgpdSecureDesc": "en servidores europeos (Supabase/Vercel EU) con cifrado en tránsito y en reposo.",
+    "rgpdEmail": "Usaremos tu email y teléfono únicamente",
+    "rgpdEmailDesc": "para enviarte las promociones limitadas del festival.",
+    "rgpdRights": "retirar tu consentimiento, acceder, rectificar o eliminar tus datos",
+    "rgpdRightsPrefix": "Puedes",
+    "rgpdRightsSuffix": "en cualquier momento contactándonos o ejerciendo tus derechos RGPD.",
+    "rgpdLegal": "Base legal: art. 6.1.a RGPD (consentimiento explícito). Responsable: {siteName}.",
+    "rgpdPrivacyLink": "Política de privacidad completa",
+    "formTitle": "Promociones limitadas",
+    "formSubtitle": "Rellena tus datos y recibirás las promociones en tu email",
+    "labelName": "Nombre",
+    "labelSurname": "Apellidos",
+    "labelEmail": "Email",
+    "labelPhone": "Teléfono",
+    "labelProfession": "Oficio",
+    "optional": "opcional",
+    "placeholderName": "Tu nombre",
+    "placeholderSurname": "Tus apellidos",
+    "placeholderEmail": "tu@email.com",
+    "placeholderPhone": "+34 600 000 000",
+    "placeholderProfession": "Diseñador, músico, hostelería…",
+    "sending": "Enviando…",
+    "submitConsent": "Al enviar, confirmas que has leído y aceptado nuestra",
+    "privacyPolicy": "política de privacidad",
+    "back": "Volver",
+    "successTitle": "¡Estás dentro!",
+    "successDescription": "Recibirás en tu email las promociones limitadas del festival. Revisa tu bandeja de entrada.",
+    "errorTitle": "Ha ocurrido un error",
+    "errorDescription": "No hemos podido procesar tu solicitud. Inténtalo de nuevo.",
+    "retry": "Reintentar"
+  },
+  "cookie": {
+    "message": "Usamos cookies para mejorar tu experiencia.",
+    "privacyPolicy": "Política de privacidad",
+    "reject": "Rechazar",
+    "accept": "Aceptar",
+    "ariaLabel": "Consentimiento de cookies"
+  },
+  "footer": {
+    "manifesto": "Un ciclo cultural donde el sol, el mar y el tiempo vacacional se convierten en experiencia artística.",
+    "navEvents": "Eventos",
+    "navMarket": "Mercado",
+    "navLocation": "Ubicación",
+    "navPrivacy": "Privacidad",
+    "locationCity": "Your City · Your Region",
+    "season": "Verano 2026",
+    "copyright": "{siteName}",
+    "tagline": "Festival Culture"
+  },
+  "location": {
+    "heading": "Ubicación",
+    "mapTitle": "Ubicación del festival — Your Venue, Your City"
+  },
+  "showcase": {
+    "hostLabel": "Anfitrión del festival",
+    "title": "{siteName}",
+    "tagline": "Festival Culture",
+    "credit": "Website Code by Your Company"
+  },
+  "about": {
+    "heading": "¿Qué es {siteName}?",
+    "intro": "{siteName} es un festival cultural y musical que se celebra en Your Venue, Your City.",
+    "description": "Durante varios días, el recinto se convierte en un espacio donde puedes disfrutar de:",
+    "concerts": "Conciertos en vivo",
+    "djSets": "DJ sets al atardecer",
+    "gastronomy": "Gastronomía local",
+    "market": "Market creativo",
+    "art": "Arte digital y experiencias"
+  },
+  "howItWorks": {
+    "heading": "¿Cómo funciona el festival?",
+    "villageTitle": "Festival Village",
+    "villageDescription": "Acceso gratuito con aforo limitado durante el día. Market, gastronomía, arte digital y ambiente.",
+    "arenaTitle": "Festival Arena",
+    "arenaDescription": "Los conciertos principales se celebran en la Arena con acceso mediante entrada oficial."
+  },
+  "tickets": {
+    "loading": "Cargando venta oficial…",
+    "buyTitle": "Comprar entradas — {eventId}",
+    "officialSale": "Venta oficial gestionada por Ticketmaster",
+    "buyButton": "Comprar Entradas",
+    "comingSoonTitle": "Venta de entradas",
+    "comingSoonDesc": "Próximamente disponible a través de Ticketmaster",
+    "openNewTab": "Abrir venta oficial en nueva pestaña"
+  },
+  "stickyCta": {
+    "label": "Ver programación"
+  },
+  "eventDescriptions": {
+    "chambao": "Concierto de flamenco chill en el festival.",
+    "bresh": "La fiesta más viral llega al festival.",
+    "ohsee": "Electrónica contemporánea frente al mar.",
+    "goa": "Sesión electrónica underground.",
+    "tropicalia": "Música veraniega y ambiente tropical.",
+    "tecnoflamenco": "Fusión de flamenco y electrónica."
+  },
+  "eventHighlights": {
+    "chambao": "Flamenco chill",
+    "bresh": "Fiesta internacional",
+    "ohsee": "Electrónica",
+    "goa": "Electrónica underground",
+    "tropicalia": "Summer music",
+    "tecnoflamenco": "Flamenco electrónico"
+  }
+}

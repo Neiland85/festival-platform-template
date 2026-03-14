@@ -2,7 +2,7 @@ import Link from "next/link"
 import LogoutButton from "./LogoutButton"
 
 export const metadata = {
-  title: "Solaris Admin",
+  title: "Festival Admin",
   robots: { index: false, follow: false },
 }
 
@@ -17,7 +17,7 @@ export default function DashboardLayout({
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/dashboard" className="text-sm font-semibold tracking-wide">
-              solaris
+              festival
             </Link>
             <span className="text-[var(--sn-muted)] text-xs">admin</span>
           </div>

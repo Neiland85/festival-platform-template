@@ -1,11 +1,18 @@
-export const dynamic = "force-dynamic"
-export const revalidate = 0
-
+import { setRequestLocale } from "next-intl/server"
 import { EVENTS } from "@/config/events"
 import { Reveal } from "@/ui/components/Reveal"
 import EventCard from "@/ui/components/EventCard"
 
-export default function EventosPage(){
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+
+type Props = {
+  params: Promise<{ locale: string }>
+}
+
+export default async function EventosPage({ params }: Props) {
+  const { locale } = await params
+  setRequestLocale(locale)
 
   return (
     <section className="max-w-6xl mx-auto py-24 px-6 space-y-16">

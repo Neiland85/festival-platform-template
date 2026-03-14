@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import { trackEvent } from "@/lib/tracking"
 
 type Props = {
@@ -15,6 +16,7 @@ type Props = {
  * - Always provides fallback direct link
  */
 export function TicketmasterWidget({ eventId, ticketUrl }: Props) {
+  const t = useTranslations("tickets")
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [iframeError, setIframeError] = useState(false)
 
@@ -35,13 +37,13 @@ export function TicketmasterWidget({ eventId, ticketUrl }: Props) {
             <div className="flex items-center justify-center h-100">
               <div className="flex flex-col items-center gap-3">
                 <div className="w-6 h-6 border-2 border-(--sn-muted) border-t-transparent rounded-full animate-spin" />
-                <p className="text-sm text-(--sn-muted)">Cargando venta oficial…</p>
+                <p className="text-sm text-(--sn-muted)">{t("loading")}</p>
               </div>
             </div>
           )}
           <iframe
             src={embedUrl}
-            title={`Comprar entradas — ${eventId}`}
+            title={t("buyTitle", { eventId })}
             className={`w-full border-0 transition-opacity duration-300 ${
               iframeLoaded ? "opacity-100" : "opacity-0 h-0"
             }`}
@@ -64,7 +66,7 @@ export function TicketmasterWidget({ eventId, ticketUrl }: Props) {
             bg-(--sn-surface)/70 backdrop-blur p-8 text-center space-y-4"
         >
           <p className="text-sm text-(--sn-muted)">
-            Venta oficial gestionada por Ticketmaster
+            {t("officialSale")}
           </p>
           <a
             href={ticketUrl}
@@ -75,7 +77,7 @@ export function TicketmasterWidget({ eventId, ticketUrl }: Props) {
               text-sm font-medium tracking-widest uppercase
               hover:bg-white hover:text-black transition-all duration-300"
           >
-            Comprar Entradas
+            {t("buyButton")}
           </a>
         </div>
       ) : (
@@ -84,9 +86,9 @@ export function TicketmasterWidget({ eventId, ticketUrl }: Props) {
           className="rounded-(--sn-radius-xl) border border-(--sn-border)
             bg-(--sn-surface)/70 backdrop-blur p-8 text-center space-y-3"
         >
-          <p className="text-lg font-medium tracking-wide">Venta de entradas</p>
+          <p className="text-lg font-medium tracking-wide">{t("comingSoonTitle")}</p>
           <p className="text-sm text-(--sn-muted)">
-            Próximamente disponible a través de Ticketmaster
+            {t("comingSoonDesc")}
           </p>
         </div>
       )}
@@ -101,7 +103,7 @@ export function TicketmasterWidget({ eventId, ticketUrl }: Props) {
             onClick={() => trackEvent("ticket_fallback_click", { eventId })}
             className="text-sm text-(--sn-muted) underline hover:text-white transition"
           >
-            Abrir venta oficial en nueva pestaña
+            {t("openNewTab")}
           </a>
         </div>
       )}

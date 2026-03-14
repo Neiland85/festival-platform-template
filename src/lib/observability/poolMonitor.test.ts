@@ -212,7 +212,7 @@ describe("poolMonitor", () => {
     })
   })
 
-  describe("Solaris Nerja scenario", () => {
+  describe("festival scenario", () => {
     it("detects pool exhaustion during lineup announcement surge", () => {
       // Simula: 5 queries lentas simultáneas + 3 esperando
       const pool = mockPool({

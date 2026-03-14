@@ -12,14 +12,14 @@ import {
 
 // ── Helpers ─────────────────────────────────────────────
 
-const BASE_URL = "https://solarisnerja.com"
+const BASE_URL = "https://your-festival.com"
 
 function goodPage(path: string, overrides?: Partial<PageMeta>): PageMeta {
   return {
     path,
-    title: `Solaris Nerja — ${path === "/" ? "Festival Cultural" : path.slice(1)}`,
+    title: `Festival Name — ${path === "/" ? "Festival Cultural" : path.slice(1)}`,
     description:
-      "Solaris Nerja es el festival cultural y musical de la Costa del Sol. Descubre artistas, horarios y compra tu entrada para vivir una experiencia única frente al mar.",
+      "Festival Name es el festival cultural y musical de la Your Region. Descubre artistas, horarios y compra tu entrada para vivir una experiencia única frente al mar.",
     ogImage: `${BASE_URL}/og${path === "/" ? "/home" : path}.jpg`,
     lang: "es",
     ...overrides,
@@ -122,7 +122,7 @@ describe("seoMonitor", () => {
 
   describe("description checks", () => {
     it("detects missing description", () => {
-      const pages = [{ path: "/", title: "Solaris Nerja Festival" }]
+      const pages = [{ path: "/", title: "Festival Name Festival" }]
       const report = validateSEOHealth(pages, [], defaultRobots(), BASE_URL)
 
       const issue = report.issues.find((i) => i.check === "description.missing")
@@ -139,7 +139,7 @@ describe("seoMonitor", () => {
     })
 
     it("detects duplicate descriptions", () => {
-      const desc = "Festival cultural y musical en la Costa del Sol. Descubre artistas y horarios del festival Solaris Nerja este verano."
+      const desc = "Festival cultural y musical en la Your Region. Descubre artistas y horarios del festival Festival Name este verano."
       const pages = [
         goodPage("/", { description: desc }),
         goodPage("/eventos", { description: desc }),
@@ -291,14 +291,14 @@ describe("seoMonitor", () => {
     })
   })
 
-  describe("Solaris Nerja real scenario", () => {
+  describe("real scenario", () => {
     it("validates real site metadata structure", () => {
       // Real metadata from the project
       const pages: PageMeta[] = [
         {
           path: "/",
-          title: "Solaris Nerja",
-          description: "Festival cultural y musical en la Costa del Sol",
+          title: "Festival Name",
+          description: "Festival cultural y musical en la Your Region",
           lang: "es",
         },
         {
@@ -308,9 +308,9 @@ describe("seoMonitor", () => {
         },
         {
           path: "/ubicacion",
-          title: "Dónde es Solaris Nerja | El Playazo Costa del Sol",
+          title: "Dónde es Festival Name | Your Venue Your Region",
           description:
-            "Solaris Nerja se celebra en El Playazo, Costa del Sol. Más de 20.000 m² frente al mar con Village libre y Arena de conciertos.",
+            "Festival Name se celebra en Your Venue, Your Region. Más de 20.000 m² frente al mar con Village libre y Arena de conciertos.",
         },
         {
           path: "/privacidad",
@@ -336,7 +336,7 @@ describe("seoMonitor", () => {
       // Should detect real issues:
       // - /eventos missing title + description
       // - /privacidad missing title + description
-      // - / title too short ("Solaris Nerja" = 13 chars)
+      // - / title too short ("Festival Name" = 13 chars, adjust for your name)
       // - / description too short
       // - Missing og:image on all public pages
       // - /ubicacion not in sitemap

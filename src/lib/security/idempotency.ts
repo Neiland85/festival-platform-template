@@ -41,7 +41,7 @@ export async function checkIdempotencyKey(key: string): Promise<boolean> {
   if (redis) {
     try {
       // SET key 1 NX EX 300 → returns "OK" if key was set, null if already existed
-      const result = await redis.set(`solaris:idem:${key}`, "1", {
+      const result = await redis.set(`festival:idem:${key}`, "1", {
         nx: true,
         ex: TTL_SECONDS,
       })

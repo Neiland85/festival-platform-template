@@ -11,7 +11,7 @@ const storedEvent: AppEvent = {
   id: "evt-42",
   title: "Flamenco Night",
   description: "Live flamenco",
-  highlight: "Best in Nerja",
+  highlight: "Best live music",
   ticketUrl: "https://tickets.example.com/42",
   active: true,
   createdAt: new Date("2026-01-15"),

@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto"
 
-const IP_SALT = process.env["IP_HASH_SALT"] ?? "solaris-default-salt-change-me"
+const IP_SALT = process.env["IP_HASH_SALT"] ?? "festival-default-salt-change-me"
 
 /**
  * One-way hash of IP address for privacy compliance (GDPR).

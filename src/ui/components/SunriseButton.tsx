@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from "react"
 
 /**
- * SunriseButton — Solaris brand ticket button.
+ * SunriseButton — Festival brand ticket button.
  *
  * Concept: Minimalist sun rising over a horizon line.
  * Palette: #FF3300 (solar orange) · #4141C6 (deep blue) · #FFF · #000
@@ -253,7 +253,7 @@ export default function SunriseButton({
             ENTRADAS
           </text>
 
-          {/* ── SOLARIS NERJA micro-label ── */}
+          {/* ── Festival micro-label — TODO: replace with your festival name ── */}
           <text
             x={CX} y={HORIZON_Y + 36}
             textAnchor="middle"
@@ -262,7 +262,7 @@ export default function SunriseButton({
             fontSize="4.5"
             letterSpacing="3"
           >
-            SOLARIS NERJA
+            FESTIVAL
           </text>
         </g>
 

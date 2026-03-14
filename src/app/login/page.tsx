@@ -34,14 +34,14 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[var(--sn-surface)] flex items-center justify-center px-6 solaris-parallax-sun">
+    <main className="min-h-screen bg-[var(--sn-surface)] flex items-center justify-center px-6 festival-parallax-sun">
       <div className="w-full max-w-sm">
         <form
           onSubmit={handleSubmit}
           className="bg-white rounded-sm border border-[var(--sn-border)] p-10 space-y-8 shadow-sm"
         >
           <div className="text-center space-y-2">
-            <h1 className="editorial-h2">solaris</h1>
+            <h1 className="editorial-h2">admin</h1>
             <p className="editorial-label">panel de administración</p>
           </div>
 
@@ -77,7 +77,7 @@ export default function LoginPage() {
         </form>
 
         <p className="text-center mt-8 text-xs text-[var(--sn-muted)] tracking-widest">
-          solaris nerja
+          festival admin
         </p>
       </div>
     </main>

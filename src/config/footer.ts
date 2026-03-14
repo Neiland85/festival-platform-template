@@ -1,2 +1,3 @@
+// TODO: Replace with your festival description
 export const FOOTER_DESCRIPTION =
-"Solaris Nerja es un festival cultural y musical en la Costa del Sol que se celebra del 18 al 28 de junio en El Playazo, Nerja. Conciertos en vivo, gastronomía mediterránea, market de diseño, arte digital y experiencias frente al mar."
+"A cultural and music festival featuring live concerts, gastronomy, creative market, digital art, and experiences by the sea."

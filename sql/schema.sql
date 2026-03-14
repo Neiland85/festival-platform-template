@@ -1,4 +1,4 @@
--- SolarisNerja — Schema v2 (production-ready)
+-- Festival Platform — Schema v2 (production-ready)
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 

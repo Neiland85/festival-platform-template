@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
+import { useTranslations } from "next-intl"
 
 /* ── Burst logo config ── */
 type BurstLogo = {
@@ -117,7 +118,8 @@ const STARS = Array.from({ length: 25 }, (_, i) => ({
   left: `${3 + ((i * 7.3) % 94)}%`,
 }))
 
-export default function SolarisShowcaseFooter() {
+export default function ShowcaseFooter() {
+  const t = useTranslations("showcase")
   const [isVisible, setIsVisible] = useState(false)
   const [isTouch] = useState(
     () => typeof window !== "undefined" && ("ontouchstart" in window || navigator.maxTouchPoints > 0),
@@ -191,7 +193,7 @@ export default function SolarisShowcaseFooter() {
             color: "rgba(255,255,255,0.4)",
           }}
         >
-          Anfitri&oacute;n del festival
+          {t("hostLabel")}
         </p>
 
         {/* ── Burst container ── */}
@@ -223,7 +225,7 @@ export default function SolarisShowcaseFooter() {
               } as React.CSSProperties}
             >
               <Image
-                src="/logo-solaris.png"
+                src="/festival_logo_burst.png"
                 alt=""
                 width={b.size}
                 height={b.size}
@@ -240,8 +242,8 @@ export default function SolarisShowcaseFooter() {
               style={{ width: 240, height: 240 }}
             >
               <Image
-                src="/logo-solaris.png"
-                alt="Solaris Nerja"
+                src="/festival_logo_burst.png"
+                alt="Festival Logo"
                 width={240}
                 height={240}
                 sizes="240px"
@@ -259,7 +261,7 @@ export default function SolarisShowcaseFooter() {
             color: "#ffffff",
           }}
         >
-          Solaris Nerja
+          {t("title")}
         </h2>
 
         {/* ── Gradient horizon line ── */}
@@ -279,13 +281,13 @@ export default function SolarisShowcaseFooter() {
             color: "rgba(255,255,255,0.35)",
           }}
         >
-          Mediterranean Light Culture
+          {t("tagline")}
         </p>
       </div>
 
       {/* ── Site credit (existing .site-credit styles from globals.css) ── */}
       <div className="site-credit">
-        <span>Website Code by Clarity Structures Digital S.L.</span>
+        <span>{t("credit")}</span>
       </div>
     </footer>
   )

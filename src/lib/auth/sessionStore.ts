@@ -14,7 +14,7 @@ export interface Session {
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000 // 8 hours
 const SESSION_TTL_SECONDS = 8 * 60 * 60
 const MAX_SESSIONS = 100
-const REDIS_PREFIX = "solaris:sess:"
+const REDIS_PREFIX = "festival:sess:"
 
 // ── In-memory fallback ────────────────────────────────
 
@@ -72,7 +72,7 @@ async function redisRevoke(token: string): Promise<void> {
   if (!redis) return
   try {
     await redis.set(
-      `solaris:revoked:${token}`,
+      `festival:revoked:${token}`,
       "1",
       { ex: SESSION_TTL_SECONDS }
     )
@@ -85,7 +85,7 @@ async function redisIsRevoked(token: string): Promise<boolean> {
   const redis = getRedis()
   if (!redis) return false
   try {
-    const val = await redis.get(`solaris:revoked:${token}`)
+    const val = await redis.get(`festival:revoked:${token}`)
     return val !== null
   } catch {
     return false
