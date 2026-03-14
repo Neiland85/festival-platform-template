@@ -52,6 +52,7 @@ export default async function LeadsPage() {
           <p className="text-3xl font-semibold">{totalLeads}</p>
         </div>
 
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- API download endpoint, not a page */}
         <a
           href="/api/v1/leads/export"
           className="border-2 border-black px-6 py-3 text-sm font-medium tracking-wide hover:bg-black hover:text-white transition"

@@ -17,12 +17,12 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://*.sentry.io",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://*.sentry.io https://cdn.sanity.io",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com data:",
-      "img-src 'self' data: blob: https:",
-      "connect-src 'self' https://*.sentry.io https://vercel.live https://*.supabase.co wss://*.supabase.co",
-      "frame-src https://www.google.com https://maps.google.com https://*.ticketmaster.com https://vercel.live",
+      "img-src 'self' data: blob: https: https://cdn.sanity.io",
+      "connect-src 'self' https://*.sentry.io https://vercel.live https://*.supabase.co wss://*.supabase.co https://*.sanity.io https://*.apicdn.sanity.io",
+      "frame-src https://www.google.com https://maps.google.com https://*.ticketmaster.com https://vercel.live https://*.sanity.io",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
@@ -37,8 +37,17 @@ const nextConfig: NextConfig = {
   },
   headers: async () => [
     {
-      source: "/(.*)",
+      // Apply security headers to all routes except /studio
+      source: "/((?!studio).*)",
       headers: securityHeaders,
+    },
+    {
+      // Studio needs relaxed CSP for Sanity's UI to work
+      source: "/studio/:path*",
+      headers: [
+        { key: "X-Frame-Options", value: "SAMEORIGIN" },
+        { key: "X-Content-Type-Options", value: "nosniff" },
+      ],
     },
   ],
 }

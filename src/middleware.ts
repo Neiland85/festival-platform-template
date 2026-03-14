@@ -55,6 +55,13 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
+  // --- Sanity webhook: skip auth (uses its own secret) ---
+  if (pathname === "/api/v1/revalidate") {
+    const response = NextResponse.next()
+    response.headers.set("x-request-id", requestId)
+    return response
+  }
+
   // --- Admin API: return 403 if not authenticated ---
   if (pathname.startsWith("/api/admin/")) {
     if (!(await isAdminAuthenticated(req))) {
