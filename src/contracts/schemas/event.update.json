@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://www.solarisnerja.com/schemas/event.update.json",
+  "$id": "https://www.your-festival.com/schemas/event.update.json",
   "type": "object",
   "properties": {
     "title": {

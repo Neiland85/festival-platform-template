@@ -1,7 +1,12 @@
+"use client"
+
 import Image from "next/image"
-import Link from "next/link"
+import { Link } from "@/i18n/navigation"
+import { useTranslations } from "next-intl"
 
 export default function Footer() {
+  const t = useTranslations("footer")
+
   return (
     <footer className="bg-[var(--sn-bg)] text-[var(--sn-text)] py-24 px-6 transition-colors duration-700">
 
@@ -10,48 +15,47 @@ export default function Footer() {
         {/* LOGO + MANIFESTO */}
         <div className="space-y-6">
           <Image
-            src="/solaris_logo.png"
-            alt="Solaris Nerja"
+            src="/festival_logo.png"
+            alt="Festival Logo"
             width={110}
             height={50}
             sizes="110px"
           />
 
           <p className="text-sm opacity-70 leading-relaxed max-w-xs">
-            Un ciclo cultural mediterráneo donde el sol, el mar y el tiempo
-            vacacional se convierten en experiencia artística.
+            {t("manifesto")}
           </p>
         </div>
 
         {/* NAVEGACIÓN */}
         <nav className="flex flex-col gap-3 text-sm">
           <Link href="/eventos" className="hover:opacity-60">
-            Eventos
+            {t("navEvents")}
           </Link>
 
           <Link href="/#mercado" className="hover:opacity-60">
-            Mercado
+            {t("navMarket")}
           </Link>
 
           <Link href="/#ubicacion" className="hover:opacity-60">
-            Ubicación
+            {t("navLocation")}
           </Link>
 
           <Link href="/privacidad" className="hover:opacity-60">
-            Privacidad
+            {t("navPrivacy")}
           </Link>
         </nav>
 
         {/* INFO / SOCIAL */}
         <div className="space-y-3 text-sm opacity-70">
 
-          <p>Nerja · Costa del Sol</p>
+          <p>{t("locationCity")}</p>
 
-          <p>Verano 2026</p>
+          <p>{t("season")}</p>
 
           <div className="pt-6 flex gap-6 text-sm">
             <a
-              href="https://www.instagram.com/solarisnerja"
+              href="https://www.instagram.com/your-festival"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:opacity-50"
@@ -60,7 +64,7 @@ export default function Footer() {
             </a>
 
             <a
-              href="https://www.facebook.com/solarisnerja"
+              href="https://www.facebook.com/your-festival"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:opacity-50"
@@ -69,7 +73,7 @@ export default function Footer() {
             </a>
 
             <a
-              href="https://www.youtube.com/@solarisnerja"
+              href="https://www.youtube.com/@your-festival"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:opacity-50"
@@ -85,10 +89,10 @@ export default function Footer() {
       {/* LÍNEA FINAL */}
       <div className="max-w-6xl mx-auto mt-20 space-y-3">
         <p className="editorial-label">
-          mediterranean light culture
+          {t("tagline")}
         </p>
         <p className="text-xs opacity-50 tracking-wide">
-          © Solaris Nerja
+          &copy; {t("copyright")}
         </p>
       </div>
 

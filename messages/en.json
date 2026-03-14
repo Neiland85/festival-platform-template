@@ -1,0 +1,140 @@
+{
+  "meta": {
+    "title": "{siteName} — Cultural Festival 2026",
+    "titleTemplate": "{title} — {siteName}",
+    "description": "Cultural and music festival. Live concerts, gastronomy, and unique experiences.",
+    "ogDescription": "Cultural and music festival. Live concerts and unique experiences.",
+    "ogAlt": "{siteName} Festival 2026"
+  },
+  "hero": {
+    "title": "{siteName}",
+    "subtitle": "June 18 — 28",
+    "cta": "TICKETS"
+  },
+  "nav": {
+    "events": "events",
+    "market": "market",
+    "location": "location"
+  },
+  "events": {
+    "heading": "Lineup",
+    "buyTickets": "Buy Tickets",
+    "moreInfo": "More info"
+  },
+  "promo": {
+    "label": "Summer 2026 promo",
+    "ctaButton": "Limited offers",
+    "ctaDescription": "Get access to exclusive festival promotions",
+    "rgpdTitle": "Access limited festival promotions",
+    "rgpdIntro": "Your personal data protection",
+    "rgpdDescription": "We are committed to protecting your privacy. Before continuing, we want you to know exactly how we handle your data:",
+    "rgpdNoSell": "We do not sell or share your data",
+    "rgpdNoSellDesc": "with external companies, advertisers, or third parties for commercial purposes.",
+    "rgpdCookies": "We only use technical and analytics cookies",
+    "rgpdCookiesDesc": "to improve your browsing experience. Marketing cookies (Facebook Pixel, Google Analytics) are only activated if you expressly accept them in the cookie banner.",
+    "rgpdSecure": "Your data is stored securely",
+    "rgpdSecureDesc": "on European servers (Supabase/Vercel EU) with encryption in transit and at rest.",
+    "rgpdEmail": "We will use your email and phone only",
+    "rgpdEmailDesc": "to send you the limited promotions for the festival.",
+    "rgpdRights": "withdraw your consent, access, rectify, or delete your data",
+    "rgpdRightsPrefix": "You can",
+    "rgpdRightsSuffix": "at any time by contacting us or exercising your GDPR rights.",
+    "rgpdLegal": "Legal basis: Art. 6.1.a GDPR (explicit consent). Controller: {siteName}.",
+    "rgpdPrivacyLink": "Full privacy policy",
+    "formTitle": "Limited offers",
+    "formSubtitle": "Fill in your details and you will receive the promotions by email",
+    "labelName": "First name",
+    "labelSurname": "Last name",
+    "labelEmail": "Email",
+    "labelPhone": "Phone",
+    "labelProfession": "Profession",
+    "optional": "optional",
+    "placeholderName": "Your first name",
+    "placeholderSurname": "Your last name",
+    "placeholderEmail": "you@email.com",
+    "placeholderPhone": "+34 600 000 000",
+    "placeholderProfession": "Designer, musician, hospitality...",
+    "sending": "Sending...",
+    "submitConsent": "By submitting, you confirm that you have read and accepted our",
+    "privacyPolicy": "privacy policy",
+    "back": "Back",
+    "successTitle": "You're in!",
+    "successDescription": "You will receive the limited promotions for the festival in your email. Check your inbox.",
+    "errorTitle": "An error occurred",
+    "errorDescription": "We could not process your request. Please try again.",
+    "retry": "Retry"
+  },
+  "cookie": {
+    "message": "We use cookies to improve your experience.",
+    "privacyPolicy": "Privacy policy",
+    "reject": "Reject",
+    "accept": "Accept",
+    "ariaLabel": "Cookie consent"
+  },
+  "footer": {
+    "manifesto": "A cultural cycle where the sun, the sea, and vacation time become an artistic experience.",
+    "navEvents": "Events",
+    "navMarket": "Market",
+    "navLocation": "Location",
+    "navPrivacy": "Privacy",
+    "locationCity": "Your City · Your Region",
+    "season": "Summer 2026",
+    "copyright": "{siteName}",
+    "tagline": "Festival Culture"
+  },
+  "location": {
+    "heading": "Location",
+    "mapTitle": "Festival Location — Your Venue, Your City"
+  },
+  "showcase": {
+    "hostLabel": "Festival host",
+    "title": "{siteName}",
+    "tagline": "Festival Culture",
+    "credit": "Website Code by Your Company"
+  },
+  "about": {
+    "heading": "What is {siteName}?",
+    "intro": "{siteName} is a cultural and music festival held at Your Venue, Your City.",
+    "description": "For several days, the venue becomes a space where you can enjoy:",
+    "concerts": "Live concerts",
+    "djSets": "Sunset DJ sets",
+    "gastronomy": "Local gastronomy",
+    "market": "Creative market",
+    "art": "Digital art and experiences"
+  },
+  "howItWorks": {
+    "heading": "How does the festival work?",
+    "villageTitle": "Festival Village",
+    "villageDescription": "Free access with limited capacity during the day. Market, gastronomy, digital art, and atmosphere.",
+    "arenaTitle": "Festival Arena",
+    "arenaDescription": "Main concerts take place in the Arena with official ticket access."
+  },
+  "tickets": {
+    "loading": "Loading official tickets...",
+    "buyTitle": "Buy tickets — {eventId}",
+    "officialSale": "Official sale managed by Ticketmaster",
+    "buyButton": "Buy Tickets",
+    "comingSoonTitle": "Ticket sales",
+    "comingSoonDesc": "Coming soon via Ticketmaster",
+    "openNewTab": "Open official sale in new tab"
+  },
+  "stickyCta": {
+    "label": "View lineup"
+  },
+  "eventDescriptions": {
+    "chambao": "Flamenco chill concert at the festival.",
+    "bresh": "The most viral party arrives at the festival.",
+    "ohsee": "Contemporary electronic music by the sea.",
+    "goa": "Underground electronic session.",
+    "tropicalia": "Summer music and tropical vibes.",
+    "tecnoflamenco": "Flamenco and electronic fusion."
+  },
+  "eventHighlights": {
+    "chambao": "Flamenco chill",
+    "bresh": "International party",
+    "ohsee": "Electronic",
+    "goa": "Underground electronic",
+    "tropicalia": "Summer music",
+    "tecnoflamenco": "Electronic flamenco"
+  }
+}

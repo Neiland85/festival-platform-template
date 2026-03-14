@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     Sentry.captureException(error, { tags: { route: "/api/v1/events", method: "GET" } })
 
     return problem({
-      type: "https://www.solarisnerja.com/problems/internal",
+      type: "https://www.your-festival.com/problems/internal",
       title: "Internal Server Error",
       status: 500,
       detail: "Unexpected error",
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) {
       log("warn", "event_validation_failed", { requestId, errors: parsed.error.issues })
       return problem({
-        type: "https://www.solarisnerja.com/problems/validation",
+        type: "https://www.your-festival.com/problems/validation",
         title: "Validation error",
         status: 400,
         detail: "Invalid payload",
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
     Sentry.captureException(error, { tags: { route: "/api/v1/events", method: "POST" } })
 
     return problem({
-      type: "https://www.solarisnerja.com/problems/internal",
+      type: "https://www.your-festival.com/problems/internal",
       title: "Internal Server Error",
       status: 500,
       detail: "Unexpected error",

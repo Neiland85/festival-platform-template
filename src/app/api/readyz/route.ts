@@ -23,7 +23,7 @@ export async function GET() {
     Sentry.captureException(error, { tags: { route: "/api/readyz" } })
 
     return problem({
-      type: "https://www.solarisnerja.com/problems/dependency",
+      type: "https://www.your-festival.com/problems/dependency",
       title: "Service Unavailable",
       status: 503,
       detail: isDev ? `Database not ready: ${name}: ${message}` : "Database not ready",

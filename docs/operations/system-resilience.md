@@ -1,4 +1,4 @@
-# SolarisNerja Platform — System Resilience
+# Festival Platform — System Resilience
 
 This document defines operational resilience, failure detection and recovery procedures.
 

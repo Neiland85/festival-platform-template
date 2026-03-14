@@ -1,4 +1,4 @@
-# Chaos Testing — SolarisNerja
+# Chaos Testing — Festival Platform
 
 Chaos testing ensures the system survives unexpected failures.
 

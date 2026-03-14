@@ -21,7 +21,7 @@ function getLimiter(): Ratelimit | null {
   limiter = new Ratelimit({
     redis,
     limiter: Ratelimit.slidingWindow(LIMIT, WINDOW),
-    prefix: "solaris:rl",
+    prefix: "festival:rl",
     analytics: false,
   })
 

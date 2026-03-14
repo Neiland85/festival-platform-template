@@ -1,4 +1,4 @@
-# SolarisNerja — Failure Scenarios
+# Festival Platform — Failure Scenarios
 
 This document defines critical failure simulations for the platform.
 

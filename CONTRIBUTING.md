@@ -1,74 +1,74 @@
-# Contribuir a Solaris Nerja
+# Contributing to Festival Platform Template
 
-## Requisitos previos
+## Prerequisites
 
 - Node.js 20+
 - pnpm 10+
-- PostgreSQL 15+ (o Supabase)
-- Redis (opcional, para rate limiting y queue distribuido)
+- PostgreSQL 15+ (or Supabase)
+- Redis (optional, for rate limiting and distributed queue)
 
-## Setup local
+## Local Setup
 
 ```bash
-git clone git@github.com:Neiland85/solarisnerja.git
-cd solarisnerja
-cp .env.example .env.local   # edita con tus credenciales
+git clone <your-repo-url>
+cd festival-platform-template
+cp .env.example .env.local   # edit with your credentials
 pnpm install
 pnpm dev
 ```
 
-## Scripts principales
+## Main Scripts
 
-| Comando | Descripción |
+| Command | Description |
 |---------|-------------|
-| `pnpm dev` | Servidor de desarrollo |
+| `pnpm dev` | Development server |
 | `pnpm verify` | Lint + typecheck + tests + build (pre-push) |
 | `pnpm lint` | ESLint (zero warnings) |
 | `pnpm typecheck` | TypeScript strict |
-| `pnpm test` | Tests unitarios (vitest) |
-| `pnpm test:e2e` | Tests E2E (Playwright) |
-| `pnpm audit:prod` | Auditoría de seguridad (prod deps) |
+| `pnpm test` | Unit tests (vitest) |
+| `pnpm test:e2e` | E2E tests (Playwright) |
+| `pnpm audit:prod` | Security audit (prod deps) |
 
-## Estructura del proyecto
+## Project Structure
 
 ```
 src/
-├── adapters/db/       # Repositorios PostgreSQL
+├── adapters/db/       # PostgreSQL repositories
 ├── app/               # Next.js App Router (pages + API routes)
-├── contracts/schemas/ # JSON Schema para validación
-├── domain/            # Lógica de negocio pura
-├── lib/               # Utilidades transversales
-│   ├── auth/          # Autenticación + RBAC
-│   ├── observability/ # Métricas, audit log, tracing
+├── contracts/schemas/ # JSON Schema for validation
+├── domain/            # Pure business logic
+├── lib/               # Cross-cutting utilities
+│   ├── auth/          # Authentication + RBAC
+│   ├── observability/ # Metrics, audit log, tracing
 │   └── security/      # Rate limiting, CSRF, queue, idempotency
-└── ui/components/     # Componentes React
+└── ui/components/     # React components
 ```
 
-## Convenciones
+## Conventions
 
-- **Commits**: mensajes en inglés, imperativos, concisos. Ejemplo: `fix: prevent duplicate lead submissions via idempotency key`
-- **Branches**: `feat/`, `fix/`, `chore/` desde `main`
-- **Tests**: todo módulo nuevo requiere tests. Cobertura mínima: funciones exportadas
-- **Lint**: `--max-warnings=0`. No se mergea con warnings
+- **Commits**: English, imperative, concise. Example: `fix: prevent duplicate lead submissions via idempotency key`
+- **Branches**: `feat/`, `fix/`, `chore/` from `main`
+- **Tests**: every new module requires tests. Minimum coverage: exported functions
+- **Lint**: `--max-warnings=0`. No merging with warnings
 
 ## Pre-push checks
 
-El hook de pre-push ejecuta `pnpm verify`. Si falla, el push se bloquea. No usar `--no-verify`.
+The pre-push hook runs `pnpm verify`. If it fails, the push is blocked. Do not use `--no-verify`.
 
-## Seguridad
+## Security
 
-- No commitear `.env`, credenciales, o tokens
-- Usar `hashIp()` para cualquier IP que se persista
-- Consent RGPD requerido antes de almacenar datos personales
-- Reportar vulnerabilidades por email a: bookingnadarecords@gmail.com
+- Do not commit `.env`, credentials, or tokens
+- Use `hashIp()` for any persisted IP
+- GDPR consent required before storing personal data
+- Report vulnerabilities via email to the project maintainer
 
 ## CI/CD
 
-GitHub Actions ejecuta en cada PR y push a main:
+GitHub Actions runs on every PR and push to main:
 1. `pnpm audit --prod --audit-level=moderate`
 2. `pnpm lint`
 3. `pnpm typecheck`
 4. `pnpm test`
 5. `pnpm build`
 
-Deploy automático en Vercel al mergear a `main`.
+Automatic deploy on Vercel when merging to `main`.

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://www.solarisnerja.com/schemas/problem.json",
+  "$id": "https://www.your-festival.com/schemas/problem.json",
   "title": "Problem Details (RFC7807)",
   "type": "object",
   "required": ["type", "title", "status"],

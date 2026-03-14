@@ -1,12 +1,14 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import Link from "next/link"
+import { Link } from "@/i18n/navigation"
+import { useTranslations } from "next-intl"
 import { trackEvent } from "@/lib/tracking"
 
 type FormState = "cta" | "rgpd" | "form" | "success" | "error"
 
 export default function PromoFormSection() {
+  const t = useTranslations("promo")
   const [state, setState] = useState<FormState>("cta")
   const [sending, setSending] = useState(false)
 
@@ -54,7 +56,7 @@ export default function PromoFormSection() {
       <section className="py-20 px-6 bg-black text-white">
         <div className="max-w-3xl mx-auto text-center space-y-8">
           <p className="text-xs font-medium tracking-[0.3em] uppercase opacity-50">
-            Promoción verano 2026
+            {t("label")}
           </p>
 
           <button
@@ -66,11 +68,11 @@ export default function PromoFormSection() {
               transition-all duration-300
               shadow-[0_0_40px_rgba(255,255,255,0.15)]"
           >
-            Promociones limitadas
+            {t("ctaButton")}
           </button>
 
           <p className="text-sm opacity-50 max-w-md mx-auto leading-relaxed">
-            Consigue acceso a promociones exclusivas del festival
+            {t("ctaDescription")}
           </p>
         </div>
       </section>
@@ -84,18 +86,17 @@ export default function PromoFormSection() {
         <div className="max-w-2xl mx-auto space-y-8">
           <div className="text-center space-y-3">
             <h3 className="text-2xl md:text-3xl font-bold tracking-tight">
-              Accede a promociones limitadas del festival
+              {t("rgpdTitle")}
             </h3>
           </div>
 
           <div className="border border-white/20 p-6 md:p-8 space-y-5 text-sm leading-relaxed opacity-80">
             <p className="text-base font-medium text-white opacity-100">
-              Protección de tus datos personales
+              {t("rgpdIntro")}
             </p>
 
             <p>
-              En Solaris Nerja nos comprometemos a proteger tu privacidad. Antes de
-              continuar, queremos que sepas exactamente cómo tratamos tus datos:
+              {t("rgpdDescription")}
             </p>
 
             <ul className="space-y-3 ml-1">
@@ -103,59 +104,54 @@ export default function PromoFormSection() {
                 <span className="shrink-0 mt-0.5 text-white opacity-100">&#10003;</span>
                 <span>
                   <strong className="text-white opacity-100">
-                    No vendemos ni compartimos tus datos
+                    {t("rgpdNoSell")}
                   </strong>{" "}
-                  con empresas externas, anunciantes ni terceros con fines comerciales.
+                  {t("rgpdNoSellDesc")}
                 </span>
               </li>
               <li className="flex gap-3">
                 <span className="shrink-0 mt-0.5 text-white opacity-100">&#10003;</span>
                 <span>
                   <strong className="text-white opacity-100">
-                    Solo usamos cookies técnicas y analíticas
+                    {t("rgpdCookies")}
                   </strong>{" "}
-                  para mejorar tu experiencia de navegación. Las cookies de marketing
-                  (Facebook Pixel, Google Analytics) solo se activan si tú las aceptas
-                  expresamente en el banner de cookies.
+                  {t("rgpdCookiesDesc")}
                 </span>
               </li>
               <li className="flex gap-3">
                 <span className="shrink-0 mt-0.5 text-white opacity-100">&#10003;</span>
                 <span>
                   <strong className="text-white opacity-100">
-                    Tus datos se almacenan de forma segura
+                    {t("rgpdSecure")}
                   </strong>{" "}
-                  en servidores europeos (Supabase/Vercel EU) con cifrado en tránsito y en
-                  reposo.
+                  {t("rgpdSecureDesc")}
                 </span>
               </li>
               <li className="flex gap-3">
                 <span className="shrink-0 mt-0.5 text-white opacity-100">&#10003;</span>
                 <span>
                   <strong className="text-white opacity-100">
-                    Usaremos tu email y teléfono únicamente
+                    {t("rgpdEmail")}
                   </strong>{" "}
-                  para enviarte las promociones limitadas del festival
-                  Solaris Nerja 2026.
+                  {t("rgpdEmailDesc")}
                 </span>
               </li>
               <li className="flex gap-3">
                 <span className="shrink-0 mt-0.5 text-white opacity-100">&#10003;</span>
                 <span>
-                  Puedes{" "}
+                  {t("rgpdRightsPrefix")}{" "}
                   <strong className="text-white opacity-100">
-                    retirar tu consentimiento, acceder, rectificar o eliminar tus datos
+                    {t("rgpdRights")}
                   </strong>{" "}
-                  en cualquier momento contactándonos o ejerciendo tus derechos RGPD.
+                  {t("rgpdRightsSuffix")}
                 </span>
               </li>
             </ul>
 
             <p className="text-xs opacity-60">
-              Base legal: art. 6.1.a RGPD (consentimiento explícito). Responsable: Solaris
-              Nerja.{" "}
+              {t("rgpdLegal")}{" "}
               <Link href="/privacidad" className="underline hover:opacity-100 transition">
-                Política de privacidad completa
+                {t("rgpdPrivacyLink")}
               </Link>
             </p>
           </div>
@@ -166,7 +162,7 @@ export default function PromoFormSection() {
               className="px-10 py-4 text-sm font-bold tracking-widest uppercase
                 bg-white text-black hover:bg-neutral-200 transition-colors"
             >
-              Promociones limitadas
+              {t("ctaButton")}
             </button>
 
             <button
@@ -175,7 +171,7 @@ export default function PromoFormSection() {
                 border border-white/30 text-white/50
                 hover:border-white/60 hover:text-white/80 transition-colors"
             >
-              Volver
+              {t("back")}
             </button>
           </div>
         </div>
@@ -190,10 +186,10 @@ export default function PromoFormSection() {
         <div className="max-w-xl mx-auto space-y-8">
           <div className="text-center space-y-3">
             <h3 className="text-2xl md:text-3xl font-bold tracking-tight">
-              Promociones limitadas
+              {t("formTitle")}
             </h3>
             <p className="text-sm opacity-50">
-              Rellena tus datos y recibirás las promociones en tu email
+              {t("formSubtitle")}
             </p>
           </div>
 
@@ -204,7 +200,7 @@ export default function PromoFormSection() {
                 htmlFor="promo-name"
                 className="text-xs font-medium tracking-wide uppercase opacity-70"
               >
-                Nombre *
+                {t("labelName")} *
               </label>
               <input
                 id="promo-name"
@@ -215,7 +211,7 @@ export default function PromoFormSection() {
                 className="w-full bg-transparent border border-white/30 px-4 py-3 text-sm
                   text-white placeholder:text-white/30
                   focus:border-white focus:outline-none transition-colors"
-                placeholder="Tu nombre"
+                placeholder={t("placeholderName")}
               />
             </div>
 
@@ -225,7 +221,7 @@ export default function PromoFormSection() {
                 htmlFor="promo-surname"
                 className="text-xs font-medium tracking-wide uppercase opacity-70"
               >
-                Apellidos *
+                {t("labelSurname")} *
               </label>
               <input
                 id="promo-surname"
@@ -236,7 +232,7 @@ export default function PromoFormSection() {
                 className="w-full bg-transparent border border-white/30 px-4 py-3 text-sm
                   text-white placeholder:text-white/30
                   focus:border-white focus:outline-none transition-colors"
-                placeholder="Tus apellidos"
+                placeholder={t("placeholderSurname")}
               />
             </div>
 
@@ -246,7 +242,7 @@ export default function PromoFormSection() {
                 htmlFor="promo-email"
                 className="text-xs font-medium tracking-wide uppercase opacity-70"
               >
-                Email *
+                {t("labelEmail")} *
               </label>
               <input
                 id="promo-email"
@@ -257,7 +253,7 @@ export default function PromoFormSection() {
                 className="w-full bg-transparent border border-white/30 px-4 py-3 text-sm
                   text-white placeholder:text-white/30
                   focus:border-white focus:outline-none transition-colors"
-                placeholder="tu@email.com"
+                placeholder={t("placeholderEmail")}
               />
             </div>
 
@@ -267,7 +263,7 @@ export default function PromoFormSection() {
                 htmlFor="promo-phone"
                 className="text-xs font-medium tracking-wide uppercase opacity-70"
               >
-                Teléfono *
+                {t("labelPhone")} *
               </label>
               <input
                 id="promo-phone"
@@ -278,7 +274,7 @@ export default function PromoFormSection() {
                 className="w-full bg-transparent border border-white/30 px-4 py-3 text-sm
                   text-white placeholder:text-white/30
                   focus:border-white focus:outline-none transition-colors"
-                placeholder="+34 600 000 000"
+                placeholder={t("placeholderPhone")}
               />
             </div>
 
@@ -288,7 +284,7 @@ export default function PromoFormSection() {
                 htmlFor="promo-profession"
                 className="text-xs font-medium tracking-wide uppercase opacity-70"
               >
-                Oficio <span className="opacity-50">(opcional)</span>
+                {t("labelProfession")} <span className="opacity-50">({t("optional")})</span>
               </label>
               <input
                 id="promo-profession"
@@ -298,7 +294,7 @@ export default function PromoFormSection() {
                 className="w-full bg-transparent border border-white/30 px-4 py-3 text-sm
                   text-white placeholder:text-white/30
                   focus:border-white focus:outline-none transition-colors"
-                placeholder="Diseñador, músico, hostelería…"
+                placeholder={t("placeholderProfession")}
               />
             </div>
 
@@ -310,7 +306,7 @@ export default function PromoFormSection() {
                   bg-white text-black hover:bg-neutral-200
                   disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {sending ? "Enviando…" : "Promociones limitadas"}
+                {sending ? t("sending") : t("ctaButton")}
               </button>
 
               <button
@@ -320,14 +316,14 @@ export default function PromoFormSection() {
                   border border-white/20 text-white/40
                   hover:text-white/70 transition-colors"
               >
-                Volver
+                {t("back")}
               </button>
             </div>
 
             <p className="text-xs text-center opacity-40 pt-2">
-              Al enviar, confirmas que has leído y aceptado nuestra{" "}
+              {t("submitConsent")}{" "}
               <Link href="/privacidad" className="underline hover:opacity-80">
-                política de privacidad
+                {t("privacyPolicy")}
               </Link>
             </p>
           </form>
@@ -343,11 +339,10 @@ export default function PromoFormSection() {
         <div className="max-w-xl mx-auto text-center space-y-6">
           <p className="text-5xl">&#127881;</p>
           <h3 className="text-2xl md:text-3xl font-bold tracking-tight">
-            ¡Estás dentro!
+            {t("successTitle")}
           </h3>
           <p className="text-sm opacity-60 max-w-md mx-auto leading-relaxed">
-            Recibirás en tu email las promociones limitadas para Solaris
-            Nerja 2026. Revisa tu bandeja de entrada.
+            {t("successDescription")}
           </p>
         </div>
       </section>
@@ -359,16 +354,16 @@ export default function PromoFormSection() {
     <section className="py-20 px-6 bg-black text-white">
       <div className="max-w-xl mx-auto text-center space-y-6">
         <p className="text-4xl">&#9888;&#65039;</p>
-        <h3 className="text-2xl font-bold tracking-tight">Ha ocurrido un error</h3>
+        <h3 className="text-2xl font-bold tracking-tight">{t("errorTitle")}</h3>
         <p className="text-sm opacity-60">
-          No hemos podido procesar tu solicitud. Inténtalo de nuevo.
+          {t("errorDescription")}
         </p>
         <button
           onClick={() => setState("form")}
           className="px-10 py-4 text-sm font-bold tracking-widest uppercase
             bg-white text-black hover:bg-neutral-200 transition-colors"
         >
-          Reintentar
+          {t("retry")}
         </button>
       </div>
     </section>

@@ -11,9 +11,9 @@ const ALL_IMAGES = [
   { src: "/carousel/carousel-08.webp", alt: "Mercadillo vintage" },
   { src: "/carousel/gallery-06.webp", alt: "Gastronomía del festival" },
   { src: "/carousel/hero-02.webp", alt: "Público disfrutando" },
-  { src: "/carousel/carousel-02.webp", alt: "Costa del Sol" },
+  { src: "/carousel/carousel-02.webp", alt: "Festival venue" },
   { src: "/carousel/gallery-04.webp", alt: "Ambiente de playa" },
-  { src: "/carousel/OS25_Rakelodel_210 2.webp", alt: "Oh See Málaga en directo" },
+  { src: "/carousel/OS25_Rakelodel_210 2.webp", alt: "Live performance" },
   { src: "/carousel/carousel-03.webp", alt: "Atardecer mediterráneo" },
   { src: "/carousel/gallery-07.webp", alt: "Experiencia gastronómica" },
   { src: "/carousel/hero-04.webp", alt: "Artesanía local" },
@@ -174,7 +174,7 @@ export default function CarouselSection() {
             Sol, playa y cultura
           </p>
           <h2 className="text-5xl md:text-7xl font-bold text-neutral-900" style={{ letterSpacing: "-0.02em" }}>
-            El ambiente Solaris
+            The Festival Vibe
           </h2>
           <div
             className="mt-6 mx-auto w-32 h-1 rounded-full"
@@ -369,7 +369,7 @@ export default function CarouselSection() {
           <div className="relative w-[90vw] h-[80vh]" onClick={(e) => e.stopPropagation()}>
             <Image
               src={lightbox}
-              alt="Festival Solaris Nerja"
+              alt="Festival gallery"
               fill
               className="object-contain"
               sizes="90vw"

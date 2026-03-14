@@ -6,7 +6,7 @@ import EventCard from "./EventCard"
 describe("EventCard", () => {
   const mockEvent = {
     id: "evt-001",
-    title: "DJ Set — Solaris Opening",
+    title: "DJ Set — Festival Opening",
     time: "22:00 — 02:00",
     description: "Sesión de apertura del festival con artistas locales e internacionales.",
   }

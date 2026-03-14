@@ -1,4 +1,4 @@
--- Solaris Nerja — Initial schema
+-- Festival Platform — Initial schema
 -- Execute against your PostgreSQL database (Supabase or direct)
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

@@ -1,4 +1,4 @@
-# SolarisNerja — Service Level Objectives
+# Festival Platform — Service Level Objectives
 
 This document defines the operational targets of the platform.
 

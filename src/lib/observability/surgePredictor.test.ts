@@ -193,7 +193,7 @@ describe("surgePredictor", () => {
   })
 
   describe("festival scenario simulation", () => {
-    it("simulates Solaris Nerja lineup drop traffic pattern", () => {
+    it("simulates festival lineup drop traffic pattern", () => {
       vi.useFakeTimers()
 
       // Normal traffic: 5-8 leads/min for 5 minutes

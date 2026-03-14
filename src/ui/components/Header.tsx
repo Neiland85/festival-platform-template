@@ -1,7 +1,12 @@
+"use client"
+
 import Image from "next/image"
-import Link from "next/link"
+import { Link } from "@/i18n/navigation"
+import { useTranslations } from "next-intl"
 
 export default function Header() {
+  const t = useTranslations("nav")
+
   return (
     <header className="bg-white text-black w-full px-8 py-6">
 
@@ -10,8 +15,8 @@ export default function Header() {
         {/* LOGO */}
         <Link href="/" className="flex items-center">
           <Image
-            src="/solaris_logo.png"
-            alt="Solaris Nerja"
+            src="/festival_logo.png"
+            alt="Festival Logo"
             width={120}
             height={60}
             sizes="120px"
@@ -26,21 +31,21 @@ export default function Header() {
             href="/#eventos"
             className="hover:opacity-60 transition"
           >
-            eventos
+            {t("events")}
           </Link>
 
           <Link
             href="/#mercado"
             className="hover:opacity-60 transition"
           >
-            mercado
+            {t("market")}
           </Link>
 
           <Link
             href="/#ubicacion"
             className="hover:opacity-60 transition"
           >
-            ubicación
+            {t("location")}
           </Link>
 
         </nav>

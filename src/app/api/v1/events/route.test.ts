@@ -46,7 +46,7 @@ function makePostRequest(body: unknown, token?: string): NextRequest {
 
 const validEvent = {
   title: "Jazz Festival",
-  description: "Annual jazz music event in Nerja",
+  description: "Annual jazz music event at the festival",
   highlight: "Top international artists",
   ticketUrl: "https://tickets.example.com/jazz",
 }

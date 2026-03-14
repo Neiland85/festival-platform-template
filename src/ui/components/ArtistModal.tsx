@@ -410,7 +410,7 @@ export default function ArtistModal({
               ...stagger(5),
             }}
           >
-            Solaris Nerja
+            Festival
           </p>
         </div>
       </div>

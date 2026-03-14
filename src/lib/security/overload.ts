@@ -18,7 +18,7 @@ const buckets = new Map<string, Bucket>()
 const WINDOW = 60 * 1000
 const WINDOW_SECONDS = 60
 const LIMIT = 120
-const REDIS_PREFIX = "solaris:overload:"
+const REDIS_PREFIX = "festival:overload:"
 
 /**
  * Returns true if request is allowed, false if overloaded.

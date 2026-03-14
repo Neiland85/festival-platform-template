@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 
 /**
- * useSolarisTheme — Golden Hour Mode for SolarisNerja.
+ * useFestivalTheme — Golden Hour Mode for the festival theme.
  *
  * Dynamically switches CSS variables based on user's local time:
  *   Before 17:00  → "day"    (bright editorial whites)
@@ -17,9 +17,9 @@ import { useState, useEffect, useCallback, useRef } from "react"
  * - prefers-color-scheme: dark overrides to "night" mode regardless of time.
  */
 
-export type SolarisTheme = "day" | "sunset" | "night"
+export type FestivalTheme = "day" | "sunset" | "night"
 
-export type SolarisThemeTokens = {
+export type FestivalThemeTokens = {
   "--sn-bg": string
   "--sn-surface": string
   "--sn-surface-2": string
@@ -33,7 +33,7 @@ export type SolarisThemeTokens = {
   "--sn-border-2": string
 }
 
-const THEMES: Record<SolarisTheme, SolarisThemeTokens> = {
+const THEMES: Record<FestivalTheme, FestivalThemeTokens> = {
   day: {
     "--sn-bg": "#ffffff",
     "--sn-surface": "#f5f5f5",
@@ -75,17 +75,17 @@ const THEMES: Record<SolarisTheme, SolarisThemeTokens> = {
   },
 }
 
-function getThemeForHour(hour: number): SolarisTheme {
+function getThemeForHour(hour: number): FestivalTheme {
   if (hour < 17) return "day"
   if (hour < 20) return "sunset"
   return "night"
 }
 
-export function useSolarisTheme() {
-  const [theme, setTheme] = useState<SolarisTheme>("day")
+export function useFestivalTheme() {
+  const [theme, setTheme] = useState<FestivalTheme>("day")
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const detectTheme = useCallback((): SolarisTheme => {
+  const detectTheme = useCallback((): FestivalTheme => {
     // prefers-color-scheme: dark overrides time-based detection
     if (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches) {
       return "night"
@@ -94,7 +94,7 @@ export function useSolarisTheme() {
     return getThemeForHour(hour)
   }, [])
 
-  const applyTokens = useCallback((t: SolarisTheme) => {
+  const applyTokens = useCallback((t: FestivalTheme) => {
     if (typeof document === "undefined") return
     const root = document.documentElement
     const tokens = THEMES[t]
@@ -102,7 +102,7 @@ export function useSolarisTheme() {
       root.style.setProperty(prop, value)
     }
     // Set data attribute for conditional CSS selectors
-    root.dataset["solarisTheme"] = t
+    root.dataset["festivalTheme"] = t
   }, [])
 
   useEffect(() => {
@@ -147,7 +147,7 @@ export function useSolarisTheme() {
     /** All token values for the current theme */
     tokens: THEMES[theme],
     /** Force a specific theme (overrides time detection until next interval tick) */
-    setTheme: (t: SolarisTheme) => {
+    setTheme: (t: FestivalTheme) => {
       setTheme(t)
       applyTokens(t)
     },

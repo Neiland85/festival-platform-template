@@ -71,7 +71,7 @@ export default function ImageCarousel() {
           <div key={src} className="relative w-full shrink-0 aspect-[2.4/1]">
             <Image
               src={src}
-              alt={`Solaris Nerja — carrusel ${i + 1}`}
+              alt={`Festival carousel ${i + 1}`}
               fill
               sizes="100vw"
               priority={i === 0}

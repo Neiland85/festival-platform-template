@@ -126,7 +126,7 @@ export default function DashboardPage() {
       <div className="space-y-12">
         <div>
           <p className="editorial-label mb-2">control center</p>
-          <h1 className="editorial-h2">solaris nerja dashboard</h1>
+          <h1 className="editorial-h2">festival dashboard</h1>
         </div>
         <div className="flex items-center justify-center py-20">
           <div className="animate-pulse text-sm text-gray-400 tracking-wide">cargando datos…</div>
@@ -140,7 +140,7 @@ export default function DashboardPage() {
       <div className="space-y-12">
         <div>
           <p className="editorial-label mb-2">control center</p>
-          <h1 className="editorial-h2">solaris nerja dashboard</h1>
+          <h1 className="editorial-h2">festival dashboard</h1>
         </div>
         <div className="bg-red-50 border border-red-200 p-6 text-sm text-red-700">
           {state.error}
@@ -153,7 +153,7 @@ export default function DashboardPage() {
     <div className="space-y-12">
       <div>
         <p className="editorial-label mb-2">control center</p>
-        <h1 className="editorial-h2">solaris nerja dashboard</h1>
+        <h1 className="editorial-h2">festival dashboard</h1>
       </div>
 
       {state.health && <FestivalHealthCard data={state.health} />}

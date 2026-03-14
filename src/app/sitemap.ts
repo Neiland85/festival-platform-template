@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next"
 import { EVENTS } from "@/config/events"
 
-const BASE = "https://solarisnerja.com"
+// TODO: Set NEXT_PUBLIC_SITE_URL in your environment
+const BASE = process.env["NEXT_PUBLIC_SITE_URL"] ?? "https://www.your-festival.com"
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const eventPages = EVENTS.map((e) => ({

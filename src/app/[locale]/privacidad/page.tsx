@@ -1,12 +1,20 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import { setRequestLocale } from "next-intl/server"
 
 export const metadata: Metadata = {
-  title: "Política de Privacidad — SolarisNerja",
-  description: "Política de privacidad y protección de datos de SolarisNerja.",
+  title: "Política de Privacidad — Festival Platform",
+  description: "Política de privacidad y protección de datos de Festival Platform.",
 }
 
-export default function PrivacidadPage() {
+type Props = {
+  params: Promise<{ locale: string }>
+}
+
+export default async function PrivacidadPage({ params }: Props) {
+  const { locale } = await params
+  setRequestLocale(locale)
+
   return (
     <main className="min-h-screen">
 
@@ -33,7 +41,8 @@ export default function PrivacidadPage() {
               1. Responsable del tratamiento
             </h2>
             <p>
-              SolarisNerja es una plataforma de eventos gestionada desde Nerja, Málaga, España.
+              {/* TODO: Replace with your company details */}
+              This is an event platform managed by Your Company.
               Para cualquier consulta sobre protección de datos, puedes contactarnos
               en la dirección indicada en la sección de contacto.
             </p>
@@ -61,7 +70,7 @@ export default function PrivacidadPage() {
               3. Finalidad del tratamiento
             </h2>
             <ul className="ml-4 space-y-1 list-disc">
-              <li>Enviarte información sobre eventos de SolarisNerja.</li>
+              <li>Enviarte información sobre eventos de Festival Platform.</li>
               <li>Analizar el uso de la plataforma para mejorar la experiencia.</li>
               <li>Gestionar la venta de entradas a través de Ticketmaster.</li>
             </ul>
@@ -82,7 +91,7 @@ export default function PrivacidadPage() {
             <h2 className="text-base font-bold text-[var(--sn-text)] mb-3">
               5. Cookies
             </h2>
-            <p>SolarisNerja utiliza las siguientes cookies:</p>
+            <p>Festival Platform utiliza las siguientes cookies:</p>
             <ul className="mt-2 ml-4 space-y-1 list-disc">
               <li>
                 <strong className="text-[var(--sn-text)]">sn_cookie_consent:</strong> registra tu

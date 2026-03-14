@@ -10,7 +10,7 @@ import { getRedis } from "@/lib/redis/client"
 const LOGIN_WINDOW_MS = 60_000
 const LOGIN_WINDOW_SECONDS = 60
 const MAX_ATTEMPTS = 5
-const REDIS_PREFIX = "solaris:login_attempts:"
+const REDIS_PREFIX = "festival:login_attempts:"
 
 // In-memory fallback
 const loginAttempts = new Map<string, { count: number; resetAt: number }>()

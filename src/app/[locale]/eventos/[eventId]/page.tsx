@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import { setRequestLocale } from "next-intl/server"
 import { getEvent } from "@/config/events"
 import { Reveal } from "@/ui/components/Reveal"
 import { ButtonPrimary } from "@/ui/components/UI"
@@ -9,6 +10,7 @@ import { ViewContentTracker } from "@/ui/components/ViewContentTracker"
 
 type Props = {
   params: Promise<{
+    locale: string
     eventId: string
   }>
 }
@@ -18,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const event = getEvent(eventId)
   if (!event) return {}
 
-  const title = `${event.title} — Solaris Nerja`
+  const title = `${event.title} — Festival`
   const description = event.description
 
   return {
@@ -29,13 +31,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       type: "website",
       locale: "es_ES",
-      siteName: "Solaris Nerja",
+      siteName: "Festival",
       images: [
         {
           url: "/og-image.jpg",
           width: 1200,
           height: 630,
-          alt: `${event.title} — Solaris Nerja Festival 2026`,
+          alt: `${event.title} — Festival 2026`,
         },
       ],
     },
@@ -49,7 +51,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function EventDetailPage({ params }: Props) {
-  const { eventId } = await params
+  const { locale, eventId } = await params
+  setRequestLocale(locale)
+
   const event = getEvent(eventId)
 
   if (!event) {
