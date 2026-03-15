@@ -9,7 +9,7 @@ export default function HeroVideo() {
   return (
     <section className="relative w-full h-[90vh] overflow-hidden">
       <video autoPlay muted loop playsInline className="absolute w-full h-full object-cover">
-        <source src="/hero/hero.mp4" type="video/mp4" />
+        <source src="/hero/Tomorrowland-Belgium_2016_Official-Aftermovie_corto.mov" type="video/mp4" />
       </video>
 
       <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
