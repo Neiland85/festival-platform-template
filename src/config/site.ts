@@ -39,7 +39,7 @@ export const LOGO_WIDTH = 120
 export const LOGO_HEIGHT = 60
 
 /** Path to the hero video (relative to /public) */
-export const HERO_VIDEO_PATH = "/hero/hero.mp4"
+export const HERO_VIDEO_PATH = "/hero/Tomorrowland-Belgium_2016_Official-Aftermovie_corto.mov"
 
 /** Favicon path */
 export const FAVICON_PATH = "/favicon.ico"
