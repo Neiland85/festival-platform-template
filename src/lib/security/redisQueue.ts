@@ -1,7 +1,8 @@
 import { getRedis } from "@/lib/redis/client"
-import type { Lead } from "@/domain/leads/create-lead"
 
-const QUEUE_KEY = "festival:lead_queue"
+type QueueItem = Record<string, unknown>
+
+const QUEUE_KEY = "platform:job_queue"
 
 function requireRedis() {
   const client = getRedis()
@@ -9,14 +10,14 @@ function requireRedis() {
   return client
 }
 
-export async function enqueueLeadRedis(lead: Lead) {
-  await requireRedis().lpush(QUEUE_KEY, JSON.stringify(lead))
+export async function enqueueRedis(item: QueueItem) {
+  await requireRedis().lpush(QUEUE_KEY, JSON.stringify(item))
 }
 
-export async function dequeueLeadRedis(): Promise<Lead | null> {
-  const item = await requireRedis().rpop<string>(QUEUE_KEY)
-  if (!item) return null
-  return JSON.parse(item) as Lead
+export async function dequeueRedis(): Promise<QueueItem | null> {
+  const raw = await requireRedis().rpop<string>(QUEUE_KEY)
+  if (!raw) return null
+  return JSON.parse(raw) as QueueItem
 }
 
 export async function queueLength() {

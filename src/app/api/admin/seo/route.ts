@@ -3,16 +3,6 @@
  *
  * Ejecuta checks SEO y devuelve report con score, grade e issues.
  * Protegido con requireAdmin.
- *
- * Integración CI (post-deploy):
- *   curl -s -H "Cookie: admin_session=$TOKEN" \
- *     https://your-festival.com/api/admin/seo | jq '.score, .grade'
- *
- * Response:
- * {
- *   score: 0-100, grade: "A"|"B"|"C"|"D"|"F",
- *   totalChecks, passed, issues: [...], summary: { errors, warnings, infos }
- * }
  */
 
 import { NextRequest, NextResponse } from "next/server"
@@ -23,10 +13,8 @@ import {
   type SitemapEntry,
   type RobotsConfig,
 } from "@/lib/observability/seoMonitor"
-import { EVENTS } from "@/config/events"
 
-// TODO: Set NEXT_PUBLIC_SITE_URL in your environment
-const BASE_URL = process.env["NEXT_PUBLIC_SITE_URL"] ?? "https://www.your-festival.com"
+const BASE_URL = process.env["NEXT_PUBLIC_SITE_URL"] ?? "https://www.your-platform.com"
 
 export async function GET(req: NextRequest) {
   if (!requireAdmin(req)) {
@@ -36,42 +24,23 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  // Build page metadata from known routes
   const pages: PageMeta[] = [
     {
       path: "/",
-      title: "Festival Name",
-      description: "Cultural and music festival",
+      title: "Platform",
+      description: "SaaS template marketplace",
       lang: "es",
     },
     {
-      path: "/eventos",
-      title: undefined,
-      description: undefined,
-    },
-    {
-      path: "/ubicacion",
-      title: "Location | Festival",
-      description:
-        "Find the festival venue. Explore the venue areas including the main stage and creative market.",
+      path: "/catalog",
+      title: "Catalog",
+      description: "Browse available assets and templates",
     },
     {
       path: "/privacidad",
       title: undefined,
       description: undefined,
     },
-    {
-      path: "/contacto",
-      title: undefined,
-      description: undefined,
-    },
-    // Dynamic event pages
-    ...EVENTS.map((e) => ({
-      path: `/eventos/${e.id}`,
-      title: undefined as string | undefined,
-      description: undefined as string | undefined,
-    })),
-    // Dashboard (should be noindex)
     {
       path: "/dashboard",
       title: "Dashboard",
@@ -84,15 +53,10 @@ export async function GET(req: NextRequest) {
     },
   ]
 
-  // Build sitemap entries
   const sitemapEntries: SitemapEntry[] = [
     { url: BASE_URL, priority: 1 },
-    { url: `${BASE_URL}/eventos`, priority: 0.9 },
+    { url: `${BASE_URL}/catalog`, priority: 0.9 },
     { url: `${BASE_URL}/privacidad`, priority: 0.3 },
-    ...EVENTS.map((e) => ({
-      url: `${BASE_URL}/eventos/${e.id}`,
-      priority: 0.8,
-    })),
   ]
 
   const robotsConfig: RobotsConfig = {

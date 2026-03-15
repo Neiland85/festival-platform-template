@@ -2,32 +2,28 @@
  * Central white-label configuration
  *
  * This file is the SINGLE source of truth for branding, URLs, and
- * festival identity. Every component reads from here instead of
+ * platform identity. Every component reads from here instead of
  * scattering process.env lookups throughout the codebase.
  *
  * Customization guide:
  *   1. Set NEXT_PUBLIC_SITE_NAME and NEXT_PUBLIC_SITE_URL in .env
  *   2. Replace /public/festival_logo.png with your logo
  *   3. Update social links below
- *   4. Optionally configure Sanity CMS for full CMS-driven branding
- *
- * If Sanity CMS is configured, siteConfig from Sanity overrides these
- * defaults at runtime (see src/adapters/cms/sanity/).
  */
 
 // ── Identity ──────────────────────────────────────────
 
-/** Festival / brand name — used in <title>, OG tags, footer, etc. */
+/** Platform / brand name — used in <title>, OG tags, footer, etc. */
 export const SITE_NAME =
-  process.env["NEXT_PUBLIC_SITE_NAME"] ?? "Festival Name"
+  process.env["NEXT_PUBLIC_SITE_NAME"] ?? "Platform Name"
 
 /** Canonical site URL — used in sitemap, OG tags, CORS whitelist */
 export const SITE_URL =
-  process.env["NEXT_PUBLIC_SITE_URL"] ?? "https://www.your-festival.com"
+  process.env["NEXT_PUBLIC_SITE_URL"] ?? "https://www.your-platform.com"
 
 /** Short tagline for hero section and meta description */
 export const SITE_TAGLINE =
-  process.env["NEXT_PUBLIC_SITE_TAGLINE"] ?? "Music, Culture & Experiences"
+  process.env["NEXT_PUBLIC_SITE_TAGLINE"] ?? "Templates, Assets & Tools"
 
 // ── Branding Assets ───────────────────────────────────
 
@@ -57,31 +53,18 @@ export const SOCIAL_LINKS = {
 // ── Contact ───────────────────────────────────────────
 
 export const CONTACT_EMAIL =
-  process.env["NEXT_PUBLIC_CONTACT_EMAIL"] ?? "info@your-festival.com"
+  process.env["NEXT_PUBLIC_CONTACT_EMAIL"] ?? "info@your-platform.com"
 
 // ── Location ──────────────────────────────────────────
 
 /** Google Maps embed coordinates or place name */
 export const VENUE_NAME =
-  process.env["NEXT_PUBLIC_VENUE_NAME"] ?? "Festival Venue"
+  process.env["NEXT_PUBLIC_VENUE_NAME"] ?? "Platform HQ"
 
 export const VENUE_MAPS_URL =
   process.env["NEXT_PUBLIC_VENUE_MAPS_URL"] ?? ""
 
 // ── Feature Toggles ───────────────────────────────────
-// These are derived from whether the corresponding env vars are set.
-// No feature requires configuration — the template works with ZERO
-// external services.
-
-/** Is Sanity CMS configured? Enables CMS-driven content. */
-export const HAS_SANITY = Boolean(
-  process.env["NEXT_PUBLIC_SANITY_PROJECT_ID"],
-)
-
-/** Is Stripe configured? Enables native checkout. */
-export const HAS_STRIPE = Boolean(
-  process.env["STRIPE_SECRET_KEY"],
-)
 
 /** Is Sentry configured? Enables error tracking. */
 export const HAS_SENTRY = Boolean(
@@ -104,9 +87,6 @@ export const HAS_META_PIXEL = Boolean(
 )
 
 // ── Theme ─────────────────────────────────────────────
-// CSS custom properties are defined in globals.css.
-// Override them in your own CSS to change the color palette.
-// Default theme: "Golden Hour" — warm sunset tones.
 
 export const THEME = {
   name: "Golden Hour",
