@@ -4,7 +4,7 @@ import { createCsrfToken } from "@/lib/csrf"
 export async function GET(req: NextRequest) {
   const secret = process.env["CSRF_SECRET"]
   if (!secret) {
-    return NextResponse.json({ error: "CSRF not configured" }, { status: 500 })
+    return NextResponse.json({ error: "CSRF not configured" }, { status: 503 })
   }
 
   const cookies = req.cookies
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
       sameSite: "lax",
       secure: true,
       path: "/",
-      maxAge: 60 * 60 * 24 * 7,
+      maxAge: 60 * 60 * 24 * 7
     })
   }
 
