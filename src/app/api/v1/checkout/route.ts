@@ -3,6 +3,9 @@ import { z } from "zod"
 import { createOrderForEvent, InsufficientCapacityError, EventNotFoundError } from "@/domain/orders/create-order"
 import { createCheckoutSession, StripeNotConfiguredError } from "@/adapters/payments/stripe/checkout"
 import { findEventWithPricing } from "@/adapters/db/event-repository"
+import { verifyCsrf } from "@/lib/security/verifyCsrf"
+import { rateLimit } from "@/lib/rate-limit"
+import { _getClientIp } from "@/lib/ip"
 
 const checkoutSchema = z.object({
   eventId: z.string().min(1).max(255),
@@ -18,10 +21,29 @@ const checkoutSchema = z.object({
  *
  * Body: { eventId: string, email: string, quantity?: number, locale?: string }
  *
+ * Security: CSRF validation + rate limiting (opt-in via env vars).
  * Degradation: Returns 503 if Stripe is not configured.
  */
 export async function POST(req: NextRequest) {
   try {
+    // Rate limiting
+    const clientIp = _getClientIp(req)
+    const allowed = await rateLimit(clientIp)
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Too many requests" },
+        { status: 429 },
+      )
+    }
+
+    // CSRF validation (opt-in: skipped if CSRF_SECRET not set)
+    if (!verifyCsrf(req)) {
+      return NextResponse.json(
+        { error: "Invalid CSRF token" },
+        { status: 403 },
+      )
+    }
+
     const raw = await req.json()
     const parsed = checkoutSchema.safeParse(raw)
 

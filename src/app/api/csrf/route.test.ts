@@ -38,14 +38,14 @@ describe("GET /api/csrf", () => {
     expect(cookie).toBeUndefined()
   })
 
-  it("returns 500 when CSRF_SECRET not configured", async () => {
+  it("returns 503 when CSRF_SECRET not configured", async () => {
     vi.stubEnv("CSRF_SECRET", "")
     // Need to clear because empty string is falsy
     delete process.env["CSRF_SECRET"]
 
     const req = new NextRequest("https://example.com/api/csrf", { method: "GET" })
     const res = await GET(req)
-    expect(res.status).toBe(500)
+    expect(res.status).toBe(503)
 
     const json = await res.json()
     expect(json.error).toContain("CSRF not configured")
