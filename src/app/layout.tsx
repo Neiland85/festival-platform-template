@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next"
 import { Space_Mono } from "next/font/google"
 import MetaPixel from "@/ui/components/MetaPixel"
-import FestivalThemeProvider from "@/ui/components/FestivalThemeProvider"
 import "./globals.css"
 
 const spaceMono = Space_Mono({
@@ -19,7 +18,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env["NEXT_PUBLIC_SITE_URL"] ?? "https://www.your-festival.com",
+    process.env["NEXT_PUBLIC_SITE_URL"] ?? "https://www.your-platform.com",
   ),
 }
 
@@ -32,7 +31,6 @@ export default function RootLayout({
     <html className={spaceMono.variable} suppressHydrationWarning>
       <body>
         <MetaPixel />
-        <FestivalThemeProvider />
         {children}
       </body>
     </html>

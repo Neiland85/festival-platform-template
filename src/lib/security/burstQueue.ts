@@ -1,12 +1,14 @@
-import type { Lead } from "@/domain/leads/types"
+/** In-memory burst queue — generic payload */
 
-const queue: Lead[] = []
+type QueueItem = Record<string, unknown>
 
-export function enqueueLead(lead: Lead) {
-  queue.push(lead)
+const queue: QueueItem[] = []
+
+export function enqueue(item: QueueItem) {
+  queue.push(item)
 }
 
-export function dequeueLead(): Lead | undefined {
+export function dequeue(): QueueItem | undefined {
   return queue.shift()
 }
 
