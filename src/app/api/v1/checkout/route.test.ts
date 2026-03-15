@@ -7,6 +7,8 @@ import { POST } from "./route"
 const mockFindEventWithPricing = vi.fn()
 const mockCreateOrderForEvent = vi.fn()
 const mockCreateCheckoutSession = vi.fn()
+const mockRateLimit = vi.fn()
+const mockVerifyCsrf = vi.fn()
 
 vi.mock("@/adapters/db/event-repository", () => ({
   findEventWithPricing: (...args: unknown[]) => mockFindEventWithPricing(...args),
@@ -27,6 +29,18 @@ vi.mock("@/adapters/payments/stripe/checkout", () => ({
   StripeNotConfiguredError: class extends Error {
     constructor() { super("Stripe not configured"); this.name = "StripeNotConfiguredError" }
   },
+}))
+
+vi.mock("@/lib/rate-limit", () => ({
+  rateLimit: (...args: unknown[]) => mockRateLimit(...args),
+}))
+
+vi.mock("@/lib/security/verifyCsrf", () => ({
+  verifyCsrf: (...args: unknown[]) => mockVerifyCsrf(...args),
+}))
+
+vi.mock("@/lib/ip", () => ({
+  _getClientIp: () => "127.0.0.1",
 }))
 
 // ── Fixtures ────────────────────────────────────────
@@ -69,6 +83,8 @@ describe("POST /api/v1/checkout", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     process.env["NEXT_PUBLIC_SITE_URL"] = "https://test-festival.com"
+    mockRateLimit.mockResolvedValue(true)
+    mockVerifyCsrf.mockReturnValue(true)
     mockFindEventWithPricing.mockResolvedValue(activeEvent)
     mockCreateOrderForEvent.mockResolvedValue(createdOrder)
     mockCreateCheckoutSession.mockResolvedValue("https://checkout.stripe.com/test")
@@ -129,5 +145,54 @@ describe("POST /api/v1/checkout", () => {
         locale: "en",
       }),
     )
+  })
+
+  // ── Rate Limiting ──────────────────────────────────
+
+  it("returns 429 when rate limit is exceeded", async () => {
+    mockRateLimit.mockResolvedValue(false)
+
+    const res = await POST(makeRequest({ eventId: "chambao", email: "fan@example.com" }))
+    expect(res.status).toBe(429)
+
+    const json = await res.json()
+    expect(json.error).toContain("Too many requests")
+  })
+
+  it("does not process checkout when rate limited", async () => {
+    mockRateLimit.mockResolvedValue(false)
+
+    await POST(makeRequest({ eventId: "chambao", email: "fan@example.com" }))
+    expect(mockFindEventWithPricing).not.toHaveBeenCalled()
+    expect(mockCreateOrderForEvent).not.toHaveBeenCalled()
+  })
+
+  // ── CSRF Validation ────────────────────────────────
+
+  it("returns 403 when CSRF token is invalid", async () => {
+    mockVerifyCsrf.mockReturnValue(false)
+
+    const res = await POST(makeRequest({ eventId: "chambao", email: "fan@example.com" }))
+    expect(res.status).toBe(403)
+
+    const json = await res.json()
+    expect(json.error).toContain("CSRF")
+  })
+
+  it("does not process checkout when CSRF fails", async () => {
+    mockVerifyCsrf.mockReturnValue(false)
+
+    await POST(makeRequest({ eventId: "chambao", email: "fan@example.com" }))
+    expect(mockFindEventWithPricing).not.toHaveBeenCalled()
+    expect(mockCreateOrderForEvent).not.toHaveBeenCalled()
+  })
+
+  it("rate limit is checked before CSRF", async () => {
+    mockRateLimit.mockResolvedValue(false)
+    mockVerifyCsrf.mockReturnValue(false)
+
+    const res = await POST(makeRequest({ eventId: "chambao", email: "fan@example.com" }))
+    expect(res.status).toBe(429)
+    expect(mockVerifyCsrf).not.toHaveBeenCalled()
   })
 })
