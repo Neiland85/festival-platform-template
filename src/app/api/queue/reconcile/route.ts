@@ -12,10 +12,9 @@
  *   4. Returns metrics: recovered and failed counts
  *
  * How to invoke:
- *   - Cron job: Every 60-120 seconds
- *   - Vercel Cron: `cron "*/2 * * * *"` (every 2 minutes)
- *   - Upstash: POST https://qstash.io/publish with URL
- *   - External: curl -X POST https://yourapp.com/api/queue/reconcile
+ *   - Cron job: Every 60-120 seconds via Vercel/Upstash
+ *   - See docs/QUEUE_RECONCILIATION.md for setup instructions
+ *   - HTTP endpoint: POST to this URL with Authorization header
  *
  * Authorization:
  *   - Protect with API key or IP allowlist in production
@@ -37,7 +36,7 @@ export async function POST(req: Request) {
   try {
     // Optional: Verify authorization (API key, IP, etc.)
     const authHeader = req.headers.get("authorization")
-    const expectedKey = process.env.QUEUE_RECONCILE_KEY
+    const expectedKey = process.env["QUEUE_RECONCILE_KEY"]
 
     if (expectedKey && authHeader !== `Bearer ${expectedKey}`) {
       log("warn", "reconcile_unauthorized", { authHeader: authHeader?.slice(0, 20) })

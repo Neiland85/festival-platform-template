@@ -790,6 +790,24 @@ export async function getDLQItems(): Promise<
 }
 
 /**
+ * Get pending queue length (simple convenience function)
+ *
+ * Returns count of jobs waiting to be processed.
+ */
+export async function queueLength(): Promise<number> {
+  const redis = requireRedis()
+
+  try {
+    return await redis.llen(PENDING_LIST)
+  } catch (error) {
+    log("error", "queue_length_failed", {
+      error: error instanceof Error ? error.message : String(error),
+    })
+    throw error
+  }
+}
+
+/**
  * Queue stats for monitoring & alerting
  *
  * Returns counts of pending, processing, and failed jobs.
