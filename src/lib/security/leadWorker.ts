@@ -137,10 +137,12 @@ export async function processOneJob(): Promise<{
 
     job = dequeueResult.job as QueueItem
     const leaseToken = dequeueResult.leaseToken
+    const processingToken = dequeueResult.processingToken
 
     log("info", "job_dequeued", {
       jobId: job.jobId,
       idempotencyToken: job.idempotencyToken,
+      processingToken, // NEW: track ownership token
       retryCount: getRetryCount(job),
     })
 
@@ -155,7 +157,7 @@ export async function processOneJob(): Promise<{
       })
 
       // Job already processed: acknowledge it and return
-      await ackJob(job.jobId, job.idempotencyToken, idempotencyCheck.result)
+      await ackJob(job.jobId, job.idempotencyToken, processingToken, idempotencyCheck.result)
       return {
         success: true,
         jobId: job.jobId,
@@ -207,7 +209,7 @@ export async function processOneJob(): Promise<{
       //   - Increment retry count
       //   - Move back to pending queue if retries available
       //   - Move to DLQ (failed queue) if max retries exceeded
-      await nackJob(job.jobId, errorMsg, retryCount)
+      await nackJob(job.jobId, processingToken, errorMsg, retryCount)
 
       return {
         success: false,
@@ -223,7 +225,7 @@ export async function processOneJob(): Promise<{
     // ackJob() will:
     //   - Mark job as completed in Postgres (with idempotency guarantee)
     //   - Clean up Redis processing list and lease
-    await ackJob(job.jobId, job.idempotencyToken, result)
+    await ackJob(job.jobId, job.idempotencyToken, processingToken, result)
 
     return { success: true, jobId: job.jobId }
   } catch (unexpectedError) {

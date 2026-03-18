@@ -25,6 +25,7 @@
 import { getRedis } from "@/lib/redis/client"
 import { db } from "@/lib/db"
 import { log } from "@/lib/logger"
+import { randomUUID } from "crypto"
 
 // ── Types ────────────────────────────────────────────────
 
@@ -126,6 +127,7 @@ export async function enqueueRedis(job: Omit<QueueItem, "retryCount">) {
 export async function dequeueRedis(): Promise<{
   job: QueueItem
   leaseToken: string
+  processingToken: string
 } | null> {
   const redis = requireRedis()
 
@@ -177,12 +179,16 @@ export async function dequeueRedis(): Promise<{
       return null
     }
 
-    // Step 3: Set lease (5 min TTL)
-    // Lease token includes timestamp + random ID to prevent other workers from releasing it
+    // Step 3: Generate processing token (proves ownership)
+    // CRITICAL: Only the worker holding this token can ack/nack this job
+    const processingToken = randomUUID()
+
+    // Step 4: Set lease (5 min TTL) + store processing token
     const leaseToken = `${jobId}:${Date.now()}:${Math.random()}`
     await redis.setex(`${LEASE_PREFIX}${jobId}`, LEASE_TTL_SECONDS, leaseToken)
+    await redis.hset(jobKey, "processingToken", processingToken)
 
-    // Step 4: Update Postgres (job is now in-flight)
+    // Step 5: Update Postgres (job is now in-flight)
     await db.query(
       `UPDATE platform_outbox
        SET status = 'processing', updated_at = NOW()
@@ -193,10 +199,11 @@ export async function dequeueRedis(): Promise<{
     log("info", "job_dequeued_redis", {
       jobId: job.jobId,
       idempotencyToken: job.idempotencyToken,
+      processingToken, // NEW: log token for ownership tracking
       retryCount: job.retryCount || 0,
     })
 
-    return { job, leaseToken }
+    return { job, leaseToken, processingToken }
   } catch (error) {
     log("error", "dequeue_redis_failed", {
       error: error instanceof Error ? error.message : String(error),
@@ -274,11 +281,23 @@ export async function checkIdempotency(idempotencyToken: string): Promise<{
 export async function ackJob(
   jobId: string,
   idempotencyToken: string,
+  processingToken: string,
   result: unknown
 ): Promise<void> {
   const redis = requireRedis()
 
   try {
+    // Step 0: CRITICAL — Verify ownership before acking
+    // If we don't own the token, another worker took over (shouldn't happen)
+    const jobKey = `${JOB_DATA_PREFIX}${jobId}`
+    const currentToken = await redis.hget<string>(jobKey, "processingToken")
+
+    if (currentToken !== processingToken) {
+      throw new Error(
+        `Processing token mismatch for ${jobId}: ownership lost (another worker took over)`
+      )
+    }
+
     // Step 1: UPSERT into Postgres with idempotency guarantee
     // If another worker already acked this token: conflict on UNIQUE constraint
     try {
@@ -355,14 +374,24 @@ export async function ackJob(
  */
 export async function nackJob(
   jobId: string,
+  processingToken: string,
   error: string,
   currentRetryCount: number
 ): Promise<void> {
   const redis = requireRedis()
 
   try {
-    // Fetch job data
+    // Step 0: Verify ownership
     const jobKey = `${JOB_DATA_PREFIX}${jobId}`
+    const currentToken = await redis.hget<string>(jobKey, "processingToken")
+
+    if (currentToken !== processingToken) {
+      throw new Error(
+        `Processing token mismatch for ${jobId}: ownership lost (another worker took over)`
+      )
+    }
+
+    // Fetch job data
     const jobData = await redis.hget<string>(jobKey, "data")
 
     if (!jobData) {
@@ -480,7 +509,16 @@ export async function reconcileProcessing(): Promise<{
       const hasLease = await redis.exists(leaseKey)
 
       if (!hasLease) {
-        // STALE: Lease expired, worker crashed
+        // STALE: Lease might be expired, worker might have crashed
+        // Double-check: verify lease STILL doesn't exist after initial check
+        // (prevents race where active worker renews lease between checks)
+        const stillNoLease = await redis.exists(leaseKey)
+        if (stillNoLease) {
+          // Worker renewed lease: it's alive, skip this job
+          continue
+        }
+
+        // Confirmed stale: Lease expired, worker crashed
         const jobKey = `${JOB_DATA_PREFIX}${jobId}`
         const jobData = await redis.hget<string>(jobKey, "data")
 
