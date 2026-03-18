@@ -2,25 +2,27 @@
  * Lead Worker — Production-grade job processor
  *
  * Pattern:
- *   1. Acquire distributed lock (prevent concurrent execution in serverless)
- *   2. Dequeue with lease (BRPOPLPUSH, atomically moves to processing)
- *   3. Check idempotency against Postgres (skip if already processed)
- *   4. Execute domain logic with timeouts
- *   5. On success: call ackJob() (marks completed in Postgres, cleans Redis)
- *   6. On error: call nackJob() (retries or moves to DLQ)
- *   7. Release lock
+ *   1. Dequeue with lease (BRPOPLPUSH, atomically moves to processing)
+ *   2. Check idempotency against Postgres (skip if already processed)
+ *   3. Execute domain logic with timeouts
+ *   4. On success: call ackJob() (marks completed in Postgres, cleans Redis)
+ *   5. On error: call nackJob() (retries or moves to DLQ)
  *
  * Safety Guarantees:
- *   - Distributed lock prevents concurrent workers from processing same job (serverless)
+ *   - BRPOPLPUSH ensures only one worker dequeues each job (atomic)
  *   - Lease timeout (5 min) + reconciliation handles crashed workers
- *   - Idempotency token prevents double-processing on retries
+ *   - Database-level idempotency prevents double-processing
  *   - All DB writes happen before Redis cleanup (eventual consistency)
  *   - Timeouts prevent hanging on stuck domain logic
  *   - Postgres is source of truth; Redis is fast dispatch layer
+ *
+ * Note: Distributed lock NOT used. BRPOPLPUSH provides sufficient exclusivity:
+ *   - Lock would need TTL >= PROCESSING_TIMEOUT (creating timeout mismatch bug)
+ *   - BRPOPLPUSH is atomic: only one dequeue succeeds per job
+ *   - Lease pattern handles crash recovery
  */
 
 import { dequeueRedis, checkIdempotency, ackJob, nackJob } from "./redisQueue"
-import { getRedis } from "@/lib/redis/client"
 import { log } from "@/lib/logger"
 import * as Sentry from "@sentry/nextjs"
 
@@ -33,68 +35,8 @@ type QueueItem = {
 
 // ── Configuration ────────────────────────────────────────────
 
-const LOCK_TTL_SECONDS = 10 // Worker must finish or release lock
 const PROCESSING_TIMEOUT_MS = 30_000 // 30 second timeout per job
 const MAX_RETRIES = 3
-
-// ── Distributed Lock ─────────────────────────────────────────
-
-/**
- * Acquire distributed lock to prevent concurrent execution in serverless
- * Returns lock ID if acquired, null if locked by another worker
- *
- * In serverless (cold starts, concurrent invocations), multiple workers
- * can try to process the same job. This lock prevents that.
- */
-async function acquireLock(jobId: string): Promise<string | null> {
-  const redis = getRedis()
-  if (!redis) return null
-
-  const lockKey = `platform:job_lock:${jobId}`
-  const lockId = `${jobId}:${Date.now()}:${Math.random()}`
-
-  try {
-    // SET with NX (only if not exists) + EX (expire after TTL)
-    // If successful, we own the lock
-    const result = await redis.set(lockKey, lockId, { nx: true, ex: LOCK_TTL_SECONDS })
-    return result ? lockId : null
-  } catch (e) {
-    log("error", "lock_acquire_failed", {
-      jobId,
-      error: e instanceof Error ? e.message : String(e),
-    })
-    return null
-  }
-}
-
-/**
- * Release lock safely (only if we still own it)
- *
- * Check if we own the lock before deleting.
- * Prevents releasing someone else's lock if we took too long.
- */
-async function releaseLock(jobId: string, lockId: string): Promise<void> {
-  const redis = getRedis()
-  if (!redis) return
-
-  const lockKey = `platform:job_lock:${jobId}`
-
-  try {
-    // Verify we still own the lock
-    const currentValue = await redis.get<string>(lockKey)
-    if (currentValue === lockId) {
-      // We own it: delete
-      await redis.del(lockKey)
-    }
-    // If someone else owns it, don't delete (they're processing)
-  } catch (e) {
-    log("warn", "lock_release_failed", {
-      jobId,
-      error: e instanceof Error ? e.message : String(e),
-    })
-    // Don't throw: lock will expire anyway after LOCK_TTL_SECONDS
-  }
-}
 
 // ── Domain Logic ─────────────────────────────────────────────
 
@@ -182,10 +124,11 @@ export async function processOneJob(): Promise<{
   reason?: string
 }> {
   let job: QueueItem | null = null
-  let lockId: string | null = null
 
   try {
     // ── Step 1: Dequeue with lease (BRPOPLPUSH pattern) ──
+    // BRPOPLPUSH is atomic: moves jobId from pending → processing
+    // Only ONE worker can successfully dequeue this job
     const dequeueResult = await dequeueRedis()
     if (!dequeueResult) {
       // Queue is empty or error occurred
@@ -201,22 +144,9 @@ export async function processOneJob(): Promise<{
       retryCount: getRetryCount(job),
     })
 
-    // ── Step 2: Acquire distributed lock ──
-    // In serverless, multiple workers can try to process the same job
-    // Lock prevents concurrent processing
-    lockId = await acquireLock(job.jobId)
-    if (!lockId) {
-      // Another worker is processing this job
-      log("warn", "job_locked_by_another_worker", {
-        jobId: job.jobId,
-      })
-      // Return early; reconciliation will handle if the other worker crashes
-      return { success: null, reason: "job_locked_by_another_worker" }
-    }
-
-    // ── Step 3: Check idempotency ──
+    // ── Step 2: Check idempotency ──
     // If job was already processed (on a previous attempt), return cached result
-    // This is critical for exactly-once semantics
+    // Database UNIQUE constraint on idempotency_token prevents duplicates
     const idempotencyCheck = await checkIdempotency(job.idempotencyToken)
     if (idempotencyCheck.processed) {
       log("info", "job_idempotent_skip", {
@@ -225,7 +155,7 @@ export async function processOneJob(): Promise<{
       })
 
       // Job already processed: acknowledge it and return
-      await ackJob(job.jobId, idempotencyCheck.result)
+      await ackJob(job.jobId, job.idempotencyToken, idempotencyCheck.result)
       return {
         success: true,
         jobId: job.jobId,
@@ -233,7 +163,7 @@ export async function processOneJob(): Promise<{
       }
     }
 
-    // ── Step 4: Execute job with timeout ──
+    // ── Step 3: Execute job with timeout ──
     let result: unknown
     try {
       result = await executeWithTimeout(job.payload)
@@ -272,7 +202,7 @@ export async function processOneJob(): Promise<{
         },
       })
 
-      // ── Step 5a: On error → NACK (retry or DLQ) ──
+      // ── Step 4a: On error → NACK (retry or DLQ) ──
       // nackJob() will:
       //   - Increment retry count
       //   - Move back to pending queue if retries available
@@ -289,12 +219,11 @@ export async function processOneJob(): Promise<{
       }
     }
 
-    // ── Step 5b: On success → ACK ──
+    // ── Step 4b: On success → ACK ──
     // ackJob() will:
-    //   - Mark job as completed in Postgres
-    //   - Store result for idempotency
+    //   - Mark job as completed in Postgres (with idempotency guarantee)
     //   - Clean up Redis processing list and lease
-    await ackJob(job.jobId, result)
+    await ackJob(job.jobId, job.idempotencyToken, result)
 
     return { success: true, jobId: job.jobId }
   } catch (unexpectedError) {
@@ -327,13 +256,6 @@ export async function processOneJob(): Promise<{
       success: false,
       jobId: job?.jobId,
       reason: "unexpected_error_in_worker_infrastructure",
-    }
-  } finally {
-    // ── Always Release Lock ──
-    // Even if processing fails, we must release the lock so other workers
-    // can process the job (after it's moved back to pending or DLQ)
-    if (lockId && job) {
-      await releaseLock(job.jobId, lockId)
     }
   }
 }
