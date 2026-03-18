@@ -349,10 +349,14 @@ export async function ackJob(
     }
 
     // Step 2-3: Clean up Redis (best effort)
+    // FIX: Delete lease FIRST (critical for heartbeat to detect job is done)
     // If these fail, reconciliation will clean up after lease expires
     try {
-      await redis.lrem(PROCESSING_SET, 1, jobId)
+      // Delete lease FIRST so heartbeat stops immediately
       await redis.del(`${LEASE_PREFIX}${jobId}`)
+      // Then remove from processing queue
+      await redis.lrem(PROCESSING_SET, 1, jobId)
+      // Finally delete job data
       await redis.del(`${JOB_DATA_PREFIX}${jobId}`)
     } catch (redisCleanupError) {
       log("warn", "redis_cleanup_failed_after_ack", {
@@ -420,20 +424,20 @@ export async function nackJob(
 
     const job = JSON.parse(jobData) as QueueItem
 
-    // Remove from processing
-    await redis.lrem(PROCESSING_SET, 1, jobId)
-    await redis.del(`${LEASE_PREFIX}${jobId}`)
-
     const nextRetryCount = currentRetryCount + 1
 
     if (nextRetryCount >= MAX_RETRIES) {
       // Max retries exceeded: DLQ
+      // FIX: Mark failed FIRST, then remove from processing (atomic failure)
       await redis.hset(`${FAILED_PREFIX}${jobId}`, {
         error,
         retries: nextRetryCount,
         failedAt: new Date().toISOString(),
       })
       await markJobFailedInPostgres(jobId, error, nextRetryCount)
+      // Remove from processing LAST (if crash before here, job is in DLQ)
+      await redis.lrem(PROCESSING_SET, 1, jobId)
+      await redis.del(`${LEASE_PREFIX}${jobId}`)
 
       log("error", "job_nacked_max_retries", {
         jobId,
@@ -442,17 +446,20 @@ export async function nackJob(
       })
     } else {
       // Retry available: move back to pending
+      // FIX: Add to pending FIRST, then remove from processing (atomic retry)
       const retryJob: QueueItem = { ...job, retryCount: nextRetryCount }
       await redis.hset(jobKey, "data", JSON.stringify(retryJob))
       await redis.lpush(PENDING_LIST, jobId)
-
-      // Update Postgres
+      // Update Postgres before removing (durability first)
       await db.query(
         `UPDATE platform_outbox
          SET status = 'queued', retry_count = ?, error = ?, updated_at = NOW()
          WHERE job_id = ?`,
         [nextRetryCount, error, jobId]
       )
+      // Remove from processing LAST (if crash before here, job is in both lists but recoverable)
+      await redis.lrem(PROCESSING_SET, 1, jobId)
+      await redis.del(`${LEASE_PREFIX}${jobId}`)
 
       log("info", "job_nacked_will_retry", {
         jobId,
@@ -590,10 +597,33 @@ export async function reconcileProcessing(): Promise<{
         // Status check complete: safe to retry or DLQ
         if (retryCount < MAX_RETRIES) {
           // Retry available: move back to pending
+          // FIX: Use Lua script to atomically check lease still doesn't exist, then move
+          // This prevents race where heartbeat renews lease between our checks
           const retryJob: QueueItem = { ...job, retryCount: retryCount + 1 }
           await redis.hset(jobKey, "data", JSON.stringify(retryJob))
-          await redis.lrem(PROCESSING_SET, 1, jobId)
-          await redis.lpush(PENDING_LIST, jobId)
+
+          // Atomic check-and-move: only move if lease STILL doesn't exist
+          const moved = await redis.eval(
+            `if redis.call('exists', KEYS[1]) == 0 then
+              redis.call('lpush', KEYS[2], ARGV[1])
+              redis.call('lrem', KEYS[3], 1, ARGV[1])
+              return 1
+            end
+            return 0`,
+            3,
+            leaseKey,
+            PENDING_LIST,
+            PROCESSING_SET,
+            jobId
+          )
+
+          if (!moved) {
+            // Lease was renewed by heartbeat between our final check and move
+            // Job is alive, don't retry. Restore job data to original state.
+            await redis.hset(jobKey, "data", JSON.stringify(job))
+            log("info", "reconciliation_lease_reappeared_skipped", { jobId })
+            continue
+          }
 
           await db.query(
             `UPDATE platform_outbox
@@ -610,6 +640,21 @@ export async function reconcileProcessing(): Promise<{
           recovered++
         } else {
           // Max retries: DLQ
+          // Use Lua script to check lease still gone before marking failed
+          const canFail = await redis.eval(
+            `if redis.call('exists', KEYS[1]) == 0 then
+              return 1
+            end
+            return 0`,
+            1,
+            leaseKey
+          )
+
+          if (!canFail) {
+            log("info", "reconciliation_lease_reappeared_skipped", { jobId })
+            continue
+          }
+
           await redis.lrem(PROCESSING_SET, 1, jobId)
           await redis.hset(`${FAILED_PREFIX}${jobId}`, {
             error: "Max retries exceeded (worker lease timeout)",
@@ -699,6 +744,7 @@ export function startHeartbeat(
       }
 
       // Verify we still own the token (another worker didn't take over)
+      // FIX: Check token ownership BEFORE renewing lease
       const currentToken = await redis.hget<string>(jobKey, "processingToken")
       if (currentToken !== processingToken) {
         // Token changed: another worker owns it now
@@ -708,6 +754,7 @@ export function startHeartbeat(
       }
 
       // Renew lease: extend TTL by HEARTBEAT_RENEW_SECONDS
+      // Safe now: we verified ownership and lease still exists
       await redis.setex(leaseKey, LEASE_TTL_SECONDS + HEARTBEAT_RENEW_SECONDS, "1")
 
       log("debug", "heartbeat_renewed_lease", {
