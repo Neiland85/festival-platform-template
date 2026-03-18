@@ -22,7 +22,13 @@
  *   - Lease pattern handles crash recovery
  */
 
-import { dequeueRedis, checkIdempotency, ackJob, nackJob } from "./redisQueue"
+import {
+  dequeueRedis,
+  checkIdempotency,
+  ackJob,
+  nackJob,
+  startHeartbeat,
+} from "./redisQueue"
 import { log } from "@/lib/logger"
 import * as Sentry from "@sentry/nextjs"
 
@@ -67,20 +73,46 @@ async function processJob(payload: Record<string, unknown>): Promise<unknown> {
 }
 
 /**
- * Execute job with timeout protection
+ * Execute job with timeout + cancellation support
  *
  * Prevents jobs from hanging indefinitely on stuck I/O or infinite loops.
- * If job takes longer than PROCESSING_TIMEOUT_MS, it's killed and nacked.
+ * Respects AbortSignal for graceful shutdown during processing.
+ *
+ * Pattern:
+ *   const controller = new AbortController()
+ *   const result = await executeWithTimeout(payload, controller.signal)
+ *   // Later: controller.abort() to cancel job gracefully
  */
-async function executeWithTimeout(payload: Record<string, unknown>): Promise<unknown> {
+async function executeWithTimeout(
+  payload: Record<string, unknown>,
+  signal?: AbortSignal
+): Promise<unknown> {
   return Promise.race([
     processJob(payload),
-    new Promise((_, reject) =>
-      setTimeout(
+    new Promise((_, reject) => {
+      // Timeout race: kill job if it takes too long
+      const timeoutId = setTimeout(
         () => reject(new Error(`Job processing timeout (${PROCESSING_TIMEOUT_MS}ms exceeded)`)),
         PROCESSING_TIMEOUT_MS
       )
-    ),
+
+      // Cleanup timeout if job completes first
+      return () => clearTimeout(timeoutId)
+    }),
+    // Cancellation race: if AbortSignal fires, reject immediately
+    ...(signal
+      ? [
+          new Promise<never>((_, reject) => {
+            if (signal.aborted) {
+              reject(new Error("Job cancelled: processing was aborted"))
+              return
+            }
+            signal.addEventListener("abort", () => {
+              reject(new Error("Job cancelled: processing was aborted"))
+            })
+          }),
+        ]
+      : []),
   ])
 }
 
@@ -165,16 +197,21 @@ export async function processOneJob(): Promise<{
       }
     }
 
-    // ── Step 3: Execute job with timeout ──
+    // ── Step 3: Execute job with heartbeat + timeout + cancellation ──
     let result: unknown
+    const abortController = new AbortController()
+    const { stop: stopHeartbeat } = startHeartbeat(job.jobId, processingToken)
+
     try {
-      result = await executeWithTimeout(job.payload)
+      result = await executeWithTimeout(job.payload, abortController.signal)
 
       log("info", "job_processing_success", {
         jobId: job.jobId,
         result,
       })
     } catch (processingError) {
+      // Stop heartbeat on error (will be stopped in finally too)
+      stopHeartbeat()
       const retryCount = getRetryCount(job)
       const errorMsg =
         processingError instanceof Error
@@ -220,6 +257,9 @@ export async function processOneJob(): Promise<{
             : "processing_error_will_retry",
       }
     }
+
+    // Stop heartbeat before cleanup
+    stopHeartbeat()
 
     // ── Step 4b: On success → ACK ──
     // ackJob() will:

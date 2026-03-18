@@ -47,7 +47,10 @@ const FAILED_PREFIX = "platform:queue:failed:" // jobId -> {error, retries, fail
 // ── Configuration ────────────────────────────────────────
 
 const LEASE_TTL_SECONDS = 300 // 5 min: if lease expires, job is assumed lost
+const HEARTBEAT_INTERVAL_MS = 10_000 // 10 seconds: renew lease to stay alive
+const HEARTBEAT_RENEW_SECONDS = 60 // Extend lease by 60 seconds per heartbeat
 const MAX_RETRIES = 3
+const MAX_QUEUE_SIZE = 1000 // Backpressure: reject enqueue if queue too deep
 
 // ── Utilities ────────────────────────────────────────────
 
@@ -81,6 +84,20 @@ export async function enqueueRedis(job: Omit<QueueItem, "retryCount">) {
   const jobKey = `${JOB_DATA_PREFIX}${job.jobId}`
 
   try {
+    // BACKPRESSURE: Check queue depth before enqueuing
+    // Prevents overwhelming workers if dequeue rate < enqueue rate
+    const queueDepth = await redis.llen(PENDING_LIST)
+    if (queueDepth >= MAX_QUEUE_SIZE) {
+      const error = `Queue at capacity (${queueDepth}/${MAX_QUEUE_SIZE}). Rejecting new jobs to prevent memory explosion.`
+      log("error", "enqueue_backpressure_rejected", {
+        jobId: job.jobId,
+        queueDepth,
+        maxSize: MAX_QUEUE_SIZE,
+        error,
+      })
+      throw new Error(error)
+    }
+
     // Store job data in Redis hash
     await redis.hset(jobKey, {
       data: JSON.stringify(job),
@@ -93,6 +110,7 @@ export async function enqueueRedis(job: Omit<QueueItem, "retryCount">) {
     log("info", "job_enqueued_redis", {
       jobId: job.jobId,
       idempotencyToken: job.idempotencyToken,
+      queueDepth,
     })
   } catch (error) {
     log("error", "enqueue_redis_failed", {
@@ -621,6 +639,95 @@ export async function reconcileProcessing(): Promise<{
       error: error instanceof Error ? error.message : String(error),
     })
     throw error
+  }
+}
+
+// ── Public API: Heartbeat ──────────────────────────────
+
+/**
+ * Start heartbeat to keep lease alive during job processing
+ *
+ * Purpose:
+ *   Worker calls this after dequeuing, runs in background while processing.
+ *   Every 10 seconds, heartbeat renews lease (sets new TTL).
+ *   If lease is gone (reconciliation killed job), heartbeat stops.
+ *
+ * Pattern:
+ *   1. Dequeue job, get processingToken
+ *   2. Start heartbeat (runs in background)
+ *   3. Execute job (can take 30+ seconds)
+ *   4. Call ackJob/nackJob to stop heartbeat + cleanup
+ *
+ * Critical:
+ *   - Must verify lease STILL exists before renewing (prevents zombie heartbeats)
+ *   - Lease must not expire while processing (heartbeat keeps it alive)
+ *   - Reconciliation can kill lease; heartbeat detects and stops
+ *
+ * Returns: Controller object with stop() method
+ *
+ * Example:
+ *   const { stop } = startHeartbeat(jobId, processingToken, jobId)
+ *   try {
+ *     await processJob()
+ *   } finally {
+ *     stop()  // Stop heartbeat before ack/nack
+ *   }
+ */
+export function startHeartbeat(
+  jobId: string,
+  processingToken: string
+): {
+  stop: () => void
+} {
+  let isActive = true
+  const intervalId = setInterval(async () => {
+    if (!isActive) return
+
+    try {
+      const redis = requireRedis()
+      const leaseKey = `${LEASE_PREFIX}${jobId}`
+      const jobKey = `${JOB_DATA_PREFIX}${jobId}`
+
+      // CRITICAL: Verify lease exists AND we still own it
+      const hasLease = await redis.exists(leaseKey)
+      if (!hasLease) {
+        // Lease is gone: reconciliation killed this job
+        // Stop heartbeat (don't renew)
+        log("warn", "heartbeat_lease_expired", { jobId })
+        isActive = false
+        return
+      }
+
+      // Verify we still own the token (another worker didn't take over)
+      const currentToken = await redis.hget<string>(jobKey, "processingToken")
+      if (currentToken !== processingToken) {
+        // Token changed: another worker owns it now
+        log("warn", "heartbeat_ownership_lost", { jobId })
+        isActive = false
+        return
+      }
+
+      // Renew lease: extend TTL by HEARTBEAT_RENEW_SECONDS
+      await redis.setex(leaseKey, LEASE_TTL_SECONDS + HEARTBEAT_RENEW_SECONDS, "1")
+
+      log("debug", "heartbeat_renewed_lease", {
+        jobId,
+        ttlSeconds: LEASE_TTL_SECONDS + HEARTBEAT_RENEW_SECONDS,
+      })
+    } catch (error) {
+      log("error", "heartbeat_renewal_failed", {
+        jobId,
+        error: error instanceof Error ? error.message : String(error),
+      })
+      // Don't stop: transient Redis error, will retry next beat
+    }
+  }, HEARTBEAT_INTERVAL_MS)
+
+  return {
+    stop: () => {
+      isActive = false
+      clearInterval(intervalId)
+    },
   }
 }
 
