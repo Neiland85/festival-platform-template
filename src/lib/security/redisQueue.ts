@@ -255,8 +255,13 @@ export async function checkIdempotency(idempotencyToken: string): Promise<{
 /**
  * ACK: Job processed successfully
  *
+ * Uses INSERT ... ON CONFLICT (UPSERT) to guarantee idempotency:
+ *   - Database UNIQUE constraint on idempotency_token enforces exactly-once
+ *   - If idempotency_token already exists: constraint prevents duplicate
+ *   - If first time: INSERT succeeds
+ *
  * Sequence:
- *   1. Update Postgres with result (atomic)
+ *   1. UPSERT into Postgres with idempotency_token
  *   2. Remove jobId from processing list (best effort)
  *   3. Clean up Redis data (best effort)
  *
@@ -266,17 +271,45 @@ export async function checkIdempotency(idempotencyToken: string): Promise<{
  * This implements the "Postgres-first" pattern: always ensure durability
  * in Postgres before removing from distributed cache.
  */
-export async function ackJob(jobId: string, result: unknown): Promise<void> {
+export async function ackJob(
+  jobId: string,
+  idempotencyToken: string,
+  result: unknown
+): Promise<void> {
   const redis = requireRedis()
 
   try {
-    // Step 1: Update Postgres (source of truth)
-    await db.query(
-      `UPDATE platform_outbox
-       SET status = 'completed', result = ?, updated_at = NOW()
-       WHERE job_id = ?`,
-      [JSON.stringify(result), jobId]
-    )
+    // Step 1: UPSERT into Postgres with idempotency guarantee
+    // If another worker already acked this token: conflict on UNIQUE constraint
+    try {
+      await db.query(
+        `INSERT INTO platform_outbox
+         (job_id, idempotency_token, status, result, created_at, updated_at)
+         VALUES (?, ?, 'completed', ?, NOW(), NOW())
+         ON CONFLICT (idempotency_token)
+         DO UPDATE SET status = 'completed', result = ?, updated_at = NOW()
+         WHERE platform_outbox.status != 'completed'`,
+        [jobId, idempotencyToken, JSON.stringify(result), JSON.stringify(result)]
+      )
+    } catch (upsertError) {
+      // Check if already completed (idempotent case)
+      const existing = await db.query(
+        `SELECT status FROM platform_outbox WHERE idempotency_token = ?`,
+        [idempotencyToken]
+      )
+
+      if (existing.rows.length > 0 && existing.rows[0].status === "completed") {
+        // Job was already completed: idempotent success
+        log("info", "job_acked_idempotent_duplicate", {
+          jobId,
+          idempotencyToken,
+        })
+        // Fall through to cleanup
+      } else {
+        // Unexpected error: re-throw
+        throw upsertError
+      }
+    }
 
     // Step 2-3: Clean up Redis (best effort)
     // If these fail, reconciliation will clean up after lease expires
@@ -287,12 +320,15 @@ export async function ackJob(jobId: string, result: unknown): Promise<void> {
     } catch (redisCleanupError) {
       log("warn", "redis_cleanup_failed_after_ack", {
         jobId,
-        error: redisCleanupError instanceof Error ? redisCleanupError.message : String(redisCleanupError),
+        error:
+          redisCleanupError instanceof Error
+            ? redisCleanupError.message
+            : String(redisCleanupError),
       })
       // Don't throw: Postgres is already updated, which is what matters
     }
 
-    log("info", "job_acked", { jobId, result })
+    log("info", "job_acked", { jobId, idempotencyToken })
   } catch (error) {
     log("error", "ack_job_failed", {
       jobId,
@@ -463,6 +499,39 @@ export async function reconcileProcessing(): Promise<{
         const job = JSON.parse(jobData) as QueueItem
         const retryCount = job.retryCount || 0
 
+        // CRITICAL: Check Postgres status before retrying
+        // If job is already 'completed', worker succeeded before lease expired
+        // Don't retry—just clean up Redis (prevents double-processing)
+        const jobStatus = await db.query(
+          `SELECT status FROM platform_outbox WHERE job_id = ?`,
+          [jobId]
+        )
+
+        if (jobStatus.rows.length > 0) {
+          const status = jobStatus.rows[0].status
+
+          if (status === "completed") {
+            // Job was already successfully processed
+            // Worker crashed after ackJob() but before returning
+            // Just clean up Redis
+            await redis.lrem(PROCESSING_SET, 1, jobId)
+            log("info", "reconciliation_cleaned_completed_job", { jobId })
+            recovered++
+            continue
+          }
+
+          if (status === "failed") {
+            // Job already marked failed: don't retry
+            await redis.lrem(PROCESSING_SET, 1, jobId)
+            log("info", "reconciliation_cleaned_failed_job", { jobId })
+            // Don't increment: already counted
+            continue
+          }
+
+          // Status is 'processing' or 'queued': safe to retry
+        }
+
+        // Status check complete: safe to retry or DLQ
         if (retryCount < MAX_RETRIES) {
           // Retry available: move back to pending
           const retryJob: QueueItem = { ...job, retryCount: retryCount + 1 }
