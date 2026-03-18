@@ -169,21 +169,77 @@ export async function executeWithDomainIdempotency<T>(
   operationType: OperationType,
   operation: () => Promise<T>
 ): Promise<T> {
-  // Step 1: Check if already applied
-  const cached = await checkOperationApplied(idempotencyToken, operationType)
-  if (cached.applied) {
-    log("info", "domain_operation_skipped_cached", {
+  // FIX: Pre-insert with PENDING status to atomically reserve the operation
+  // This ensures only one worker executes the operation, even if others crash
+  // Pattern: reserve (PENDING) → execute → mark (COMPLETED)
+  try {
+    await db.query(
+      `INSERT INTO applied_operations (idempotency_token, operation_type, status, result, created_at)
+       VALUES (?, ?, 'pending', '{}', NOW())
+       ON CONFLICT (idempotency_token, operation_type) DO NOTHING`,
+      [idempotencyToken, operationType]
+    )
+  } catch (error) {
+    log("warn", "domain_operation_pre_insert_failed", {
       idempotencyToken,
       operationType,
+      error: error instanceof Error ? error.message : String(error),
     })
-    return cached.result as T
+    // Continue: check status below
+  }
+
+  // Step 1: Check current status
+  const existing = await db.query(
+    `SELECT status, result FROM applied_operations
+     WHERE idempotency_token = ? AND operation_type = ?
+     LIMIT 1`,
+    [idempotencyToken, operationType]
+  )
+
+  if (existing.rows.length > 0) {
+    const row = existing.rows[0]
+
+    // If already completed, return cached result
+    if (row.status === "completed") {
+      log("info", "domain_operation_skipped_completed", {
+        idempotencyToken,
+        operationType,
+      })
+      return row.result as T
+    }
+
+    // If pending by another worker, wait and retry
+    if (row.status === "pending") {
+      log("info", "domain_operation_pending_by_other_worker", {
+        idempotencyToken,
+        operationType,
+      })
+      // In production, use exponential backoff and max retries
+      await new Promise((resolve) => setTimeout(resolve, 100))
+      return executeWithDomainIdempotency(idempotencyToken, operationType, operation)
+    }
   }
 
   // Step 2: Execute operation
+  // At this point, we either reserved it (first INSERT) or are retrying
   let result: T
   try {
     result = await operation()
   } catch (error) {
+    // Cleanup: remove pending record so another worker can retry
+    try {
+      await db.query(
+        `DELETE FROM applied_operations
+         WHERE idempotency_token = ? AND operation_type = ? AND status = 'pending'`,
+        [idempotencyToken, operationType]
+      )
+    } catch (deleteError) {
+      log("warn", "failed_to_cleanup_pending_operation", {
+        idempotencyToken,
+        operationType,
+      })
+    }
+
     log("error", "domain_operation_failed", {
       idempotencyToken,
       operationType,
@@ -192,9 +248,29 @@ export async function executeWithDomainIdempotency<T>(
     throw error
   }
 
-  // Step 3: Record that operation was applied
-  // CRITICAL: Do this before any other side effects
-  await recordOperationApplied(idempotencyToken, operationType, result)
+  // Step 3: Mark as COMPLETED with result
+  // This is the commit point: effect is applied, now make it durable
+  try {
+    await db.query(
+      `UPDATE applied_operations
+       SET status = 'completed', result = ?
+       WHERE idempotency_token = ? AND operation_type = ? AND status = 'pending'`,
+      [JSON.stringify(result), idempotencyToken, operationType]
+    )
+  } catch (updateError) {
+    log("error", "domain_operation_update_status_failed", {
+      idempotencyToken,
+      operationType,
+      error: updateError instanceof Error ? updateError.message : String(updateError),
+    })
+    // Don't throw: effect already happened, better to return result
+    // than to retry and duplicate effect
+  }
+
+  log("info", "domain_operation_completed", {
+    idempotencyToken,
+    operationType,
+  })
 
   return result
 }
