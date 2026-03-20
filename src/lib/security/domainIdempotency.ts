@@ -72,7 +72,7 @@ export async function checkOperationApplied(
 
       return {
         applied: true,
-        result: result.rows[0].result,
+        result: result.rows[0]?.["result"],
       }
     }
 
@@ -198,19 +198,19 @@ export async function executeWithDomainIdempotency<T>(
   )
 
   if (existing.rows.length > 0) {
-    const row = existing.rows[0]
+    const row = existing.rows[0]!
 
     // If already completed, return cached result
-    if (row.status === "completed") {
+    if (row["status"] === "completed") {
       log("info", "domain_operation_skipped_completed", {
         idempotencyToken,
         operationType,
       })
-      return row.result as T
+      return row["result"] as T
     }
 
     // If pending by another worker, wait and retry
-    if (row.status === "pending") {
+    if (row["status"] === "pending") {
       log("info", "domain_operation_pending_by_other_worker", {
         idempotencyToken,
         operationType,

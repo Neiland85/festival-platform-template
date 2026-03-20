@@ -270,7 +270,7 @@ export async function checkIdempotency(idempotencyToken: string): Promise<{
     if (result.rows.length > 0) {
       return {
         processed: true,
-        result: result.rows[0].result,
+        result: result.rows[0]?.["result"],
       }
     }
 
@@ -349,7 +349,7 @@ export async function ackJob(
         [idempotencyToken]
       )
 
-      if (existing.rows.length > 0 && existing.rows[0].status === "completed") {
+      if (existing.rows.length > 0 && existing.rows[0]?.["status"] === "completed") {
         // Job was already completed: idempotent success
         log("info", "job_acked_idempotent_duplicate", {
           jobId,
@@ -591,7 +591,7 @@ export async function reconcileProcessing(): Promise<{
         )
 
         if (jobStatus.rows.length > 0) {
-          const status = jobStatus.rows[0].status
+          const status = jobStatus.rows[0]?.["status"]
 
           if (status === "completed") {
             // Job was already successfully processed

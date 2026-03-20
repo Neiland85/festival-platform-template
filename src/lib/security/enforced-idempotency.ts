@@ -67,18 +67,18 @@ export async function executeJobSafely<T>(
   )
 
   if (existing.rows.length > 0) {
-    const row = existing.rows[0]
+    const row = existing.rows[0]!
 
-    if (row.status === "completed") {
+    if (row["status"] === "completed") {
       log("info", "job_idempotency_cache_hit", {
         jobId,
         idempotencyToken,
         operationType,
       })
-      return row.result as T
+      return row["result"] as T
     }
 
-    if (row.status === "pending") {
+    if (row["status"] === "pending") {
       // Another worker is executing this job
       // Wait for it to complete (with timeout)
       log("info", "job_idempotency_pending_wait", {
@@ -90,10 +90,10 @@ export async function executeJobSafely<T>(
       return await waitForCompletion(idempotencyToken, operationType, timeout)
     }
 
-    if (row.status === "failed") {
+    if (row["status"] === "failed") {
       // Previous execution failed, don't retry
       throw new Error(
-        `Job already failed for token ${idempotencyToken}. Previous error: ${row.error || "unknown"}`
+        `Job already failed for token ${idempotencyToken}. Previous error: ${row["error"] || "unknown"}`
       )
     }
   }
@@ -245,7 +245,9 @@ async function waitForCompletion<T>(
     )
 
     if (row.rows.length > 0) {
-      const { status, result } = row.rows[0]
+      const r = row.rows[0]!
+      const status = r["status"]
+      const result = r["result"]
 
       if (status === "completed") {
         log("info", "job_wait_completed", {

@@ -27,6 +27,12 @@
       ]
     },
     "esModuleInterop": true,
+    "types": [
+      "node",
+      "pg",
+      "react",
+      "react-dom"
+    ],
     "plugins": [
       {
         "name": "next"
