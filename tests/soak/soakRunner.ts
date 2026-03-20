@@ -56,7 +56,7 @@ const workers: any[] = []
 function startWorker(id: number) {
   const workerScript = require.resolve("./worker")
 
-  const worker = spawn("node", [workerScript], {
+  const worker = spawn("pnpm", ["exec", "tsx", workerScript], {
     env: {
       ...process.env,
       CHAOS: "true",

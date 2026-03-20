@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+
+  redis-exporter:
+    image: oliver006/redis_exporter
+    environment:
+      - REDIS_ADDR=redis://host.docker.internal:6379
+    ports:
+      - "9121:9121"
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter
+    environment:
+      - DATA_SOURCE_NAME=postgresql://postgres:postgres@host.docker.internal:5432/postgres?sslmode=disable
+    ports:
+      - "9187:9187"

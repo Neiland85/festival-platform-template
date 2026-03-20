@@ -208,3 +208,42 @@ export async function validateCritical(): Promise<{ passed: boolean; issues: str
     issues,
   }
 }
+
+/**
+ * Validate system for soak test (compatible with long-soak-runner)
+ */
+export async function validateSystem(): Promise<{
+  overall: boolean
+  results: Array<{ name: string; passed: boolean }>
+}> {
+  const report = await runConsistencyCheck()
+  const critical = await validateCritical()
+
+  const results = [
+    {
+      name: "No Stuck Jobs",
+      passed: report.stuckJobs.length === 0,
+    },
+    {
+      name: "No Duplicate Operations",
+      passed: report.duplicateOperations === 0,
+    },
+    {
+      name: "No Lost Jobs",
+      passed: report.lostJobs.length === 0,
+    },
+    {
+      name: "No Zombie Leases",
+      passed: report.zombieLeases.length === 0,
+    },
+    {
+      name: "Redis/Postgres Consistency",
+      passed: report.redisPgDivergence.length === 0,
+    },
+  ]
+
+  return {
+    overall: results.every((r) => r.passed),
+    results,
+  }
+}

@@ -15,7 +15,7 @@
 
 import { spawn } from "child_process"
 import { log } from "@/lib/logger"
-import { validateSystemConsistency } from "./chaos-validator"
+import { validateSystem } from "./consistencyCheck"
 import { runDriftDetection } from "./drift-detector"
 import { redisChaosProxy } from "@/lib/redis/chaos-proxy"
 
@@ -79,7 +79,7 @@ function startWorker(id: number) {
     env.REDIS_PORT = "6380" // Proxy port
   }
 
-  const worker = spawn("node", [workerScript], {
+  const worker = spawn("pnpm", ["exec", "tsx", workerScript], {
     env,
     stdio: ["ignore", "pipe", "pipe"],
   })
@@ -143,7 +143,7 @@ async function consistencyCheckpoint() {
   longSoakMetrics.checkpointsRun++
 
   try {
-    const consistency = await validateSystemConsistency()
+    const consistency = await validateSystem()
 
     if (!consistency.overall) {
       longSoakMetrics.checkpointsFailed++
