@@ -176,6 +176,21 @@ const clientSchema = z.object({
 })
 
 // ═══════════════════════════════════════════════════════
+// BUILD-TIME DETECTION
+// ═══════════════════════════════════════════════════════
+//
+// During `next build`, Next.js sets NEXT_PHASE = "phase-production-build".
+// At build time the server env vars (DATABASE_URL, SESSION_SECRET, etc.)
+// are NOT available — they only exist at runtime in Vercel/Docker/local.
+//
+// We detect this phase and return a "dummy" parse result so the build
+// succeeds. The dummy values are NEVER used at runtime — they only satisfy
+// the type system during static page generation.
+//
+const isBuildPhase =
+  process.env["NEXT_PHASE"] === "phase-production-build"
+
+// ═══════════════════════════════════════════════════════
 // PARSE + VALIDATE AT MODULE LOAD
 // ═══════════════════════════════════════════════════════
 
@@ -183,6 +198,36 @@ function parseEnv<T extends z.ZodTypeAny>(
   schema: T,
   label: string,
 ): z.infer<T> {
+  // During build: skip strict validation — return partial parse with defaults.
+  // Missing required vars get placeholder values that are never hit at runtime.
+  if (isBuildPhase) {
+    const result = schema.safeParse(process.env)
+    if (result.success) return result.data
+
+    // Build with missing vars: warn (don't crash) and return defaults
+    console.warn(
+      `⚠ [${label}] Skipping strict validation during build phase. ` +
+      `${result.error.issues.length} var(s) missing — will be required at runtime.`,
+    )
+    // Parse with all-optional override to get at least the defaults.
+    // Use a valid URL placeholder for fields that have .url() validation.
+    const lenient = schema.safeParse({
+      ...Object.fromEntries(
+        result.error.issues.map((i) => [
+          i.path.join("."),
+          i.message.toLowerCase().includes("url") || i.path.join(".").toLowerCase().includes("url")
+            ? "https://build.placeholder.invalid"
+            : "BUILD_PLACEHOLDER_000000000000000000000000000000",
+        ]),
+      ),
+      ...process.env,
+    })
+    if (lenient.success) return lenient.data
+
+    // Last resort: return empty-ish object typed correctly
+    return {} as z.infer<T>
+  }
+
   const result = schema.safeParse(process.env)
 
   if (!result.success) {
