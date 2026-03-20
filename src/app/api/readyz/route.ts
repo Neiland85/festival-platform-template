@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { getPool } from "@/adapters/db/pool"
 import { problem } from "@/lib/problem"
-import * as Sentry from "@sentry/nextjs"
+import { captureException } from "@sentry/nextjs"
 
 export async function GET() {
   const instance = "/api/readyz"
@@ -20,7 +20,7 @@ export async function GET() {
     const name = error instanceof Error ? error.name : "UnknownError"
 
     console.error("readyz_db_check_failed", { name, message })
-    Sentry.captureException(error, { tags: { route: "/api/readyz" } })
+    captureException(error, { tags: { route: "/api/readyz" } })
 
     return problem({
       type: "https://www.your-festival.com/problems/dependency",

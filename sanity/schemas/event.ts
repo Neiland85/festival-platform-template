@@ -1,4 +1,4 @@
-import { defineField, defineType } from "sanity"
+import { defineField, defineType, type Rule } from "sanity"
 
 export const event = defineType({
   name: "event",
@@ -10,7 +10,7 @@ export const event = defineType({
       title: "Event ID",
       type: "string",
       description: "Unique slug identifier (e.g. 'chambao', 'bresh')",
-      validation: (rule) => rule.required(),
+      validation: (rule: Rule) => rule.required(),
     }),
     defineField({
       name: "title",

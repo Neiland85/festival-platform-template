@@ -30,7 +30,7 @@ import {
   startHeartbeat,
 } from "./redisQueue"
 import { log } from "@/lib/logger"
-import * as Sentry from "@sentry/nextjs"
+import { captureException } from "@sentry/nextjs"
 
 type QueueItem = {
   jobId: string
@@ -226,7 +226,7 @@ export async function processOneJob(): Promise<{
       })
 
       // Send to Sentry with context
-      Sentry.captureException(processingError, {
+      captureException(processingError, {
         tags: {
           module: "leadWorker",
           jobId: job.jobId,
@@ -282,7 +282,7 @@ export async function processOneJob(): Promise<{
 
     // Unexpected error in worker infrastructure (not job processing)
     // Send to Sentry as a critical issue
-    Sentry.captureException(unexpectedError, {
+    captureException(unexpectedError, {
       tags: {
         module: "leadWorker",
         severity: "critical",

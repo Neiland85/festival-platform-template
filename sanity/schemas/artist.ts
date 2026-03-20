@@ -1,4 +1,4 @@
-import { defineField, defineType } from "sanity"
+import { defineField, defineType, type Rule } from "sanity"
 
 export const artist = defineType({
   name: "artist",
@@ -9,7 +9,7 @@ export const artist = defineType({
       name: "name",
       title: "Name",
       type: "string",
-      validation: (rule) => rule.required(),
+      validation: (rule: Rule) => rule.required(),
     }),
     defineField({
       name: "slug",
