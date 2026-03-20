@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
-import Stripe from "stripe"
+import { requireStripe } from "@/adapters/payments/stripe/client"
+import { StripeNotConfiguredError } from "@/adapters/payments/stripe/client"
+import { serverEnv, clientEnv } from "@/lib/env"
+import { log } from "@/lib/logger"
 
 /**
  * POST /api/checkout
  *
  * Creates a Stripe Checkout Session for template license purchases.
  * Expects JSON body: { tier: "indie" | "business" | "enterprise" }
- *
- * Requires env vars:
- *   STRIPE_SECRET_KEY
- *   NEXT_PUBLIC_SITE_URL  (for redirect URLs)
  *
  * Enterprise tier returns a redirect to contact form (no self-serve checkout).
  */
@@ -57,24 +56,27 @@ export async function POST(req: NextRequest) {
   }
 
   // ── 3. Enterprise → contact form (no Stripe checkout) ─────────
+  const siteUrl = clientEnv.NEXT_PUBLIC_SITE_URL
   if (tier === "enterprise") {
-    const siteUrl = process.env["NEXT_PUBLIC_SITE_URL"] || "http://localhost:3000"
     return NextResponse.json({ url: `${siteUrl}/contacto` })
   }
 
   // ── 4. Validate Stripe config ─────────────────────────────────
-  const stripeKey = process.env["STRIPE_SECRET_KEY"]
-  if (!stripeKey) {
-    return NextResponse.json(
-      { error: "Stripe is not configured. Set STRIPE_SECRET_KEY in .env.local" },
-      { status: 503 }
-    )
+  let stripe
+  try {
+    stripe = requireStripe()
+  } catch (err) {
+    if (err instanceof StripeNotConfiguredError) {
+      return NextResponse.json(
+        { error: "Stripe is not configured. Set STRIPE_SECRET_KEY in .env.local" },
+        { status: 503 }
+      )
+    }
+    throw err
   }
 
   // ── 5. Create Stripe Checkout Session ─────────────────────────
   const config = CHECKOUT_TIERS[tier]
-  const siteUrl = process.env["NEXT_PUBLIC_SITE_URL"] || "http://localhost:3000"
-  const stripe = new Stripe(stripeKey)
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -103,7 +105,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: session.url })
   } catch (error) {
-    console.error("[checkout] Stripe error:", error)
+    log("error", "checkout_stripe_error", {
+      error: error instanceof Error ? error.message : String(error),
+      tier,
+    })
     return NextResponse.json(
       { error: "Failed to create checkout session" },
       { status: 500 }

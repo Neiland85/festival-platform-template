@@ -1,23 +1,21 @@
 /**
  * Upstash Redis client — singleton, edge-compatible (HTTP-based).
  *
- * Env vars:
- *   UPSTASH_REDIS_REST_URL   — REST endpoint
- *   UPSTASH_REDIS_REST_TOKEN — Bearer token
- *
- * In development without these env vars, `getRedis()` returns null
+ * Uses validated env from src/lib/env.ts.
+ * When UPSTASH vars are not configured, returns null
  * and all consumers fall back to in-memory stores.
  */
 
 import { Redis } from "@upstash/redis"
+import { serverEnv } from "@/lib/env"
 
 let instance: Redis | null = null
 
 export function getRedis(): Redis | null {
   if (instance) return instance
 
-  const url = process.env["UPSTASH_REDIS_REST_URL"]
-  const token = process.env["UPSTASH_REDIS_REST_TOKEN"]
+  const url = serverEnv.UPSTASH_REDIS_REST_URL
+  const token = serverEnv.UPSTASH_REDIS_REST_TOKEN
 
   if (!url || !token) return null
 

@@ -1,4 +1,5 @@
 import { rateLimitRedis } from "./rateLimitRedis"
+import { serverEnv } from "@/lib/env"
 import {
   rateLimit as rateLimitLocal,
   _resetStore,
@@ -17,7 +18,7 @@ import {
  * For sync-only callers the local fallback is always synchronous.
  */
 export async function rateLimit(ip: string): Promise<boolean> {
-  if (process.env["UPSTASH_REDIS_REST_URL"]) {
+  if (serverEnv.UPSTASH_REDIS_REST_URL) {
     try {
       const result = await rateLimitRedis(ip)
       return result.allowed

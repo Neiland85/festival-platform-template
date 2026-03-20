@@ -13,8 +13,9 @@ import {
   type SitemapEntry,
   type RobotsConfig,
 } from "@/lib/observability/seoMonitor"
+import { clientEnv } from "@/lib/env"
 
-const BASE_URL = process.env["NEXT_PUBLIC_SITE_URL"] ?? "https://www.your-platform.com"
+const BASE_URL = clientEnv.NEXT_PUBLIC_SITE_URL
 
 export async function GET(req: NextRequest) {
   if (!requireAdmin(req)) {

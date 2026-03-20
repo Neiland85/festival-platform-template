@@ -5,6 +5,7 @@ import { createSessionAsync } from "@/lib/auth/sessionStore"
 import { audit } from "@/lib/observability/auditLog"
 import { isLoginBlocked, recordFailedAttempt, clearAttempts } from "@/lib/auth/loginRateLimit"
 import { loginSchema } from "@/contracts/schemas/login.schema"
+import { serverEnv } from "@/lib/env"
 
 export async function POST(req: NextRequest) {
   const ip = _getClientIp(req)
@@ -29,14 +30,11 @@ export async function POST(req: NextRequest) {
   }
 
   const password = parsed.data.password
+  const adminPassword = serverEnv.ADMIN_PASSWORD
 
-  const adminPassword = process.env["ADMIN_PASSWORD"]
-
-  const input = password
   const passwordMatch =
-    adminPassword &&
-    input.length === adminPassword.length &&
-    timingSafeEqual(Buffer.from(input), Buffer.from(adminPassword))
+    password.length === adminPassword.length &&
+    timingSafeEqual(Buffer.from(password), Buffer.from(adminPassword))
 
   if (!passwordMatch) {
     await recordFailedAttempt(ip)
@@ -52,7 +50,7 @@ export async function POST(req: NextRequest) {
 
   response.cookies.set("admin_session", session.token, {
     httpOnly: true,
-    secure: process.env["NODE_ENV"] === "production",
+    secure: serverEnv.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
     maxAge: 60 * 60 * 8,

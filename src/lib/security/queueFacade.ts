@@ -8,6 +8,7 @@
 import { enqueueRedis, dequeueRedis } from "./redisQueue"
 import { enqueue as enqueueLocal, dequeue as dequeueLocal } from "./burstQueue"
 import { log } from "@/lib/logger"
+import { features } from "@/lib/env"
 
 interface QueueJobInput {
   jobId: string
@@ -16,7 +17,7 @@ interface QueueJobInput {
 }
 
 function hasRedis(): boolean {
-  return !!process.env["UPSTASH_REDIS_REST_URL"]
+  return features.redis
 }
 
 export async function enqueue(item: QueueJobInput): Promise<void> {
