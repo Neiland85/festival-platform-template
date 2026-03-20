@@ -32,7 +32,8 @@ interface ExecutionLock {
 }
 
 const executionLocks = new Map<string, ExecutionLock>()
-const LOCK_TIMEOUT_MS = 60_000 // 60 seconds max execution time
+// Lock timeout: 60 seconds max execution time (used in future stale-lock cleanup)
+// const LOCK_TIMEOUT_MS = 60_000
 
 /**
  * Execute job with ENFORCED idempotency

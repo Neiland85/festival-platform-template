@@ -240,7 +240,7 @@ export async function executeWithDomainIdempotency<T>(
          WHERE idempotency_token = ? AND operation_type = ? AND status = 'pending'`,
         [idempotencyToken, operationType]
       )
-    } catch (deleteError) {
+    } catch {
       log("warn", "failed_to_cleanup_pending_operation", {
         idempotencyToken,
         operationType,
