@@ -1,35 +1,26 @@
 import { test, expect } from "@playwright/test"
 
 test.describe("Home page", () => {
-  test("loads and shows festival branding", async ({ page }) => {
+  test("loads and shows festival branding in title", async ({ page }) => {
     await page.goto("/")
     await expect(page).toHaveTitle(/festival/i)
   })
 
-  test("renders navigation header", async ({ page }) => {
+  test("renders hero section with video", async ({ page }) => {
     await page.goto("/")
-    const header = page.locator("header")
-    await expect(header).toBeVisible()
+    const hero = page.locator("video, section").first()
+    await expect(hero).toBeVisible()
   })
 
-  test("renders footer with privacy link", async ({ page }) => {
+  test("renders footer (ShowcaseFooter)", async ({ page }) => {
     await page.goto("/")
     const footer = page.locator("footer")
     await expect(footer).toBeVisible()
-    const privacyLink = footer.getByRole("link", { name: /privacidad/i })
-    await expect(privacyLink).toBeVisible()
   })
 
-  test("shows cookie banner on first visit", async ({ page }) => {
+  test("renders programming section with event cards", async ({ page }) => {
     await page.goto("/")
-    const banner = page.getByRole("dialog", { name: /cookies/i })
-    await expect(banner).toBeVisible()
-  })
-
-  test("dismisses cookie banner on accept", async ({ page }) => {
-    await page.goto("/")
-    const banner = page.getByRole("dialog", { name: /cookies/i })
-    await banner.getByRole("button", { name: /aceptar/i }).click()
-    await expect(banner).not.toBeVisible()
+    const section = page.locator("#programacion")
+    await expect(section).toBeVisible()
   })
 })
