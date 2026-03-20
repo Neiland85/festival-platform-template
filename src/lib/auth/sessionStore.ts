@@ -1,6 +1,5 @@
-import { randomUUID } from "node:crypto"
 import type { Role } from "./rbac"
-import { createSignedToken } from "./signedSession"
+import { createSignedToken, verifySignedToken } from "./signedSession"
 import { getRedis } from "@/lib/redis/client"
 
 export interface Session {
@@ -16,7 +15,7 @@ const SESSION_TTL_SECONDS = 8 * 60 * 60
 const MAX_SESSIONS = 100
 const REDIS_PREFIX = "festival:sess:"
 
-// ── In-memory fallback ────────────────────────────────
+// ── In-memory store (cache + fallback for dev without Redis) ──
 
 const sessions = new Map<string, Session>()
 const revokedTokens = new Set<string>()
@@ -95,10 +94,12 @@ async function redisIsRevoked(token: string): Promise<boolean> {
 // ── Public API ────────────────────────────────────────
 
 /**
- * Crea sesión. Si SESSION_SECRET está disponible, genera token firmado
- * verificable en edge. Si no, usa UUID (fallback dev).
+ * Creates a session with a SIGNED token (HMAC-SHA256).
  *
- * Stores in Redis if available, otherwise in-memory.
+ * SECURITY: SESSION_SECRET is REQUIRED. If not set, createSignedToken
+ * throws and login fails. There is NO UUID fallback.
+ *
+ * Stores in Redis if available, otherwise in-memory only.
  */
 export async function createSessionAsync(
   opts: { role?: Role; userId?: string } = {}
@@ -115,12 +116,8 @@ export async function createSessionAsync(
   const now = Date.now()
   const role = opts.role ?? "admin"
 
-  let token: string
-  if (process.env["SESSION_SECRET"]) {
-    token = await createSignedToken({ role, userId: opts.userId })
-  } else {
-    token = randomUUID()
-  }
+  // ALWAYS signed — no fallback
+  const token = await createSignedToken({ role, userId: opts.userId })
 
   const session: Session = {
     token,
@@ -138,9 +135,13 @@ export async function createSessionAsync(
 }
 
 /**
- * Sync version — always UUID. Kept for backward compatibility in tests.
+ * Sync session creation for test environments ONLY.
+ * Uses a pre-generated signed token that must be passed in.
+ *
+ * @internal — Do not use in production code paths.
  */
-export function createSession(
+export function createSessionFromToken(
+  token: string,
   opts: { role?: Role; userId?: string } = {}
 ): Session {
   purgeExpired()
@@ -154,7 +155,7 @@ export function createSession(
 
   const now = Date.now()
   const session: Session = {
-    token: randomUUID(),
+    token,
     role: opts.role ?? "admin",
     userId: opts.userId,
     createdAt: now,
@@ -165,25 +166,15 @@ export function createSession(
   return session
 }
 
-export function validateSession(token: string | undefined): boolean {
-  if (!token) return false
-  if (revokedTokens.has(token)) return false
-
-  purgeExpired()
-
-  const session = sessions.get(token)
-  if (!session) return false
-
-  if (Date.now() >= session.expiresAt) {
-    sessions.delete(token)
-    return false
-  }
-
-  return true
-}
-
 /**
- * Async validation — checks Redis if local miss.
+ * Validates a session token.
+ *
+ * Checks:
+ * 1. Token is non-empty
+ * 2. Token is not in the revocation list (local + Redis)
+ * 3. Token exists in session store (local + Redis)
+ * 4. Session has not expired
+ * 5. Token passes HMAC signature verification + iat/exp claims
  */
 export async function validateSessionAsync(token: string | undefined): Promise<boolean> {
   if (!token) return false
@@ -194,6 +185,10 @@ export async function validateSessionAsync(token: string | undefined): Promise<b
     revokedTokens.add(token)
     return false
   }
+
+  // Cryptographic verification — ALWAYS required
+  const payload = await verifySignedToken(token)
+  if (!payload) return false
 
   purgeExpired()
 
@@ -216,6 +211,31 @@ export async function validateSessionAsync(token: string | undefined): Promise<b
   return true
 }
 
+/**
+ * Sync validation — checks local store only.
+ * For backwards compatibility in route handlers that can't be async.
+ *
+ * NOTE: This still requires the token to exist in the local session map
+ * (i.e., it was created in this process). For distributed validation,
+ * use validateSessionAsync.
+ */
+export function validateSession(token: string | undefined): boolean {
+  if (!token) return false
+  if (revokedTokens.has(token)) return false
+
+  purgeExpired()
+
+  const session = sessions.get(token)
+  if (!session) return false
+
+  if (Date.now() >= session.expiresAt) {
+    sessions.delete(token)
+    return false
+  }
+
+  return true
+}
+
 export function getSessionRole(token: string | undefined): Role | null {
   if (!token) return null
   if (revokedTokens.has(token)) return null
@@ -231,7 +251,7 @@ export function destroySession(token: string | undefined): void {
 }
 
 /**
- * Async destroy — removes from Redis too.
+ * Async destroy — removes from Redis too + adds to revocation list.
  */
 export async function destroySessionAsync(token: string | undefined): Promise<void> {
   if (!token) return

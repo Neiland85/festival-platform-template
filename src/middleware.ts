@@ -1,17 +1,15 @@
 import createIntlMiddleware from "next-intl/middleware"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { verifySignedToken, looksLikeSignedToken } from "@/lib/auth/signedSession"
+import { verifySignedToken } from "@/lib/auth/signedSession"
 import { routing } from "@/i18n/routing"
 
 const intlMiddleware = createIntlMiddleware(routing)
 
-// TODO: Replace with your production domain(s)
+// ── Origin allowlist ─────────────────────────────────
 const ALLOWED_ORIGINS = new Set([
   process.env["NEXT_PUBLIC_SITE_URL"] ?? "https://www.your-festival.com",
 ])
-
-const UUID_V4_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 function isAllowedOrigin(origin: string | null): boolean {
   if (!origin) return false
@@ -19,24 +17,28 @@ function isAllowedOrigin(origin: string | null): boolean {
   return ALLOWED_ORIGINS.has(origin)
 }
 
+// ── Session verification (SIGNED TOKENS ONLY) ────────
+//
+// Security: NO fallback to UUID, regex-based, or format-only checks.
+// Every token MUST pass full HMAC-SHA256 verification + expiry + iat window.
+// If SESSION_SECRET is missing, verifySignedToken throws → auth fails → 403/redirect.
+//
 async function isAdminAuthenticated(req: NextRequest): Promise<boolean> {
   const token = req.cookies.get("admin_session")?.value
   if (!token) return false
 
-  if (looksLikeSignedToken(token)) {
-    const payload = await verifySignedToken(token)
-    return payload !== null
-  }
-
-  return UUID_V4_RE.test(token)
+  const payload = await verifySignedToken(token)
+  return payload !== null
 }
+
+// ── Middleware ────────────────────────────────────────
 
 export default async function middleware(req: NextRequest) {
   const requestId = crypto.randomUUID()
   const origin = req.headers.get("origin")
   const { pathname } = req.nextUrl
 
-  // --- Skip locale routing for API, dashboard, login, studio, _next ---
+  // --- Skip locale routing for non-i18n paths ---
   const skipIntl =
     pathname.startsWith("/api/") ||
     pathname.startsWith("/dashboard") ||
@@ -48,7 +50,7 @@ export default async function middleware(req: NextRequest) {
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml"
 
-  // --- Dashboard pages: redirect to login if not authenticated ---
+  // --- Protected pages: redirect to login if not authenticated ---
   if (pathname.startsWith("/dashboard") || pathname.startsWith("/studio")) {
     if (!(await isAdminAuthenticated(req))) {
       return NextResponse.redirect(new URL("/login", req.url))
@@ -79,7 +81,7 @@ export default async function middleware(req: NextRequest) {
       status: 204,
       headers: {
         "Access-Control-Allow-Methods": "POST, GET, OPTIONS, PATCH, DELETE",
-        "Access-Control-Allow-Headers": "Content-Type, x-request-id, idempotency-key",
+        "Access-Control-Allow-Headers": "Content-Type, x-request-id, idempotency-key, x-csrf-token",
         "Access-Control-Allow-Origin": origin,
         "Access-Control-Max-Age": "86400",
         "x-request-id": requestId,
