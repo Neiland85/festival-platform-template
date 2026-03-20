@@ -4,7 +4,8 @@ import { POST } from "./route"
 import { _clearAllSessions } from "@/lib/auth/sessionStore"
 import { _resetLoginAttempts } from "@/lib/auth/loginRateLimit"
 
-const CORRECT_PASSWORD = "test-admin-password-123"
+// Must match the value injected in src/test/setup.ts (Zod parses env once at module load)
+const CORRECT_PASSWORD = "test-admin-password"
 
 function makeRequest(body: unknown): NextRequest {
   return new NextRequest("https://example.com/api/v1/auth/login", {
