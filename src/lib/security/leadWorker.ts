@@ -168,7 +168,7 @@ export async function processOneJob(): Promise<{
     }
 
     job = dequeueResult.job as QueueItem
-    const leaseToken = dequeueResult.leaseToken
+    // leaseToken available via dequeueResult.leaseToken if needed
     const processingToken = dequeueResult.processingToken
 
     log("info", "job_dequeued", {

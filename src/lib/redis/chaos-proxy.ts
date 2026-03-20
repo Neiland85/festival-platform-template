@@ -32,16 +32,16 @@ export interface ChaosProxyConfig {
 }
 
 const DEFAULT_CONFIG: ChaosProxyConfig = {
-  enabled: process.env.CHAOS_REDIS_PROXY === "true",
-  targetHost: process.env.REDIS_HOST || "127.0.0.1",
-  targetPort: parseInt(process.env.REDIS_PORT || "6379", 10),
-  proxyPort: parseInt(process.env.CHAOS_REDIS_PROXY_PORT || "6380", 10),
+  enabled: process.env["CHAOS_REDIS_PROXY"] === "true",
+  targetHost: process.env["REDIS_HOST"] || "127.0.0.1",
+  targetPort: parseInt(process.env["REDIS_PORT"] || "6379", 10),
+  proxyPort: parseInt(process.env["CHAOS_REDIS_PROXY_PORT"] || "6380", 10),
 
-  timeoutRate: parseFloat(process.env.CHAOS_REDIS_TIMEOUT_RATE || "0.02"), // 2%
-  slowRate: parseFloat(process.env.CHAOS_REDIS_SLOW_RATE || "0.15"), // 15%
-  resetRate: parseFloat(process.env.CHAOS_REDIS_RESET_RATE || "0.01"), // 1%
-  corruptRate: parseFloat(process.env.CHAOS_REDIS_CORRUPT_RATE || "0.005"), // 0.5%
-  maxLatencyMs: parseInt(process.env.CHAOS_REDIS_MAX_LATENCY || "5000", 10),
+  timeoutRate: parseFloat(process.env["CHAOS_REDIS_TIMEOUT_RATE"] || "0.02"), // 2%
+  slowRate: parseFloat(process.env["CHAOS_REDIS_SLOW_RATE"] || "0.15"), // 15%
+  resetRate: parseFloat(process.env["CHAOS_REDIS_RESET_RATE"] || "0.01"), // 1%
+  corruptRate: parseFloat(process.env["CHAOS_REDIS_CORRUPT_RATE"] || "0.005"), // 0.5%
+  maxLatencyMs: parseInt(process.env["CHAOS_REDIS_MAX_LATENCY"] || "5000", 10),
 }
 
 interface ProxyMetrics {

@@ -11,7 +11,7 @@ export const db = {
   async query(
     sql: string,
     values?: unknown[]
-  ): Promise<QueryResult<any>> {
+  ): Promise<QueryResult<Record<string, unknown>>> {
     const pool = getPool()
     return pool.query(sql, values)
   },
