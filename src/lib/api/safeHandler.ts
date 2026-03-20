@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import * as Sentry from "@sentry/nextjs"
+import { captureException } from "@sentry/nextjs"
 
 type HandlerFn = (req: NextRequest) => Promise<NextResponse>
 
@@ -11,7 +11,7 @@ export function safeHandler(fn: HandlerFn): HandlerFn {
       const message = error instanceof Error ? error.message : "unknown error"
       console.error(`[API Error] ${req.nextUrl.pathname}: ${message}`)
 
-      Sentry.captureException(error, {
+      captureException(error, {
         tags: { route: req.nextUrl.pathname, method: req.method },
       })
 

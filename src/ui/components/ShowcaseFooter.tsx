@@ -215,7 +215,7 @@ export default function ShowcaseFooter() {
                 marginLeft: -(b.size / 2),
                 marginTop: -(b.size / 2),
                 filter: b.filter,
-                mixBlendMode: (b.blendMode ?? "normal") as React.CSSProperties["mixBlendMode"],
+                mixBlendMode: (b.blendMode ?? "normal") as unknown as string,
                 "--b-tx": `${b.tx}px`,
                 "--b-ty": `${b.ty}px`,
                 "--b-r": `${b.rotate}deg`,
