@@ -134,6 +134,10 @@ jobs:
       - name: Install Playwright system deps
         if: steps.pw-cache.outputs.cache-hit == 'true'
         run: pnpm exec playwright install-deps chromium
+      - name: Build for E2E (production server)
+        run: pnpm build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
       - run: pnpm exec playwright test
         env:
           CI: "true"
