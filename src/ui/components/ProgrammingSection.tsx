@@ -4,6 +4,7 @@ import { useState, useCallback } from "react"
 import Image from "next/image"
 import { useTranslations } from "next-intl"
 import ArtistModal from "./ArtistModal"
+import SunriseButton from "./SunriseButton"
 
 /* ── Event catalog (static — could come from Sanity in the future) ── */
 const EVENTS = [
@@ -57,6 +58,83 @@ export default function ProgrammingSection() {
             0%, 100% { opacity: 0.4; }
             50%      { opacity: 0.7; }
           }
+
+          /* ── Blur-to-reveal mist layer ── */
+          .event-card-mist {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            backdrop-filter: blur(18px) saturate(0.6);
+            -webkit-backdrop-filter: blur(18px) saturate(0.6);
+            background: radial-gradient(
+              ellipse 80% 70% at 50% 40%,
+              rgba(255, 51, 0, 0.06) 0%,
+              rgba(10, 10, 10, 0.55) 50%,
+              rgba(10, 10, 10, 0.75) 100%
+            );
+            transition: backdrop-filter 0.8s cubic-bezier(.16,1,.3,1),
+                        -webkit-backdrop-filter 0.8s cubic-bezier(.16,1,.3,1),
+                        opacity 0.8s cubic-bezier(.16,1,.3,1);
+            opacity: 1;
+            pointer-events: none;
+          }
+          .event-card:hover .event-card-mist,
+          .event-card:focus-within .event-card-mist {
+            backdrop-filter: blur(0px) saturate(1);
+            -webkit-backdrop-filter: blur(0px) saturate(1);
+            opacity: 0;
+          }
+
+          /* ── Mist particles (floating dots) ── */
+          @keyframes mist-float-1 {
+            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.4; }
+            33%      { transform: translate(12px, -18px) scale(1.3); opacity: 0.7; }
+            66%      { transform: translate(-8px, -10px) scale(0.9); opacity: 0.3; }
+          }
+          @keyframes mist-float-2 {
+            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+            40%      { transform: translate(-15px, -12px) scale(1.2); opacity: 0.6; }
+            70%      { transform: translate(10px, -20px) scale(0.8); opacity: 0.2; }
+          }
+          @keyframes mist-float-3 {
+            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+            50%      { transform: translate(8px, -25px) scale(1.4); opacity: 0.8; }
+          }
+          .mist-particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 3;
+            transition: opacity 0.8s cubic-bezier(.16,1,.3,1);
+          }
+          .event-card:hover .mist-particle,
+          .event-card:focus-within .mist-particle {
+            opacity: 0 !important;
+          }
+
+          /* ── Ripple burst on card click ── */
+          @keyframes card-ripple {
+            0%   { transform: translate(-50%, -50%) scale(0); opacity: 0.5; }
+            60%  { opacity: 0.2; }
+            100% { transform: translate(-50%, -50%) scale(4); opacity: 0; }
+          }
+          .card-ripple-ring {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,51,0,0.4) 0%, rgba(65,65,198,0.2) 50%, transparent 70%);
+            pointer-events: none;
+            z-index: 10;
+            animation: card-ripple 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          }
+
+          /* ── Reduced motion ── */
+          @media (prefers-reduced-motion: reduce) {
+            .event-card-mist { transition: none; }
+            .mist-particle { animation: none !important; }
+            .card-ripple-ring { animation: none !important; }
+          }
         `}</style>
 
         {/* ── Ambient glow ── */}
@@ -108,129 +186,34 @@ export default function ProgrammingSection() {
             {EVENTS.map((event, idx) => {
               const isHovered = hovered === event.id
               return (
-                <button
+                <EventCard
                   key={event.id}
-                  type="button"
-                  className="group relative rounded-2xl overflow-hidden text-left bg-transparent border-0 p-0 cursor-pointer"
-                  style={{
-                    aspectRatio: "3 / 4",
-                    animation: `prog-fade-up 0.6s ease-out ${0.1 + idx * 0.08}s both`,
-                  }}
-                  onClick={() => setSelectedId(event.id)}
-                  onMouseEnter={() => setHovered(event.id)}
-                  onMouseLeave={() => setHovered(null)}
-                  aria-label={`${event.id} — ${tHigh(event.id)}`}
-                >
-                  {/* Image */}
-                  <Image
-                    src={event.image}
-                    alt={event.id}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-cover"
-                    style={{
-                      transition: "transform 0.6s cubic-bezier(.16,1,.3,1), filter 0.6s ease",
-                      transform: isHovered ? "scale(1.06)" : "scale(1)",
-                      filter: isHovered ? "brightness(1.1)" : "brightness(0.85)",
-                    }}
-                  />
-
-                  {/* Gradient overlay */}
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 40%, transparent 70%)",
-                    }}
-                  />
-
-                  {/* Hover border glow */}
-                  <div
-                    className="absolute inset-0 rounded-2xl"
-                    style={{
-                      transition: "box-shadow 0.4s ease",
-                      boxShadow: isHovered
-                        ? "inset 0 0 0 2px rgba(255,51,0,0.5), 0 0 40px rgba(255,51,0,0.1)"
-                        : "inset 0 0 0 1px rgba(255,255,255,0.06)",
-                    }}
-                  />
-
-                  {/* Text overlay */}
-                  <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6">
-                    {/* Time */}
-                    <p
-                      className="text-xs tracking-widest uppercase mb-2"
-                      style={{
-                        color: "var(--sn-solar, #FF3300)",
-                        opacity: isHovered ? 1 : 0.7,
-                        transition: "opacity 0.3s ease",
-                      }}
-                    >
-                      {event.time}
-                    </p>
-
-                    {/* Name */}
-                    <h3
-                      className="text-2xl sm:text-3xl font-bold tracking-tight"
-                      style={{
-                        color: "#ffffff",
-                        transition: "transform 0.4s cubic-bezier(.16,1,.3,1)",
-                        transform: isHovered ? "translateY(-4px)" : "translateY(0)",
-                      }}
-                    >
-                      {event.id.charAt(0).toUpperCase() + event.id.slice(1)}
-                    </h3>
-
-                    {/* Highlight tag */}
-                    <span
-                      className="inline-block mt-2 px-3 py-1 text-xs tracking-widest uppercase rounded-full"
-                      style={{
-                        backgroundColor: "rgba(255,51,0,0.15)",
-                        color: "var(--sn-solar, #FF3300)",
-                        border: "1px solid rgba(255,51,0,0.25)",
-                      }}
-                    >
-                      {tHigh(event.id)}
-                    </span>
-
-                    {/* More info hint on hover */}
-                    <p
-                      className="mt-3 text-xs tracking-widest uppercase"
-                      style={{
-                        color: "rgba(255,255,255,0.5)",
-                        opacity: isHovered ? 1 : 0,
-                        transform: isHovered ? "translateY(0)" : "translateY(8px)",
-                        transition: "opacity 0.3s ease, transform 0.3s ease",
-                      }}
-                    >
-                      {tEvents("moreInfo")} →
-                    </p>
-                  </div>
-                </button>
+                  event={event}
+                  idx={idx}
+                  isHovered={isHovered}
+                  highlight={tHigh(event.id)}
+                  moreInfoLabel={tEvents("moreInfo")}
+                  onHover={setHovered}
+                  onSelect={setSelectedId}
+                />
               )
             })}
           </div>
 
-          {/* ── Bottom CTA ── */}
+          {/* ── Bottom: SunriseButton row ── */}
           <div
-            className="text-center mt-16"
+            className="flex flex-wrap justify-center gap-6 mt-16"
             style={{ animation: "prog-fade-up 0.8s ease-out 0.6s both" }}
           >
-            <a
-              href="#pricing"
-              className="inline-block px-10 py-4 text-sm font-bold tracking-widest uppercase rounded-full transition-all duration-300"
-              style={{
-                backgroundColor: "var(--sn-solar, #FF3300)",
-                color: "#ffffff",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.backgroundColor = "var(--sn-deep-blue, #4141C6)"
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.backgroundColor = "var(--sn-solar, #FF3300)"
-              }}
-            >
-              {tEvents("buyTickets")}
-            </a>
+            {EVENTS.map((event, idx) => (
+              <SunriseButton
+                key={event.id}
+                artistName={event.id.charAt(0).toUpperCase() + event.id.slice(1)}
+                href={event.ticketUrl}
+                colorIndex={idx}
+                onSelect={() => setSelectedId(event.id)}
+              />
+            ))}
           </div>
         </div>
       </section>
@@ -244,5 +227,183 @@ export default function ProgrammingSection() {
         artistImagePosition="center 30%"
       />
     </>
+  )
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   EventCard — Individual card with blur-to-reveal mist + ripple
+   ══════════════════════════════════════════════════════════════════ */
+
+type EventCardProps = {
+  event: (typeof EVENTS)[number]
+  idx: number
+  isHovered: boolean
+  highlight: string
+  moreInfoLabel: string
+  onHover: (id: string | null) => void
+  onSelect: (id: string) => void
+}
+
+/** Mist particle config — deterministic per card index */
+const PARTICLES = [
+  { top: "20%", left: "15%", size: 6,  anim: "mist-float-1", dur: "6s",   delay: "0s",    color: "rgba(255,51,0,0.3)" },
+  { top: "35%", left: "70%", size: 8,  anim: "mist-float-2", dur: "7.5s", delay: "0.5s",  color: "rgba(65,65,198,0.25)" },
+  { top: "55%", left: "40%", size: 5,  anim: "mist-float-3", dur: "5.5s", delay: "1s",    color: "rgba(255,150,80,0.3)" },
+  { top: "15%", left: "55%", size: 4,  anim: "mist-float-1", dur: "8s",   delay: "1.5s",  color: "rgba(255,51,0,0.2)" },
+  { top: "45%", left: "25%", size: 7,  anim: "mist-float-2", dur: "6.5s", delay: "0.8s",  color: "rgba(65,65,198,0.2)" },
+  { top: "65%", left: "80%", size: 5,  anim: "mist-float-3", dur: "7s",   delay: "0.3s",  color: "rgba(255,200,100,0.25)" },
+]
+
+function EventCard({ event, idx, isHovered, highlight, moreInfoLabel, onHover, onSelect }: EventCardProps) {
+  const [ripple, setRipple] = useState<{ x: number; y: number; key: number } | null>(null)
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      const rect = e.currentTarget.getBoundingClientRect()
+      const x = e.clientX - rect.left
+      const y = e.clientY - rect.top
+      setRipple({ x, y, key: Date.now() })
+      // Delay modal open so user sees the ripple
+      setTimeout(() => onSelect(event.id), 350)
+    },
+    [event.id, onSelect],
+  )
+
+  return (
+    <button
+      type="button"
+      className="event-card group relative rounded-2xl overflow-hidden text-left bg-transparent border-0 p-0 cursor-pointer"
+      style={{
+        aspectRatio: "3 / 4",
+        animation: `prog-fade-up 0.6s ease-out ${0.1 + idx * 0.08}s both`,
+      }}
+      onClick={handleClick}
+      onMouseEnter={() => onHover(event.id)}
+      onMouseLeave={() => onHover(null)}
+      aria-label={`${event.id} — ${highlight}`}
+    >
+      {/* ── Base image ── */}
+      <Image
+        src={event.image}
+        alt={event.id}
+        fill
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        className="object-cover"
+        style={{
+          transition: "transform 0.8s cubic-bezier(.16,1,.3,1), filter 0.6s ease",
+          transform: isHovered ? "scale(1.08)" : "scale(1)",
+          filter: isHovered ? "brightness(1.15) saturate(1.2)" : "brightness(0.75) saturate(0.9)",
+        }}
+      />
+
+      {/* ── Mist layer (blur-to-reveal) ── */}
+      <div className="event-card-mist" />
+
+      {/* ── Floating mist particles ── */}
+      {PARTICLES.map((p, i) => (
+        <div
+          key={i}
+          className="mist-particle"
+          style={{
+            top: p.top,
+            left: p.left,
+            width: p.size,
+            height: p.size,
+            backgroundColor: p.color,
+            animation: `${p.anim} ${p.dur} ease-in-out ${p.delay} infinite`,
+            filter: "blur(2px)",
+          }}
+        />
+      ))}
+
+      {/* ── Gradient overlay (always visible, fades slightly on hover) ── */}
+      <div
+        className="absolute inset-0"
+        style={{
+          zIndex: 4,
+          background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.35) 35%, transparent 65%)",
+          transition: "opacity 0.6s ease",
+          opacity: isHovered ? 0.7 : 1,
+        }}
+      />
+
+      {/* ── Hover border glow ── */}
+      <div
+        className="absolute inset-0 rounded-2xl"
+        style={{
+          zIndex: 5,
+          transition: "box-shadow 0.4s ease",
+          boxShadow: isHovered
+            ? "inset 0 0 0 2px rgba(255,51,0,0.5), 0 0 60px rgba(255,51,0,0.15), 0 0 120px rgba(65,65,198,0.08)"
+            : "inset 0 0 0 1px rgba(255,255,255,0.06)",
+        }}
+      />
+
+      {/* ── Ripple burst on click ── */}
+      {ripple && (
+        <div
+          key={ripple.key}
+          className="card-ripple-ring"
+          style={{ left: ripple.x, top: ripple.y, zIndex: 10 }}
+          onAnimationEnd={() => setRipple(null)}
+        />
+      )}
+
+      {/* ── Text overlay ── */}
+      <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6" style={{ zIndex: 6 }}>
+        {/* Time */}
+        <p
+          className="text-xs tracking-widest uppercase mb-2"
+          style={{
+            color: "var(--sn-solar, #FF3300)",
+            opacity: isHovered ? 1 : 0.7,
+            transition: "opacity 0.3s ease",
+            fontFamily: "var(--font-space-mono, 'Space Mono', monospace)",
+          }}
+        >
+          {event.time}
+        </p>
+
+        {/* Name */}
+        <h3
+          className="text-2xl sm:text-3xl font-bold tracking-tight"
+          style={{
+            color: "#ffffff",
+            transition: "transform 0.5s cubic-bezier(.16,1,.3,1)",
+            transform: isHovered ? "translateY(-6px)" : "translateY(0)",
+          }}
+        >
+          {event.id.charAt(0).toUpperCase() + event.id.slice(1)}
+        </h3>
+
+        {/* Highlight tag */}
+        <span
+          className="inline-block mt-2 px-3 py-1 text-xs tracking-widest uppercase rounded-full"
+          style={{
+            backgroundColor: "rgba(255,51,0,0.15)",
+            color: "var(--sn-solar, #FF3300)",
+            border: "1px solid rgba(255,51,0,0.25)",
+            fontFamily: "var(--font-space-mono, 'Space Mono', monospace)",
+          }}
+        >
+          {highlight}
+        </span>
+
+        {/* More info hint on hover */}
+        <p
+          className="mt-3 text-xs tracking-widest uppercase"
+          style={{
+            color: "rgba(255,255,255,0.5)",
+            opacity: isHovered ? 1 : 0,
+            transform: isHovered ? "translateY(0)" : "translateY(8px)",
+            transition: "opacity 0.3s ease, transform 0.3s ease",
+            fontFamily: "var(--font-space-mono, 'Space Mono', monospace)",
+          }}
+        >
+          {moreInfoLabel} →
+        </p>
+      </div>
+    </button>
   )
 }

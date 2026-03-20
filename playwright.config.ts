@@ -1,15 +1,20 @@
 import { defineConfig, devices } from "@playwright/test"
 
+const IS_CI = !!process.env["CI"]
 const PORT = process.env["PORT"] ?? "3000"
 const BASE_URL = `http://localhost:${PORT}`
 
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
-  forbidOnly: !!process.env["CI"],
-  retries: process.env["CI"] ? 2 : 0,
-  workers: process.env["CI"] ? 1 : undefined,
-  reporter: process.env["CI"] ? "github" : "html",
+  forbidOnly: IS_CI,
+  retries: IS_CI ? 1 : 0,
+  workers: IS_CI ? 1 : undefined,
+  reporter: IS_CI ? "github" : "html",
+  /* Hard cap: if all tests together exceed this, abort immediately. */
+  globalTimeout: IS_CI ? 5 * 60_000 : 0,
+  /* Per-test timeout */
+  timeout: IS_CI ? 15_000 : 30_000,
 
   use: {
     baseURL: BASE_URL,
@@ -17,25 +22,22 @@ export default defineConfig({
     screenshot: "only-on-failure",
   },
 
-  projects: [
-    {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
-    },
-    {
-      name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
-    },
-    {
-      name: "mobile-chrome",
-      use: { ...devices["Pixel 5"] },
-    },
-  ],
+  /* CI: only chromium (it's the only browser installed).
+     Local: chromium + firefox + mobile-chrome for full coverage. */
+  projects: IS_CI
+    ? [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }]
+    : [
+        { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+        { name: "firefox", use: { ...devices["Desktop Firefox"] } },
+        { name: "mobile-chrome", use: { ...devices["Pixel 5"] } },
+      ],
 
+  /* CI: production server (fast, deterministic).
+     Local: dev server (HMR, reuse if already running). */
   webServer: {
-    command: "pnpm dev",
+    command: IS_CI ? "pnpm start" : "pnpm dev",
     url: BASE_URL,
-    reuseExistingServer: !process.env["CI"],
-    timeout: 30_000,
+    reuseExistingServer: !IS_CI,
+    timeout: IS_CI ? 60_000 : 30_000,
   },
 })
