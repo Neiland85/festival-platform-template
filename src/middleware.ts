@@ -7,8 +7,11 @@ import { routing } from "@/i18n/routing"
 const intlMiddleware = createIntlMiddleware(routing)
 
 // ── Origin allowlist ─────────────────────────────────
+// NOTE: middleware runs in edge runtime. We read process.env directly here
+// because the Zod env module uses Node.js APIs (process.exit) incompatible
+// with edge. The value is still validated at server boot by src/lib/env.ts.
 const ALLOWED_ORIGINS = new Set([
-  process.env["NEXT_PUBLIC_SITE_URL"] ?? "https://www.your-festival.com",
+  process.env["NEXT_PUBLIC_SITE_URL"] ?? "https://www.your-platform.com",
 ])
 
 function isAllowedOrigin(origin: string | null): boolean {
