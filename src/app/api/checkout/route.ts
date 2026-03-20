@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireStripe } from "@/adapters/payments/stripe/client"
 import { StripeNotConfiguredError } from "@/adapters/payments/stripe/client"
-import { serverEnv, clientEnv } from "@/lib/env"
+import { clientEnv } from "@/lib/env"
 import { log } from "@/lib/logger"
 
 /**
