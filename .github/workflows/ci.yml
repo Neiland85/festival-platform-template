@@ -1,3 +1,15 @@
+# ──────────────────────────────────────────────────────────────
+# CI Pipeline — festival-platform-template
+#
+# Design decisions:
+#   1. install job: single pnpm install → cached → shared via artifact
+#   2. Parallel quality gates: lint, typecheck, test, audit (fail-fast)
+#   3. build depends on ALL quality gates passing
+#   4. e2e depends on build
+#   5. Grouped log output (::group::) for GitHub Actions readability
+#   6. Explicit timeouts prevent hung jobs billing hours
+#   7. pnpm store cache + node_modules artifact = fast re-runs
+# ──────────────────────────────────────────────────────────────
 name: CI
 
 on:
@@ -6,57 +18,253 @@ on:
     branches:
       - main
 
+# Cancel in-progress runs for the same branch/PR
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+  PNPM_VERSION: "10"
+
 jobs:
+  # ── Stage 1: Install & cache ──────────────────────────────
+  install:
+    name: "📦 Install"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies (frozen lockfile)
+        run: |
+          echo "::group::pnpm install"
+          pnpm install --frozen-lockfile
+          echo "::endgroup::"
+
+      - name: Upload node_modules artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-modules
+          path: node_modules
+          retention-days: 1
+
+  # ── Stage 2: Quality gates (parallel) ─────────────────────
+  lint:
+    name: "🔍 Lint"
+    needs: install
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download node_modules
+        uses: actions/download-artifact@v4
+        with:
+          name: node-modules
+          path: node_modules
+
+      - name: Run ESLint
+        run: |
+          echo "::group::eslint src --max-warnings=0"
+          pnpm lint
+          echo "::endgroup::"
+
+  typecheck:
+    name: "🔠 Typecheck"
+    needs: install
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download node_modules
+        uses: actions/download-artifact@v4
+        with:
+          name: node-modules
+          path: node_modules
+
+      - name: Run TypeScript compiler
+        run: |
+          echo "::group::tsc --noEmit"
+          pnpm typecheck
+          echo "::endgroup::"
+
+  test:
+    name: "🧪 Unit tests"
+    needs: install
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download node_modules
+        uses: actions/download-artifact@v4
+        with:
+          name: node-modules
+          path: node_modules
+
+      - name: Run Vitest
+        run: |
+          echo "::group::vitest run"
+          pnpm test
+          echo "::endgroup::"
+
+  audit:
+    name: "🛡️ Security audit"
+    needs: install
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download node_modules
+        uses: actions/download-artifact@v4
+        with:
+          name: node-modules
+          path: node_modules
+
+      - name: Audit prod dependencies (high+ only)
+        run: |
+          echo "::group::pnpm audit --prod --audit-level=high"
+          pnpm audit --prod --audit-level=high
+          echo "::endgroup::"
+
+  # ── Stage 3: Build (depends on all quality gates) ─────────
   build:
+    name: "🏗️ Build"
+    needs: [lint, typecheck, test, audit]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: ${{ env.PNPM_VERSION }}
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: pnpm
+          node-version: ${{ env.NODE_VERSION }}
 
-      - run: pnpm install --frozen-lockfile
+      - name: Download node_modules
+        uses: actions/download-artifact@v4
+        with:
+          name: node-modules
+          path: node_modules
 
-      - name: Security audit (prod dependencies)
-        run: pnpm audit --prod --audit-level=high
+      - name: Build Next.js
+        run: |
+          echo "::group::next build"
+          pnpm build
+          echo "::endgroup::"
+        env:
+          # Suppress telemetry during CI
+          NEXT_TELEMETRY_DISABLED: "1"
 
-      - run: pnpm lint
-
-      - run: pnpm typecheck
-
-      - run: pnpm test
-
-      - run: pnpm build
-
+  # ── Stage 4: E2E (depends on successful build) ───────────
   e2e:
-    runs-on: ubuntu-latest
+    name: "🎭 E2E tests"
     needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: ${{ env.PNPM_VERSION }}
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: pnpm
+          node-version: ${{ env.NODE_VERSION }}
 
-      - run: pnpm install --frozen-lockfile
+      - name: Download node_modules
+        uses: actions/download-artifact@v4
+        with:
+          name: node-modules
+          path: node_modules
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: |
+          echo "::group::playwright install"
+          pnpm exec playwright install --with-deps chromium
+          echo "::endgroup::"
+
+      - name: Install Playwright system deps (cache hit)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps chromium
 
       - name: Run E2E tests
-        run: pnpm exec playwright test
+        run: |
+          echo "::group::playwright test"
+          pnpm exec playwright test
+          echo "::endgroup::"
         env:
-          CI: true
+          CI: "true"
+
+      - name: Upload E2E artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
