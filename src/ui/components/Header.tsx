@@ -15,8 +15,8 @@ export default function Header() {
         {/* LOGO */}
         <Link href="/" className="flex items-center">
           <Image
-            src="/festival_logo.png"
-            alt="Festival Logo"
+            src="/clarity-logo-light.png"
+            alt="Clarity Structures"
             width={120}
             height={60}
             sizes="120px"
