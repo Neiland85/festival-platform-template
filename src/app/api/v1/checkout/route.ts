@@ -15,7 +15,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { rateLimit } from "@/lib/rate-limit"
+import { rateLimit, setRateLimitHeaders } from "@/lib/rate-limit"
 import { verifyCsrf } from "@/lib/security/verifyCsrf"
 import { createOrderForEvent } from "@/domain/orders/create-order"
 import { setStripeSessionId } from "@/domain/orders/order-repository"
@@ -31,12 +31,14 @@ import { log } from "@/lib/logger"
 export async function POST(req: NextRequest) {
   // 1. Rate limit — check BEFORE CSRF (cheaper check first)
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown"
-  const allowed = await rateLimit(ip)
-  if (!allowed) {
-    return NextResponse.json(
+  const rl = await rateLimit(ip)
+  if (!rl.allowed) {
+    const res = NextResponse.json(
       { error: "Too many requests" },
       { status: 429 },
     )
+    setRateLimitHeaders(res.headers, rl)
+    return res
   }
 
   // 2. CSRF
