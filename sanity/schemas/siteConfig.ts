@@ -1,4 +1,4 @@
-import { defineField, defineType } from "sanity"
+import { defineField, defineType, type Rule } from "sanity"
 
 export const siteConfig = defineType({
   name: "siteConfig",
@@ -9,7 +9,7 @@ export const siteConfig = defineType({
       name: "festivalName",
       title: "Festival Name",
       type: "string",
-      validation: (rule) => rule.required(),
+      validation: (rule: Rule) => rule.required(),
     }),
     defineField({
       name: "tagline",

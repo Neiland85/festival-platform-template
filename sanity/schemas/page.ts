@@ -1,4 +1,4 @@
-import { defineField, defineType } from "sanity"
+import { defineField, defineType, type Rule } from "sanity"
 
 export const page = defineType({
   name: "page",
@@ -10,7 +10,7 @@ export const page = defineType({
       title: "Slug",
       type: "slug",
       description: "URL path (e.g. 'privacidad', 'contacto')",
-      validation: (rule) => rule.required(),
+      validation: (rule: Rule) => rule.required(),
     }),
     defineField({
       name: "title",
