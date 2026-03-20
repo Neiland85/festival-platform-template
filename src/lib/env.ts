@@ -106,6 +106,17 @@ const serverSchema = z.object({
   TM_API_KEY: z.string().optional(),
   QUEUE_RECONCILE_KEY: z.string().optional(),
 
+  // ── Rate Limiting (optional, sensible defaults) ──
+  RATE_LIMIT_WINDOW_MS: z.coerce.number().int().min(1000).default(60_000).describe(
+    "Sliding window duration in ms. Default: 60000 (1 min).",
+  ),
+  RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().min(1).default(20).describe(
+    "Max requests per IP per window. Default: 20.",
+  ),
+  RATE_LIMIT_API_MAX_REQUESTS: z.coerce.number().int().min(1).default(10).describe(
+    "Stricter limit for sensitive API routes (/api/v1/auth/*). Default: 10.",
+  ),
+
   // ── Chaos Engineering (optional, dev/staging) ────
   CHAOS: booleanStr,
   CHAOS_ERROR_RATE: probability.default(0.05),
