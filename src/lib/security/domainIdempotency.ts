@@ -33,6 +33,7 @@
 
 import { db } from "@/lib/db"
 import { log } from "@/lib/logger"
+import { chaos } from "@/lib/security/chaosMonkey" // Chaos testing injection
 
 type OperationType = "create_lead" | "send_email" | "sync_external_api" | "process_payment"
 
@@ -224,7 +225,13 @@ export async function executeWithDomainIdempotency<T>(
   // At this point, we either reserved it (first INSERT) or are retrying
   let result: T
   try {
+    // Chaos injection: BEFORE domain execution (most critical point for side effects)
+    await chaos.inject("domain_operation_before", { killRate: 0.02 })
+
     result = await operation()
+
+    // Chaos injection: AFTER domain execution (effect has happened, now update DB)
+    await chaos.inject("domain_operation_after")
   } catch (error) {
     // Cleanup: remove pending record so another worker can retry
     try {

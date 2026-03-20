@@ -1,0 +1,35 @@
+# Festival Platform — Local development stack
+# Usage: docker compose up -d
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: festival-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: festival
+      POSTGRES_PASSWORD: festival
+      POSTGRES_DB: festival
+      # Forzar UTF-8 independientemente del locale del host
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C.UTF-8"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # Evita crash en queries complejas (Postgres usa /dev/shm para shared memory)
+    shm_size: 256mb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U festival -d festival"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+      # Gracia para cold start: no cuenta retries durante los primeros 5s
+      start_period: 5s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  pgdata:

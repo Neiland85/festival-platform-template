@@ -26,6 +26,7 @@ import { getRedis } from "@/lib/redis/client"
 import { db } from "@/lib/db"
 import { log } from "@/lib/logger"
 import { randomUUID } from "crypto"
+import { chaos } from "@/lib/security/chaosMonkey" // Chaos testing injection
 
 // ── Types ────────────────────────────────────────────────
 
@@ -150,8 +151,14 @@ export async function dequeueRedis(): Promise<{
   const redis = requireRedis()
 
   try {
+    // Chaos injection: before dequeue
+    await chaos.inject("dequeue_before")
+
     // Step 1: Atomically move jobId from pending → processing
     const jobId = await redis.rpoplpush<string>(PENDING_LIST, PROCESSING_SET)
+
+    // Chaos injection: after dequeue (before lease setup)
+    await chaos.inject("dequeue_after_pop")
 
     if (!jobId) {
       // Queue is empty
@@ -305,6 +312,9 @@ export async function ackJob(
   const redis = requireRedis()
 
   try {
+    // Chaos injection: before ownership check
+    await chaos.inject("ack_before_ownership_check")
+
     // Step 0: CRITICAL — Verify ownership before acking
     // If we don't own the token, another worker took over (shouldn't happen)
     const jobKey = `${JOB_DATA_PREFIX}${jobId}`
@@ -315,6 +325,9 @@ export async function ackJob(
         `Processing token mismatch for ${jobId}: ownership lost (another worker took over)`
       )
     }
+
+    // Chaos injection: before Postgres write (critical durability point)
+    await chaos.inject("ack_before_db_write")
 
     // Step 1: UPSERT into Postgres with idempotency guarantee
     // If another worker already acked this token: conflict on UNIQUE constraint
@@ -403,6 +416,9 @@ export async function nackJob(
   const redis = requireRedis()
 
   try {
+    // Chaos injection: before nack logic
+    await chaos.inject("nack_before")
+
     // Step 0: Verify ownership
     const jobKey = `${JOB_DATA_PREFIX}${jobId}`
     const currentToken = await redis.hget<string>(jobKey, "processingToken")
@@ -415,6 +431,9 @@ export async function nackJob(
 
     // Fetch job data
     const jobData = await redis.hget<string>(jobKey, "data")
+
+    // Chaos injection: before re-enqueuing (critical point)
+    await chaos.inject("nack_before_requeue")
 
     if (!jobData) {
       // Job lost: mark failed
@@ -729,6 +748,9 @@ export function startHeartbeat(
     if (!isActive) return
 
     try {
+      // Chaos injection: heartbeat tick
+      await chaos.inject("heartbeat_tick", { killRate: 0.001 }) // Lower kill rate for heartbeat
+
       const redis = requireRedis()
       const leaseKey = `${LEASE_PREFIX}${jobId}`
       const jobKey = `${JOB_DATA_PREFIX}${jobId}`

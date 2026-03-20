@@ -39,29 +39,29 @@ Every optional feature works independently. The template runs with **zero extern
 
 ## Quick Start
 
+**Prerequisites:** Node 20+, pnpm, Docker.
+
 ```bash
-# 1. Clone and install
 git clone <your-repo-url>
 cd festival-platform-template
 pnpm install
-
-# 2. Configure environment
-cp .env.example .env.local
-# Edit .env.local with your DATABASE_URL and ADMIN_PASSWORD
-
-# 3. Run database migrations
-psql $DATABASE_URL -f migrations/001_initial.sql
-psql $DATABASE_URL -f migrations/002_event_capacity.sql
-psql $DATABASE_URL -f migrations/003_event_metadata.sql
-psql $DATABASE_URL -f migrations/004_lead_profile_fields.sql
-psql $DATABASE_URL -f migrations/005_rbac_users.sql
-psql $DATABASE_URL -f migrations/006_orders_and_pricing.sql
-
-# 4. Start development server
-pnpm dev
-
-# 5. Open http://localhost:3000
+pnpm setup      # ~30 seconds — see below
+pnpm dev        # http://localhost:3000
 ```
+
+That's it. The admin dashboard is at `/dashboard` (password: `ADMIN_PASSWORD` from `.env.local`, default: `admin123`).
+
+> **Note:** Dashboard login uses the `ADMIN_PASSWORD` environment variable, not the seeded users in the database. The `users` table is used for RBAC and audit trails.
+
+### What `pnpm setup` does
+
+1. Copies `.env.example` to `.env.local` (skips if it already exists)
+2. Starts a PostgreSQL 15 container via Docker Compose
+3. Waits for the database to report healthy
+4. Pushes the Drizzle schema to the database
+5. Seeds 7 demo events, 3 users, 8 leads, and 10 orders
+
+To redo everything from scratch: `docker compose down -v && pnpm setup`
 
 ---
 
@@ -197,9 +197,14 @@ e2e/                      # Playwright E2E tests
 
 | Command | Description |
 |---------|-------------|
+| `pnpm setup` | One-command bootstrap (env + Docker + schema + seed) |
 | `pnpm dev` | Development server |
+| `pnpm dev:full` | `setup` + `dev` in one command |
 | `pnpm build` | Production build |
 | `pnpm start` | Production server |
+| `pnpm db:seed` | Re-run demo data seed (idempotent) |
+| `pnpm db:push` | Push Drizzle schema to database |
+| `pnpm db:studio` | Open Drizzle Studio (DB browser) |
 | `pnpm lint` | ESLint (zero warnings) |
 | `pnpm typecheck` | TypeScript strict check |
 | `pnpm test` | Unit tests (Vitest, 429+ tests) |
@@ -286,6 +291,18 @@ Deploy automatically on Vercel when merging to `main`.
 3. Generate an API token with write access and set `SANITY_API_TOKEN`
 4. Access the embedded studio at `/studio` (requires admin login)
 5. Optional: Set up a webhook for ISR revalidation pointing to `/api/v1/revalidate`
+
+---
+
+## Troubleshooting
+
+**Port 5432 already in use** — Another PostgreSQL instance is running. Stop it (`brew services stop postgresql` on macOS) or change the port in `docker-compose.yml` and `DATABASE_URL`.
+
+**`pnpm setup` fails at "Waiting for PostgreSQL"** — Docker may not be running. Start Docker Desktop (or `systemctl start docker` on Linux) and retry.
+
+**`db:push` fails with connection refused** — The container started but PostgreSQL isn't ready yet. Wait a few seconds and run `pnpm db:push` manually. If it persists, check `docker compose logs postgres`.
+
+**Want a clean slate?** — Run `docker compose down -v && pnpm setup`. The `-v` flag deletes the persistent volume.
 
 ---
 
