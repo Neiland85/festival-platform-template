@@ -5,30 +5,32 @@
  * platform identity. Every component reads from here instead of
  * scattering process.env lookups throughout the codebase.
  *
+ * All env vars are validated at boot by src/lib/env.ts (Zod).
+ * No raw process.env access here — only typed, validated values.
+ *
  * Customization guide:
  *   1. Set NEXT_PUBLIC_SITE_NAME and NEXT_PUBLIC_SITE_URL in .env
- *   2. Replace /public/festival_logo.png with your logo
+ *   2. Replace /public/clarity-logo-light.png with your logo
  *   3. Update social links below
  */
+
+import { clientEnv, features } from "@/lib/env"
 
 // ── Identity ──────────────────────────────────────────
 
 /** Platform / brand name — used in <title>, OG tags, footer, etc. */
-export const SITE_NAME =
-  process.env["NEXT_PUBLIC_SITE_NAME"] ?? "Platform Name"
+export const SITE_NAME = clientEnv.NEXT_PUBLIC_SITE_NAME
 
 /** Canonical site URL — used in sitemap, OG tags, CORS whitelist */
-export const SITE_URL =
-  process.env["NEXT_PUBLIC_SITE_URL"] ?? "https://www.your-platform.com"
+export const SITE_URL = clientEnv.NEXT_PUBLIC_SITE_URL
 
 /** Short tagline for hero section and meta description */
-export const SITE_TAGLINE =
-  process.env["NEXT_PUBLIC_SITE_TAGLINE"] ?? "Templates, Assets & Tools"
+export const SITE_TAGLINE = clientEnv.NEXT_PUBLIC_SITE_TAGLINE
 
 // ── Branding Assets ───────────────────────────────────
 
 /** Path to the main logo (relative to /public) */
-export const LOGO_PATH = "/festival_logo.png"
+export const LOGO_PATH = "/clarity-logo-light.png"
 
 /** Logo dimensions for next/image */
 export const LOGO_WIDTH = 120
@@ -43,53 +45,41 @@ export const FAVICON_PATH = "/favicon.ico"
 // ── Social Links ──────────────────────────────────────
 
 export const SOCIAL_LINKS = {
-  instagram: process.env["NEXT_PUBLIC_SOCIAL_INSTAGRAM"] ?? "",
-  facebook: process.env["NEXT_PUBLIC_SOCIAL_FACEBOOK"] ?? "",
-  twitter: process.env["NEXT_PUBLIC_SOCIAL_TWITTER"] ?? "",
-  tiktok: process.env["NEXT_PUBLIC_SOCIAL_TIKTOK"] ?? "",
-  youtube: process.env["NEXT_PUBLIC_SOCIAL_YOUTUBE"] ?? "",
+  instagram: clientEnv.NEXT_PUBLIC_SOCIAL_INSTAGRAM,
+  facebook: clientEnv.NEXT_PUBLIC_SOCIAL_FACEBOOK,
+  twitter: clientEnv.NEXT_PUBLIC_SOCIAL_TWITTER,
+  tiktok: clientEnv.NEXT_PUBLIC_SOCIAL_TIKTOK,
+  youtube: clientEnv.NEXT_PUBLIC_SOCIAL_YOUTUBE,
 } as const
 
 // ── Contact ───────────────────────────────────────────
 
-export const CONTACT_EMAIL =
-  process.env["NEXT_PUBLIC_CONTACT_EMAIL"] ?? "info@your-platform.com"
+export const CONTACT_EMAIL = clientEnv.NEXT_PUBLIC_CONTACT_EMAIL
 
 // ── Location ──────────────────────────────────────────
 
 /** Google Maps embed coordinates or place name */
-export const VENUE_NAME =
-  process.env["NEXT_PUBLIC_VENUE_NAME"] ?? "Platform HQ"
+export const VENUE_NAME = clientEnv.NEXT_PUBLIC_VENUE_NAME
 
-export const VENUE_MAPS_URL =
-  process.env["NEXT_PUBLIC_VENUE_MAPS_URL"] ?? ""
+export const VENUE_MAPS_URL = clientEnv.NEXT_PUBLIC_VENUE_MAPS_URL
 
 // ── Feature Toggles ───────────────────────────────────
+// Derived from validated env — no Boolean(undefined) bugs.
 
 /** Is Sentry configured? Enables error tracking. */
-export const HAS_SENTRY = Boolean(
-  process.env["SENTRY_DSN"] || process.env["NEXT_PUBLIC_SENTRY_DSN"],
-)
+export const HAS_SENTRY = features.sentry
 
 /** Is Redis configured? Enables distributed rate limiting. */
-export const HAS_REDIS = Boolean(
-  process.env["REDIS_URL"] || process.env["UPSTASH_REDIS_REST_URL"],
-)
+export const HAS_REDIS = features.redis
 
 /** Is Google Analytics configured? */
-export const HAS_GA = Boolean(
-  process.env["NEXT_PUBLIC_GA_ID"],
-)
+export const HAS_GA = features.analytics
 
 /** Is Meta Pixel configured? */
-export const HAS_META_PIXEL = Boolean(
-  process.env["NEXT_PUBLIC_FB_PIXEL_ID"],
-)
+export const HAS_META_PIXEL = features.metaPixel
 
 /** Is Stripe configured? Enables event ticket checkout (ADR-003). */
-export const HAS_STRIPE = Boolean(
-  process.env["STRIPE_SECRET_KEY"],
-)
+export const HAS_STRIPE = features.stripe
 
 // ── Theme ─────────────────────────────────────────────
 

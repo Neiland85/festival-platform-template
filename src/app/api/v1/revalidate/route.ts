@@ -1,5 +1,6 @@
 import { revalidateTag } from "next/cache"
 import { type NextRequest, NextResponse } from "next/server"
+import { serverEnv } from "@/lib/env"
 
 /**
  * POST /api/v1/revalidate
@@ -13,7 +14,7 @@ import { type NextRequest, NextResponse } from "next/server"
  */
 export async function POST(req: NextRequest) {
   const secret = req.headers.get("x-sanity-secret")
-  const expectedSecret = process.env["SANITY_REVALIDATE_SECRET"]
+  const expectedSecret = serverEnv.SANITY_REVALIDATE_SECRET
 
   if (!expectedSecret) {
     return NextResponse.json(

@@ -1,17 +1,12 @@
 import { Pool } from "pg"
+import { serverEnv } from "@/lib/env"
 
 let pool: Pool | undefined
 
 export function getPool() {
   if (!pool) {
-    const connectionString = process.env["DATABASE_URL"]
-
-    if (!connectionString) {
-      throw new Error("DATABASE_URL not configured")
-    }
-
     pool = new Pool({
-      connectionString,
+      connectionString: serverEnv.DATABASE_URL,
       ssl: {
         rejectUnauthorized: false,
       },

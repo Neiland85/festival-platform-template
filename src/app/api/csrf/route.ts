@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createCsrfToken } from "@/lib/csrf"
+import { serverEnv } from "@/lib/env"
 
 export async function GET(req: NextRequest) {
-  const secret = process.env["CSRF_SECRET"]
+  const secret = serverEnv.CSRF_SECRET
   if (!secret) {
     return NextResponse.json({ error: "CSRF not configured" }, { status: 503 })
   }

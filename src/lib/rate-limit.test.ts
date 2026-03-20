@@ -7,7 +7,7 @@ import {
 } from "./rateLimitLocal"
 
 /**
- * These tests exercise the in-memory (local) rate limiter directly.
+ * These tests exercise the in-memory sliding window rate limiter directly.
  * The unified async wrapper in rate-limit.ts delegates to this module
  * when UPSTASH_REDIS_REST_URL is not configured.
  */
@@ -25,9 +25,27 @@ describe("rateLimitLocal", () => {
   it("allows requests until limit is reached", () => {
     const ip = "1.2.3.4"
     for (let i = 0; i < 20; i++) {
-      expect(rateLimitLocal(ip)).toBe(true)
+      expect(rateLimitLocal(ip).allowed).toBe(true)
     }
-    expect(rateLimitLocal(ip)).toBe(false)
+    const blocked = rateLimitLocal(ip)
+    expect(blocked.allowed).toBe(false)
+    expect(blocked.remaining).toBe(0)
+    expect(blocked.retryAfterMs).toBeGreaterThan(0)
+  })
+
+  it("returns remaining count correctly", () => {
+    const ip = "1.2.3.4"
+    const first = rateLimitLocal(ip)
+    expect(first.remaining).toBe(19)
+    expect(first.limit).toBe(20)
+    expect(first.current).toBe(1)
+
+    for (let i = 1; i < 20; i++) {
+      rateLimitLocal(ip)
+    }
+    const last = rateLimitLocal(ip)
+    expect(last.remaining).toBe(0)
+    expect(last.current).toBe(20)
   })
 
   it("tracks IPs independently", () => {
@@ -38,8 +56,23 @@ describe("rateLimitLocal", () => {
       rateLimitLocal(ipA)
     }
 
-    expect(rateLimitLocal(ipA)).toBe(false)
-    expect(rateLimitLocal(ipB)).toBe(true)
+    expect(rateLimitLocal(ipA).allowed).toBe(false)
+    expect(rateLimitLocal(ipB).allowed).toBe(true)
+  })
+
+  it("respects custom window and limit params", () => {
+    const ip = "1.2.3.4"
+    const windowMs = 5000
+    const maxRequests = 3
+
+    for (let i = 0; i < 3; i++) {
+      expect(rateLimitLocal(ip, windowMs, maxRequests).allowed).toBe(true)
+    }
+    expect(rateLimitLocal(ip, windowMs, maxRequests).allowed).toBe(false)
+
+    // Advance past window
+    vi.advanceTimersByTime(5001)
+    expect(rateLimitLocal(ip, windowMs, maxRequests).allowed).toBe(true)
   })
 
   describe("window expiration", () => {
@@ -48,43 +81,56 @@ describe("rateLimitLocal", () => {
 
       // Fill up to the limit
       for (let i = 0; i < 20; i++) {
-        expect(rateLimitLocal(ip)).toBe(true)
+        expect(rateLimitLocal(ip).allowed).toBe(true)
       }
 
       // Next request is blocked
-      expect(rateLimitLocal(ip)).toBe(false)
+      expect(rateLimitLocal(ip).allowed).toBe(false)
 
       // Advance time by 59 seconds - still blocked
       vi.advanceTimersByTime(59 * 1000)
-      expect(rateLimitLocal(ip)).toBe(false)
+      expect(rateLimitLocal(ip).allowed).toBe(false)
 
       // Advance more than 1 second to ensure > 60000ms has passed
       vi.advanceTimersByTime(1500)
 
       // Now new requests are allowed
-      expect(rateLimitLocal(ip)).toBe(true)
+      expect(rateLimitLocal(ip).allowed).toBe(true)
       for (let i = 1; i < 20; i++) {
-        expect(rateLimitLocal(ip)).toBe(true)
+        expect(rateLimitLocal(ip).allowed).toBe(true)
       }
-      expect(rateLimitLocal(ip)).toBe(false)
+      expect(rateLimitLocal(ip).allowed).toBe(false)
+    })
+
+    it("sliding window allows gradual recovery", () => {
+      const ip = "192.168.1.1"
+      const windowMs = 10_000
+      const maxRequests = 5
+
+      // Send 5 requests at t=0 (window full)
+      for (let i = 0; i < 5; i++) {
+        rateLimitLocal(ip, windowMs, maxRequests)
+      }
+      expect(rateLimitLocal(ip, windowMs, maxRequests).allowed).toBe(false)
+
+      // At t=10001 the first request expires → 1 slot opens
+      vi.advanceTimersByTime(10_001)
+      const result = rateLimitLocal(ip, windowMs, maxRequests)
+      expect(result.allowed).toBe(true)
+      // All 5 old ones expired, so remaining = maxRequests - 1
+      expect(result.remaining).toBe(4)
     })
 
     it("allows new IPs within the same window", () => {
       const ip = "192.168.1.1"
 
-      // Use up the limit for the first IP
       for (let i = 0; i < 20; i++) {
         rateLimitLocal(ip)
       }
 
-      // Advance 30 seconds (still within 60-second window)
       vi.advanceTimersByTime(30 * 1000)
-
-      // A different IP should still be allowed
-      expect(rateLimitLocal("192.168.1.2")).toBe(true)
-
-      // But the original IP remains blocked
-      expect(rateLimitLocal(ip)).toBe(false)
+      expect(rateLimitLocal("192.168.1.2").allowed).toBe(true)
+      expect(rateLimitLocal(ip).allowed).toBe(false)
     })
 
     it("prunes expired entries on access using sampled cleanup", () => {
@@ -100,7 +146,7 @@ describe("rateLimitLocal", () => {
       countedCall(ipA)
       countedCall(ipB)
 
-      // Move past the window so ipB is expired.
+      // Move past the window so ipB is expired
       vi.advanceTimersByTime(61 * 1000)
       countedCall(ipA)
 
@@ -115,7 +161,7 @@ describe("rateLimitLocal", () => {
 
       expect(_getStoreSize()).toBe(2)
 
-      // Next call should trigger cleanup and remove the expired ipB entry.
+      // Next call triggers cleanup → removes expired ipB
       countedCall(ipA)
       expect(_getStoreSize()).toBe(1)
     })
@@ -123,47 +169,33 @@ describe("rateLimitLocal", () => {
 
   describe("MAX_STORE_SIZE safety valve", () => {
     it("evicts oldest entry when store reaches 10,000 entries", () => {
-      // Fill the store with 10,000 entries
       for (let i = 0; i < 10000; i++) {
-        const ip = `192.168.1.${i}`
-        rateLimitLocal(ip)
+        rateLimitLocal(`192.168.1.${i}`)
       }
 
-      // Store should be at capacity
-      expect(new Map().constructor).toBeDefined()
-
-      // Start adding a new entry - this should trigger eviction of the first one (192.168.1.0)
       const newIp = "10.0.0.1"
+      expect(rateLimitLocal(newIp).allowed).toBe(true)
 
-      // The first IP had one request, verify new IP can be added
-      expect(rateLimitLocal(newIp)).toBe(true)
-
-      // The store should have evicted the oldest entry (first IP)
-      // We can't directly check this, but we can verify the new IP was added
-      // by making many requests to it and seeing it behaves normally
       for (let i = 1; i < 20; i++) {
-        expect(rateLimitLocal(newIp)).toBe(true)
+        expect(rateLimitLocal(newIp).allowed).toBe(true)
       }
-      expect(rateLimitLocal(newIp)).toBe(false)
+      expect(rateLimitLocal(newIp).allowed).toBe(false)
     })
 
     it("handles rapid evictions under high load", () => {
-      // Simulate burst of requests from many IPs
       const ips: string[] = []
       for (let i = 0; i < 500; i++) {
         ips.push(`192.168.1.${i}`)
       }
 
-      // Make requests from all IPs multiple times
       for (let batch = 0; batch < 22; batch++) {
         for (const ip of ips) {
           rateLimitLocal(ip)
         }
       }
 
-      // Add one more IP - should work despite high load
       const crashTestIp = "10.0.0.1"
-      expect(rateLimitLocal(crashTestIp)).toBe(true)
+      expect(rateLimitLocal(crashTestIp).allowed).toBe(true)
     })
   })
 
@@ -171,22 +203,17 @@ describe("rateLimitLocal", () => {
     it("increments counter correctly for sequential requests from same IP", () => {
       const ip = "172.16.0.1"
 
-      // Make 5 sequential requests and track the counter implicitly
       const results: boolean[] = []
       for (let i = 0; i < 5; i++) {
-        results.push(rateLimitLocal(ip))
+        results.push(rateLimitLocal(ip).allowed)
       }
 
-      // All 5 should succeed
       expect(results).toEqual([true, true, true, true, true])
 
-      // Next 15 should also succeed (reaching limit of 20)
       for (let i = 0; i < 15; i++) {
-        expect(rateLimitLocal(ip)).toBe(true)
+        expect(rateLimitLocal(ip).allowed).toBe(true)
       }
-
-      // The 21st should fail
-      expect(rateLimitLocal(ip)).toBe(false)
+      expect(rateLimitLocal(ip).allowed).toBe(false)
     })
 
     it("maintains accurate count with interleaved IPs", () => {
@@ -194,28 +221,24 @@ describe("rateLimitLocal", () => {
       const ipB = "172.16.0.2"
       const ipC = "172.16.0.3"
 
-      // Make interleaved requests
       for (let i = 0; i < 10; i++) {
-        expect(rateLimitLocal(ipA)).toBe(true)
-        expect(rateLimitLocal(ipB)).toBe(true)
-        expect(rateLimitLocal(ipC)).toBe(true)
+        expect(rateLimitLocal(ipA).allowed).toBe(true)
+        expect(rateLimitLocal(ipB).allowed).toBe(true)
+        expect(rateLimitLocal(ipC).allowed).toBe(true)
       }
 
-      // Complete limits for A and B
       for (let i = 10; i < 20; i++) {
-        expect(rateLimitLocal(ipA)).toBe(true)
-        expect(rateLimitLocal(ipB)).toBe(true)
+        expect(rateLimitLocal(ipA).allowed).toBe(true)
+        expect(rateLimitLocal(ipB).allowed).toBe(true)
       }
 
-      // A and B should be blocked
-      expect(rateLimitLocal(ipA)).toBe(false)
-      expect(rateLimitLocal(ipB)).toBe(false)
+      expect(rateLimitLocal(ipA).allowed).toBe(false)
+      expect(rateLimitLocal(ipB).allowed).toBe(false)
 
-      // But C should still have requests available
       for (let i = 10; i < 20; i++) {
-        expect(rateLimitLocal(ipC)).toBe(true)
+        expect(rateLimitLocal(ipC).allowed).toBe(true)
       }
-      expect(rateLimitLocal(ipC)).toBe(false)
+      expect(rateLimitLocal(ipC).allowed).toBe(false)
     })
   })
 })
@@ -232,12 +255,12 @@ describe("rateLimit (unified facade)", () => {
   })
 
   it("falls back to local when UPSTASH_REDIS_REST_URL is not set", async () => {
-    // Dynamic import to get the facade
     const { rateLimit } = await import("./rate-limit")
 
     const ip = "10.0.0.1"
     const result = await rateLimit(ip)
-    expect(result).toBe(true)
+    expect(result.allowed).toBe(true)
+    expect(result.remaining).toBe(19)
   })
 
   it("rateLimitSync always uses local store", async () => {
@@ -245,8 +268,25 @@ describe("rateLimit (unified facade)", () => {
 
     const ip = "10.0.0.1"
     for (let i = 0; i < 20; i++) {
-      expect(rateLimitSync(ip)).toBe(true)
+      expect(rateLimitSync(ip).allowed).toBe(true)
     }
-    expect(rateLimitSync(ip)).toBe(false)
+    expect(rateLimitSync(ip).allowed).toBe(false)
+  })
+
+  it("setRateLimitHeaders sets correct headers", async () => {
+    const { setRateLimitHeaders } = await import("./rate-limit")
+
+    const headers = new Headers()
+    setRateLimitHeaders(headers, {
+      allowed: false,
+      remaining: 0,
+      retryAfterMs: 45_000,
+      current: 20,
+      limit: 20,
+    })
+
+    expect(headers.get("X-RateLimit-Limit")).toBe("20")
+    expect(headers.get("X-RateLimit-Remaining")).toBe("0")
+    expect(headers.get("Retry-After")).toBe("45")
   })
 })

@@ -1,15 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
+import { describe, it, expect } from "vitest"
 import { NextRequest } from "next/server"
 import { GET } from "./route"
 
 describe("GET /api/csrf", () => {
-  beforeEach(() => {
-    vi.stubEnv("CSRF_SECRET", "test-csrf-secret-value")
-  })
-
-  afterEach(() => {
-    vi.unstubAllEnvs()
-  })
+  // NOTE: CSRF_SECRET has a Zod default ("dev-csrf-change-me-in-production"),
+  // so it is always available via serverEnv. No need to stubEnv.
 
   it("returns csrfToken and sets sn_sid cookie when no session exists", async () => {
     const req = new NextRequest("https://example.com/api/csrf", { method: "GET" })
@@ -38,16 +33,20 @@ describe("GET /api/csrf", () => {
     expect(cookie).toBeUndefined()
   })
 
-  it("returns 503 when CSRF_SECRET not configured", async () => {
-    vi.stubEnv("CSRF_SECRET", "")
-    // Need to clear because empty string is falsy
-    delete process.env["CSRF_SECRET"]
+  it("returns different tokens for different sessions", async () => {
+    const req1 = new NextRequest("https://example.com/api/csrf", {
+      method: "GET",
+      headers: { cookie: "sn_sid=session-aaa" },
+    })
+    const req2 = new NextRequest("https://example.com/api/csrf", {
+      method: "GET",
+      headers: { cookie: "sn_sid=session-bbb" },
+    })
 
-    const req = new NextRequest("https://example.com/api/csrf", { method: "GET" })
-    const res = await GET(req)
-    expect(res.status).toBe(503)
+    const [res1, res2] = await Promise.all([GET(req1), GET(req2)])
+    const json1 = await res1.json()
+    const json2 = await res2.json()
 
-    const json = await res.json()
-    expect(json.error).toContain("CSRF not configured")
+    expect(json1.csrfToken).not.toBe(json2.csrfToken)
   })
 })
