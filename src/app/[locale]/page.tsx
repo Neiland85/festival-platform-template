@@ -1,6 +1,7 @@
 import { setRequestLocale } from "next-intl/server"
 import HeroVideo from "@/ui/components/HeroVideo"
 import CarouselSection from "@/ui/components/CarouselSection"
+import ProgrammingSection from "@/ui/components/ProgrammingSection"
 import PricingSection from "@/ui/components/PricingSection"
 import ShowcaseFooter from "@/ui/components/ShowcaseFooter"
 
@@ -18,6 +19,7 @@ export default async function HomePage({ params }: Props) {
     <main>
       <HeroVideo />
       <CarouselSection />
+      <ProgrammingSection />
       <PricingSection />
       <ShowcaseFooter />
     </main>
