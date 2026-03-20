@@ -6,22 +6,23 @@ test.describe("Admin authentication", () => {
     await expect(page).toHaveURL(/\/login/)
   })
 
-  test("login page renders form", async ({ page }) => {
+  test("login page renders password form", async ({ page }) => {
     await page.goto("/login")
-    // Login page should have at least one input and a submit button
-    const input = page.locator("input").first()
-    await expect(input).toBeVisible()
+    // Password input with id="password"
+    const passwordInput = page.locator("#password")
+    await expect(passwordInput).toBeVisible()
+    // Submit button says "entrar"
+    const submitBtn = page.getByRole("button", { name: /entrar/i })
+    await expect(submitBtn).toBeVisible()
   })
 
-  test("shows error or stays on login with wrong password", async ({ page }) => {
+  test("shows error on wrong password", async ({ page }) => {
     await page.goto("/login")
-    const input = page.locator("input").first()
-    await input.fill("wrong-password-12345")
+    await page.locator("#password").fill("wrong-password-12345")
+    await page.getByRole("button", { name: /entrar/i }).click()
 
-    const submitBtn = page.locator('button[type="submit"], button').first()
-    await submitBtn.click()
-
-    // Should remain on login page
+    // Should show error message and remain on login page
+    await expect(page.getByText(/contraseña incorrecta|error/i)).toBeVisible()
     await expect(page).toHaveURL(/\/login/)
   })
 })
