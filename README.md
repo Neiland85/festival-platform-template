@@ -1,8 +1,26 @@
 # Festival Platform Template
 
-A **white-label festival platform** for ticket sales, lead capture, and event operations. Built with Next.js 16, React 19, TypeScript 5, Tailwind 4, PostgreSQL, and Vercel.
+A **production-ready, white-label festival platform** for ticket sales, lead capture, and event operations. Built with Next.js 16, React 19, TypeScript 5, Tailwind 4, PostgreSQL, and Vercel.
 
 > Fork this template, customize branding and events, and deploy your own festival website in minutes.
+
+---
+
+## Why This Template
+
+This is not a starter kit or boilerplate — it's a **production-grade platform** with the engineering depth of a 6-figure SaaS build, available as a white-label template.
+
+**What you get out of the box:**
+
+- Complete ticket sales pipeline: Stripe Checkout with webhooks, capacity validation, idempotent order processing
+- Enterprise-grade observability: metrics collection, distributed tracing, audit logging, surge prediction, pool monitoring
+- Production security: rate limiting, CSRF protection, circuit breaker, burst queue, chaos testing infrastructure
+- Distributed job processing: Redis-backed queue with lease pattern, dead letter queue, automatic reconciliation
+- Load testing suite: k6 scripts with SLO thresholds (p95 < 500ms, p99 < 1500ms, error rate < 1%)
+- CI pipeline: 6 parallel jobs (lint, typecheck, test, audit, build, E2E) with Playwright browser caching
+- Full i18n (ES/EN), GDPR compliance, Sanity CMS, admin dashboard — all optional with graceful degradation
+
+**Tech stack:** Next.js 16 (App Router) · React 19 · TypeScript 5 (strict) · Tailwind 4 · PostgreSQL · Drizzle ORM · Stripe · Upstash Redis · Sentry · Sanity CMS · Playwright · Vitest · k6
 
 ---
 
@@ -263,13 +281,20 @@ Results are saved to `k6/results/` as JSON summaries.
 
 ## CI/CD
 
-GitHub Actions runs on every PR and push to main:
+GitHub Actions runs on every PR and push to main with **6 parallel jobs**:
 
-1. `pnpm audit --prod --audit-level=high` — Security audit
-2. `pnpm lint` — ESLint (zero warnings)
-3. `pnpm typecheck` — TypeScript strict
-4. `pnpm test` — Vitest unit tests
-5. `pnpm build` — Next.js production build
+```
+install ──┬── lint ──────┐
+          ├── typecheck ──┤
+          ├── test ────────┼── build ── e2e
+          └── audit ──────┘
+```
+
+- Parallel quality gates with explicit timeouts (5–20 min per job)
+- `pnpm install --frozen-lockfile` with pnpm store cache per job
+- Playwright browser caching by lockfile hash
+- E2E failure artifacts (test-results + playwright-report) auto-uploaded
+- `concurrency.cancel-in-progress` kills stale runs on same branch/PR
 
 Deploy automatically on Vercel when merging to `main`.
 
