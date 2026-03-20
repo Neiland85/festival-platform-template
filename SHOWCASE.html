@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Festival Platform — Product Showcase</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface-2: #1e1e1e;
+    --border: #2a2a2a;
+    --text: #fafafa;
+    --text-muted: #888;
+    --accent: #f59e0b;
+    --accent-glow: rgba(245, 158, 11, 0.15);
+    --green: #22c55e;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --red: #ef4444;
+    --cyan: #06b6d4;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── Hero ──────────────────────── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 40%, rgba(245,158,11,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 70% 60%, rgba(59,130,246,0.06) 0%, transparent 50%);
+    animation: drift 20s ease-in-out infinite;
+  }
+
+  @keyframes drift {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(-3%, 2%); }
+  }
+
+  .hero-content { position: relative; z-index: 1; max-width: 900px; }
+
+  .badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border: 1px solid var(--accent);
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 2rem;
+    background: var(--accent-glow);
+  }
+
+  h1 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.5rem;
+  }
+
+  h1 span { color: var(--accent); }
+
+  .subtitle {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto 3rem;
+    font-weight: 300;
+  }
+
+  /* ── Stats bar ─────────────────── */
+  .stats {
+    display: flex;
+    gap: 3rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 3rem;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 4px;
+  }
+
+  /* ── Section layout ────────────── */
+  section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 6rem 2rem;
+  }
+
+  .section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+  }
+
+  .section-heading {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+  }
+
+  .section-desc {
+    color: var(--text-muted);
+    max-width: 650px;
+    margin-bottom: 3rem;
+    font-size: 1.05rem;
+  }
+
+  /* ── Diagram container ─────────── */
+  .diagram-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .diagram-tab {
+    padding: 10px 20px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .diagram-tab:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  .diagram-tab.active {
+    background: var(--accent-glow);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .diagram-tab .icon { font-size: 1.1rem; }
+
+  .diagram-panel {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.5rem;
+    min-height: 400px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .diagram-panel.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Flow diagrams ─────────────── */
+  .flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 2rem 0;
+  }
+
+  .flow-node {
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    min-width: 110px;
+    position: relative;
+  }
+
+  .flow-node.primary { background: rgba(245,158,11,0.15); color: var(--accent); border: 1px solid rgba(245,158,11,0.3); }
+  .flow-node.blue { background: rgba(59,130,246,0.12); color: var(--blue); border: 1px solid rgba(59,130,246,0.25); }
+  .flow-node.green { background: rgba(34,197,94,0.12); color: var(--green); border: 1px solid rgba(34,197,94,0.25); }
+  .flow-node.purple { background: rgba(168,85,247,0.12); color: var(--purple); border: 1px solid rgba(168,85,247,0.25); }
+  .flow-node.cyan { background: rgba(6,182,212,0.12); color: var(--cyan); border: 1px solid rgba(6,182,212,0.25); }
+  .flow-node.red { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.25); }
+
+  .flow-arrow {
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .flow-desc {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+    font-weight: 400;
+  }
+
+  /* ── Architecture layers ───────── */
+  .arch-layers {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .arch-layer {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    transition: all 0.2s;
+  }
+
+  .arch-layer:hover {
+    border-color: var(--accent);
+    transform: translateX(4px);
+  }
+
+  .arch-layer-icon {
+    font-size: 1.5rem;
+    width: 40px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .arch-layer-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    min-width: 160px;
+  }
+
+  .arch-layer-detail {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    flex: 1;
+  }
+
+  .arch-layer-tech {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .tech-pill {
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    background: var(--surface);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  /* ── CI Pipeline visual ────────── */
+  .ci-graph {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 1rem 0;
+  }
+
+  .ci-stage {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .ci-job {
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    min-width: 100px;
+    position: relative;
+  }
+
+  .ci-job.pass { background: rgba(34,197,94,0.12); color: var(--green); border: 1px solid rgba(34,197,94,0.25); }
+  .ci-job.build { background: rgba(59,130,246,0.12); color: var(--blue); border: 1px solid rgba(59,130,246,0.25); }
+
+  .ci-connector {
+    width: 2px;
+    height: 20px;
+    background: var(--border);
+  }
+
+  .ci-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+  }
+
+  /* ── Feature grid ──────────────── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 2rem;
+  }
+
+  .feature-card {
+    padding: 24px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    transition: all 0.2s;
+  }
+
+  .feature-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .feature-card-icon { font-size: 1.5rem; margin-bottom: 12px; }
+  .feature-card-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 8px; }
+  .feature-card-desc { color: var(--text-muted); font-size: 0.8rem; line-height: 1.5; }
+
+  /* ── Tech stack bar ────────────── */
+  .stack-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin: 2rem 0;
+  }
+
+  .stack-item {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: all 0.2s;
+  }
+
+  .stack-item:hover { border-color: var(--accent); color: var(--text); }
+
+  /* ── Footer ────────────────────── */
+  .footer {
+    text-align: center;
+    padding: 4rem 2rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  .footer a { color: var(--accent); text-decoration: none; }
+
+  /* ── Panel description ─────────── */
+  .panel-header {
+    margin-bottom: 2rem;
+  }
+
+  .panel-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .panel-desc {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  /* ── Responsive ────────────────── */
+  @media (max-width: 768px) {
+    .stats { gap: 1.5rem; }
+    .stat-value { font-size: 1.8rem; }
+    .arch-layer { flex-direction: column; align-items: flex-start; }
+    .arch-layer-tech { flex-wrap: wrap; }
+    .flow { gap: 8px; }
+    .flow-node { min-width: 90px; padding: 10px 14px; font-size: 0.7rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero">
+  <div class="hero-content">
+    <div class="badge">Production-Ready Platform</div>
+    <h1>Festival Platform<br><span>Template</span></h1>
+    <p class="subtitle">
+      White-label event platform with enterprise-grade backend,
+      payment processing, and operational tooling. Ready to deploy.
+    </p>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value">429+</div>
+        <div class="stat-label">Unit Tests</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">6</div>
+        <div class="stat-label">CI Jobs (Parallel)</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">18</div>
+        <div class="stat-label">API Endpoints</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">2</div>
+        <div class="stat-label">Languages (i18n)</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">&lt;500ms</div>
+        <div class="stat-label">p95 Response</div>
+      </div>
+    </div>
+
+    <div class="stack-bar">
+      <div class="stack-item">Next.js 16</div>
+      <div class="stack-item">React 19</div>
+      <div class="stack-item">TypeScript 5</div>
+      <div class="stack-item">Tailwind 4</div>
+      <div class="stack-item">PostgreSQL</div>
+      <div class="stack-item">Stripe</div>
+      <div class="stack-item">Redis</div>
+      <div class="stack-item">Sentry</div>
+      <div class="stack-item">Sanity CMS</div>
+      <div class="stack-item">Playwright</div>
+      <div class="stack-item">Vitest</div>
+      <div class="stack-item">k6</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ARCHITECTURE ═══ -->
+<section>
+  <div class="section-title">Architecture</div>
+  <div class="section-heading">Explore the System</div>
+  <p class="section-desc">
+    Click each tab to see how the platform is built — from payment processing
+    to observability, security, and CI/CD automation.
+  </p>
+
+  <div class="diagram-tabs">
+    <button class="diagram-tab active" onclick="showDiagram('checkout')">
+      <span class="icon">💳</span> Payment Flow
+    </button>
+    <button class="diagram-tab" onclick="showDiagram('arch')">
+      <span class="icon">🏗️</span> Architecture Layers
+    </button>
+    <button class="diagram-tab" onclick="showDiagram('queue')">
+      <span class="icon">⚡</span> Job Processing
+    </button>
+    <button class="diagram-tab" onclick="showDiagram('observability')">
+      <span class="icon">📊</span> Observability
+    </button>
+    <button class="diagram-tab" onclick="showDiagram('security')">
+      <span class="icon">🛡️</span> Security
+    </button>
+    <button class="diagram-tab" onclick="showDiagram('ci')">
+      <span class="icon">🔄</span> CI Pipeline
+    </button>
+  </div>
+
+  <!-- Panel: Checkout Flow -->
+  <div class="diagram-panel active" id="panel-checkout">
+    <div class="panel-header">
+      <div class="panel-title">Stripe Checkout — Hosted & Idempotent</div>
+      <div class="panel-desc">Complete ticket purchase flow with capacity validation, webhook-based order completion, and automatic cancellation on session expiry.</div>
+    </div>
+    <div class="flow">
+      <div class="flow-node primary">
+        👤 User<br>
+        <span class="flow-desc">Selects ticket</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node blue">
+        🔒 Rate Limit<br>
+        <span class="flow-desc">IP-based + CSRF</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node green">
+        ✅ Validate<br>
+        <span class="flow-desc">Capacity check</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node purple">
+        📦 Create Order<br>
+        <span class="flow-desc">Pending in DB</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node primary">
+        💳 Stripe<br>
+        <span class="flow-desc">Hosted checkout</span>
+      </div>
+    </div>
+    <div style="text-align:center;color:var(--text-muted);margin:1rem 0;">⬇ Webhook callback (async)</div>
+    <div class="flow">
+      <div class="flow-node primary">
+        🔔 Webhook<br>
+        <span class="flow-desc">Signature verified</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node green">
+        ✅ Complete<br>
+        <span class="flow-desc">Idempotent</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node blue">
+        🎫 Tickets++<br>
+        <span class="flow-desc">Atomic counter</span>
+      </div>
+      <div class="flow-arrow" style="margin:0 0.5rem;">|</div>
+      <div class="flow-node red">
+        ❌ Expired<br>
+        <span class="flow-desc">Auto-cancel</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel: Architecture -->
+  <div class="diagram-panel" id="panel-arch">
+    <div class="panel-header">
+      <div class="panel-title">Hexagonal Architecture (Ports & Adapters)</div>
+      <div class="panel-desc">Clean separation between domain logic, external services, and API layer. Each layer can be tested and replaced independently.</div>
+    </div>
+    <div class="arch-layers">
+      <div class="arch-layer">
+        <div class="arch-layer-icon">🌐</div>
+        <div class="arch-layer-name">API Layer</div>
+        <div class="arch-layer-detail">App Router routes, request validation, response formatting</div>
+        <div class="arch-layer-tech">
+          <span class="tech-pill">Next.js 16</span>
+          <span class="tech-pill">Zod</span>
+        </div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-layer-icon">🧠</div>
+        <div class="arch-layer-name">Domain Layer</div>
+        <div class="arch-layer-detail">Business rules: orders, events, leads, capacity, pricing</div>
+        <div class="arch-layer-tech">
+          <span class="tech-pill">TypeScript</span>
+          <span class="tech-pill">DDD</span>
+        </div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-layer-icon">🔌</div>
+        <div class="arch-layer-name">Adapters</div>
+        <div class="arch-layer-detail">Stripe, Sanity CMS, PostgreSQL, Redis — all swappable</div>
+        <div class="arch-layer-tech">
+          <span class="tech-pill">Stripe</span>
+          <span class="tech-pill">Drizzle</span>
+          <span class="tech-pill">Upstash</span>
+        </div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-layer-icon">🛡️</div>
+        <div class="arch-layer-name">Security Layer</div>
+        <div class="arch-layer-detail">Rate limiting, CSRF, circuit breaker, burst queue, chaos testing</div>
+        <div class="arch-layer-tech">
+          <span class="tech-pill">Redis</span>
+          <span class="tech-pill">Middleware</span>
+        </div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-layer-icon">📊</div>
+        <div class="arch-layer-name">Observability</div>
+        <div class="arch-layer-detail">Metrics, tracing, audit log, pool monitor, surge prediction</div>
+        <div class="arch-layer-tech">
+          <span class="tech-pill">Sentry</span>
+          <span class="tech-pill">Custom</span>
+        </div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-layer-icon">💾</div>
+        <div class="arch-layer-name">Infrastructure</div>
+        <div class="arch-layer-detail">PostgreSQL as source of truth, Redis as fast dispatch, Docker</div>
+        <div class="arch-layer-tech">
+          <span class="tech-pill">PostgreSQL</span>
+          <span class="tech-pill">Redis</span>
+          <span class="tech-pill">Docker</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel: Queue -->
+  <div class="diagram-panel" id="panel-queue">
+    <div class="panel-header">
+      <div class="panel-title">Distributed Job Processing</div>
+      <div class="panel-desc">Redis-backed queue with lease pattern, automatic retry, dead letter queue, and crash recovery via reconciliation.</div>
+    </div>
+    <div class="flow">
+      <div class="flow-node primary">
+        📥 Enqueue<br>
+        <span class="flow-desc">Job submitted</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node blue">
+        📋 Pending<br>
+        <span class="flow-desc">Redis list</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node cyan">
+        🔄 LMOVE<br>
+        <span class="flow-desc">Atomic dequeue</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node purple">
+        ⚙️ Processing<br>
+        <span class="flow-desc">Lease + heartbeat</span>
+      </div>
+    </div>
+    <div style="text-align:center;margin:1.5rem 0;">
+      <div class="flow" style="margin:0;">
+        <div class="flow-node green">
+          ✅ ACK<br>
+          <span class="flow-desc">Complete in DB</span>
+        </div>
+        <div style="width:3rem;"></div>
+        <div class="flow-node red">
+          ❌ NACK<br>
+          <span class="flow-desc">Retry or DLQ</span>
+        </div>
+        <div style="width:3rem;"></div>
+        <div class="flow-node primary">
+          🔧 Reconcile<br>
+          <span class="flow-desc">Crash recovery</span>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:2rem;padding:16px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border);">
+      <div style="font-weight:600;font-size:0.85rem;margin-bottom:8px;">Safety Guarantees</div>
+      <div style="color:var(--text-muted);font-size:0.8rem;line-height:1.8;">
+        ✓ Atomic dequeue — only one worker processes each job<br>
+        ✓ Lease timeout (5 min) — crashed workers auto-recover<br>
+        ✓ Database-level idempotency — no double-processing<br>
+        ✓ Dead letter queue — failed jobs preserved for inspection<br>
+        ✓ PostgreSQL = source of truth, Redis = fast dispatch
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel: Observability -->
+  <div class="diagram-panel" id="panel-observability">
+    <div class="panel-header">
+      <div class="panel-title">Full Observability Suite</div>
+      <div class="panel-desc">Built-in monitoring, alerting, and tracing — know what's happening in production at all times.</div>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-card-icon">📈</div>
+        <div class="feature-card-title">Metrics Collector</div>
+        <div class="feature-card-desc">Response times, error rates, throughput. Real-time system health at a glance.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-icon">🔍</div>
+        <div class="feature-card-title">Request Tracer</div>
+        <div class="feature-card-desc">Distributed tracing across the request lifecycle. Correlation IDs propagated end-to-end.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-icon">📋</div>
+        <div class="feature-card-title">Audit Log</div>
+        <div class="feature-card-desc">Tamper-evident record of admin actions, logins, data changes. GDPR audit trail.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-icon">🌊</div>
+        <div class="feature-card-title">Surge Predictor</div>
+        <div class="feature-card-desc">Detects traffic spikes before they become outages. Proactive capacity alerts.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-icon">🏊</div>
+        <div class="feature-card-title">Pool Monitor</div>
+        <div class="feature-card-desc">Database connection pool health: idle, active, waiting. Exhaustion alerts.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-icon">🔗</div>
+        <div class="feature-card-title">Correlation Engine</div>
+        <div class="feature-card-desc">Links related events across services. Find the root cause, not the symptom.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-icon">🏆</div>
+        <div class="feature-card-title">Safety Scorecard</div>
+        <div class="feature-card-desc">System health score aggregated from all monitors. Single number, full picture.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-icon">🔍</div>
+        <div class="feature-card-title">SEO Monitor</div>
+        <div class="feature-card-desc">Track indexing status, broken links, meta tags. SEO health dashboard.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel: Security -->
+  <div class="diagram-panel" id="panel-security">
+    <div class="panel-header">
+      <div class="panel-title">Defense in Depth</div>
+      <div class="panel-desc">Multiple security layers protect the platform from abuse, attacks, and overload.</div>
+    </div>
+    <div class="flow">
+      <div class="flow-node red">
+        🌐 Request<br>
+        <span class="flow-desc">Incoming</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node primary">
+        🚦 Rate Limit<br>
+        <span class="flow-desc">IP + sliding window</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node blue">
+        🔐 CSRF<br>
+        <span class="flow-desc">Token verify</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node purple">
+        ⚡ Circuit Breaker<br>
+        <span class="flow-desc">Overload guard</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node green">
+        ✅ Handler<br>
+        <span class="flow-desc">Business logic</span>
+      </div>
+    </div>
+    <div class="features-grid" style="margin-top:2rem;">
+      <div class="feature-card">
+        <div class="feature-card-icon">🔄</div>
+        <div class="feature-card-title">Burst Queue</div>
+        <div class="feature-card-desc">Absorbs traffic spikes by queuing excess requests instead of rejecting them.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-icon">🔑</div>
+        <div class="feature-card-title">Idempotency</div>
+        <div class="feature-card-desc">Domain-level and enforced idempotency. Safe to retry any operation.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-icon">🐒</div>
+        <div class="feature-card-title">Chaos Testing</div>
+        <div class="feature-card-desc">Inject failures in dev/staging to validate resilience before production.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-icon">🍪</div>
+        <div class="feature-card-title">GDPR Compliance</div>
+        <div class="feature-card-desc">Cookie consent, data portability, soft-delete, audit trail. EU-ready.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel: CI -->
+  <div class="diagram-panel" id="panel-ci">
+    <div class="panel-header">
+      <div class="panel-title">CI Pipeline — 6 Parallel Jobs</div>
+      <div class="panel-desc">Every push and PR triggers a hardened pipeline with parallel quality gates, caching, and automatic cancellation of stale runs.</div>
+    </div>
+    <div class="ci-graph">
+      <div class="ci-label">Stage 1 — Install</div>
+      <div class="ci-stage">
+        <div class="ci-job build">📦 Install<br><span class="flow-desc">pnpm + frozen lockfile</span></div>
+      </div>
+      <div class="ci-connector"></div>
+      <div class="ci-label">Stage 2 — Quality Gates (parallel)</div>
+      <div class="ci-stage">
+        <div class="ci-job pass">🔍 Lint<br><span class="flow-desc">0 warnings</span></div>
+        <div class="ci-job pass">🔠 Typecheck<br><span class="flow-desc">Strict mode</span></div>
+        <div class="ci-job pass">🧪 Tests<br><span class="flow-desc">429+ tests</span></div>
+        <div class="ci-job pass">🛡️ Audit<br><span class="flow-desc">0 high vulns</span></div>
+      </div>
+      <div class="ci-connector"></div>
+      <div class="ci-label">Stage 3 — Build</div>
+      <div class="ci-stage">
+        <div class="ci-job build">🏗️ Build<br><span class="flow-desc">Next.js production</span></div>
+      </div>
+      <div class="ci-connector"></div>
+      <div class="ci-label">Stage 4 — E2E</div>
+      <div class="ci-stage">
+        <div class="ci-job build">🎭 E2E<br><span class="flow-desc">Playwright + Chromium</span></div>
+      </div>
+    </div>
+    <div style="margin-top:1.5rem;padding:16px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border);">
+      <div style="font-weight:600;font-size:0.85rem;margin-bottom:8px;">Pipeline Features</div>
+      <div style="color:var(--text-muted);font-size:0.8rem;line-height:1.8;">
+        ✓ Parallel quality gates — fail fast, save time<br>
+        ✓ pnpm store cache — installs in seconds on cache hit<br>
+        ✓ Playwright browser cache — no re-download per run<br>
+        ✓ Concurrency control — stale runs auto-cancelled<br>
+        ✓ Explicit timeouts — no hung jobs billing hours<br>
+        ✓ E2E failure artifacts — screenshots + traces uploaded
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ WHAT'S INCLUDED ═══ -->
+<section>
+  <div class="section-title">What's Included</div>
+  <div class="section-heading">Everything You Need to Launch</div>
+  <p class="section-desc">
+    This is not a weekend project. It's months of engineering work — domain modeling,
+    security hardening, observability, load testing — packaged as a ready-to-deploy template.
+  </p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-card-icon">🎪</div>
+      <div class="feature-card-title">Event Management</div>
+      <div class="feature-card-desc">Lineup pages, artist profiles, event details with bilingual content (ES/EN). Sanity CMS or config file.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">💳</div>
+      <div class="feature-card-title">Ticket Sales</div>
+      <div class="feature-card-desc">Stripe Checkout with webhooks, capacity validation, idempotent orders. Falls back to external links.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">📊</div>
+      <div class="feature-card-title">Admin Dashboard</div>
+      <div class="feature-card-desc">Leads, orders, events, system health, queue status, forecasting — all in one panel.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">📱</div>
+      <div class="feature-card-title">Lead Capture</div>
+      <div class="feature-card-desc">GDPR-compliant forms with consent flow, soft-delete, data export. Cookie banner included.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">🌍</div>
+      <div class="feature-card-title">Internationalization</div>
+      <div class="feature-card-desc">Full i18n with next-intl. Spanish and English out of the box. Add more with a JSON file.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">🎨</div>
+      <div class="feature-card-title">White-Label Ready</div>
+      <div class="feature-card-desc">Change logo, colors, name, and content via env vars and config files. Zero code changes needed.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">⚡</div>
+      <div class="feature-card-title">Load Testing</div>
+      <div class="feature-card-desc">k6 test suite with smoke, load, and stress profiles. SLO thresholds enforced automatically.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">🚀</div>
+      <div class="feature-card-title">One-Command Deploy</div>
+      <div class="feature-card-desc">pnpm setup → Docker + DB + seed in 30 seconds. Deploy to Vercel with git push.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ GRACEFUL DEGRADATION ═══ -->
+<section>
+  <div class="section-title">Flexibility</div>
+  <div class="section-heading">Works With or Without External Services</div>
+  <p class="section-desc">
+    Every integration is optional. The platform runs with zero external services
+    and progressively enhances as you add them.
+  </p>
+  <div class="arch-layers">
+    <div class="arch-layer">
+      <div class="arch-layer-icon">💳</div>
+      <div class="arch-layer-name">Stripe</div>
+      <div class="arch-layer-detail">Native checkout with webhooks → Falls back to Ticketmaster/Universe links</div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-layer-icon">📝</div>
+      <div class="arch-layer-name">Sanity CMS</div>
+      <div class="arch-layer-detail">CMS-driven content with embedded studio → Falls back to config file</div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-layer-icon">💾</div>
+      <div class="arch-layer-name">PostgreSQL</div>
+      <div class="arch-layer-detail">Full CRUD, orders, leads, admin → Falls back to static config</div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-layer-icon">🔴</div>
+      <div class="arch-layer-name">Redis</div>
+      <div class="arch-layer-detail">Distributed rate limiting + queue → Falls back to in-memory</div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-layer-icon">🐛</div>
+      <div class="arch-layer-name">Sentry</div>
+      <div class="arch-layer-detail">Error tracking + performance monitoring → Silent (no errors)</div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-layer-icon">📈</div>
+      <div class="arch-layer-name">Analytics</div>
+      <div class="arch-layer-detail">Google Analytics + Meta Pixel (after consent) → No tracking</div>
+    </div>
+  </div>
+</section>
+
+<div class="footer">
+  <p>Festival Platform Template — Built with precision.</p>
+  <p style="margin-top:8px;">
+    <a href="https://github.com/Neiland85/festival-platform-template">View on GitHub</a>
+  </p>
+</div>
+
+<script>
+function showDiagram(id) {
+  document.querySelectorAll('.diagram-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.diagram-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+</script>
+
+</body>
+</html>
