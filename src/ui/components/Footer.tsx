@@ -15,8 +15,8 @@ export default function Footer() {
         {/* LOGO + MANIFESTO */}
         <div className="space-y-6">
           <Image
-            src="/festival_logo.png"
-            alt="Festival Logo"
+            src="/clarity-logo-light.png"
+            alt="Clarity Structures"
             width={110}
             height={50}
             sizes="110px"

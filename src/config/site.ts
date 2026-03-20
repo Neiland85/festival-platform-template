@@ -7,7 +7,7 @@
  *
  * Customization guide:
  *   1. Set NEXT_PUBLIC_SITE_NAME and NEXT_PUBLIC_SITE_URL in .env
- *   2. Replace /public/festival_logo.png with your logo
+ *   2. Replace /public/clarity-logo-light.png with your logo
  *   3. Update social links below
  */
 
@@ -28,7 +28,7 @@ export const SITE_TAGLINE =
 // ── Branding Assets ───────────────────────────────────
 
 /** Path to the main logo (relative to /public) */
-export const LOGO_PATH = "/festival_logo.png"
+export const LOGO_PATH = "/clarity-logo-light.png"
 
 /** Logo dimensions for next/image */
 export const LOGO_WIDTH = 120
