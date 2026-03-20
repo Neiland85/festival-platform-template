@@ -23,6 +23,7 @@ import { completeOrder } from "@/domain/orders/complete-order"
 import { cancelOrder } from "@/domain/orders/cancel-order"
 import { checkIdempotencyKey } from "@/lib/security/idempotency"
 import { log } from "@/lib/logger"
+import { serverEnv } from "@/lib/env"
 
 // ── Error types ─────────────────────────────────────
 
@@ -68,7 +69,7 @@ export async function verifyAndHandleWebhook(
   const stripe = requireStripe()
 
   // ── 1. Validate webhook secret exists ──
-  const webhookSecret = process.env["STRIPE_WEBHOOK_SECRET"]
+  const webhookSecret = serverEnv.STRIPE_WEBHOOK_SECRET
   if (!webhookSecret) {
     throw new WebhookVerificationError(
       "STRIPE_WEBHOOK_SECRET not configured",

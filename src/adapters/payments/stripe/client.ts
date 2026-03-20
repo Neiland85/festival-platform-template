@@ -3,16 +3,19 @@
  *
  * Returns null when STRIPE_SECRET_KEY is not configured,
  * enabling graceful degradation (ADR-003 / ADR-004).
+ *
+ * Uses validated env from src/lib/env.ts — no raw process.env.
  */
 
 import Stripe from "stripe"
+import { serverEnv } from "@/lib/env"
 
 let instance: Stripe | null = null
 
 export function getStripeClient(): Stripe | null {
   if (instance) return instance
 
-  const key = process.env["STRIPE_SECRET_KEY"]
+  const key = serverEnv.STRIPE_SECRET_KEY
   if (!key) return null
 
   instance = new Stripe(key, {
