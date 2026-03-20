@@ -1,253 +1,433 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import Image from "next/image"
 import { useTranslations } from "next-intl"
 
-/* ── Burst logo config ── */
-type BurstLogo = {
+/* ═══════════════════════════════════════════════════════════════════
+   ShowcaseFooter — Clarity Structures Digital SLU
+   ─────────────────────────────────────────────────────────────────
+   Effects:
+   1. Central logo with chromatic aberration split (RGB offset on hover)
+   2. Orbiting particles tracing the logo's circle geometry
+   3. Holographic shimmer sweep
+   4. Magnetic field lines that pulse outward
+   5. Glitch scanline micro-effect on hover
+   6. Video background subtle reveal
+   7. Mouse parallax on the central logo
+   8. All respect prefers-reduced-motion
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Orbital particle config ── */
+type OrbitalParticle = {
   id: number
-  tx: number
-  ty: number
-  rotate: number
-  scale: number
-  filter: string
-  opacity: number
-  delay: number
-  blendMode?: string
+  orbitRadius: number
   size: number
+  speed: number
+  startAngle: number
+  color: string
+  blur: number
+  opacity: number
+  reverse?: boolean
 }
 
-const BURST_LOGOS: BurstLogo[] = [
-  // Inner ring — closer, larger
-  { id: 1, tx: -140, ty: -120, rotate: -15, scale: 0.55, filter: "grayscale(1)", opacity: 0.55, delay: 0, size: 90 },
-  { id: 2, tx: 160, ty: -100, rotate: 12, scale: 0.5, filter: "hue-rotate(220deg) saturate(1.8)", opacity: 0.45, delay: 50, blendMode: "screen", size: 85 },
-  { id: 3, tx: -180, ty: 60, rotate: -25, scale: 0.45, filter: "brightness(1.5) contrast(0.8)", opacity: 0.4, delay: 100, size: 80 },
-  { id: 4, tx: 190, ty: 80, rotate: 20, scale: 0.4, filter: "invert(1) hue-rotate(180deg)", opacity: 0.3, delay: 70, blendMode: "difference", size: 75 },
-  { id: 5, tx: -50, ty: -160, rotate: 8, scale: 0.5, filter: "sepia(1) hue-rotate(-30deg) saturate(2)", opacity: 0.45, delay: 120, size: 88 },
-  { id: 6, tx: 60, ty: 150, rotate: -10, scale: 0.45, filter: "blur(2px) brightness(1.3)", opacity: 0.35, delay: 90, size: 78 },
-  // Outer ring — farther, smaller, wilder treatments
-  { id: 7, tx: -260, ty: -60, rotate: 35, scale: 0.35, filter: "grayscale(1) brightness(2)", opacity: 0.22, delay: 150, size: 60 },
-  { id: 8, tx: 280, ty: -40, rotate: -30, scale: 0.3, filter: "hue-rotate(90deg) saturate(3)", opacity: 0.28, delay: 180, blendMode: "overlay", size: 55 },
-  { id: 9, tx: -220, ty: 140, rotate: 45, scale: 0.28, filter: "blur(3px)", opacity: 0.18, delay: 200, size: 50 },
-  { id: 10, tx: 240, ty: 160, rotate: -40, scale: 0.3, filter: "invert(1) brightness(0.8)", opacity: 0.2, delay: 170, blendMode: "exclusion", size: 55 },
-  { id: 11, tx: 0, ty: -200, rotate: 15, scale: 0.32, filter: "sepia(0.8) contrast(1.4)", opacity: 0.25, delay: 220, size: 58 },
-  { id: 12, tx: -300, ty: 0, rotate: -50, scale: 0.25, filter: "hue-rotate(300deg) blur(1px)", opacity: 0.16, delay: 250, size: 48 },
-  { id: 13, tx: 310, ty: 20, rotate: 55, scale: 0.22, filter: "grayscale(0.5) hue-rotate(45deg)", opacity: 0.18, delay: 230, blendMode: "soft-light", size: 45 },
-  { id: 14, tx: 30, ty: 200, rotate: -20, scale: 0.3, filter: "brightness(0.5) sepia(1)", opacity: 0.2, delay: 200, size: 52 },
+const ORBITAL_PARTICLES: OrbitalParticle[] = [
+  // Inner orbit — fast, bright
+  { id: 1, orbitRadius: 130, size: 4, speed: 8, startAngle: 0, color: "#3B82F6", blur: 0, opacity: 0.9 },
+  { id: 2, orbitRadius: 130, size: 3, speed: 8, startAngle: 120, color: "#60A5FA", blur: 1, opacity: 0.7 },
+  { id: 3, orbitRadius: 130, size: 3, speed: 8, startAngle: 240, color: "#93C5FD", blur: 0, opacity: 0.8 },
+  // Mid orbit — medium speed, reverse
+  { id: 4, orbitRadius: 180, size: 3, speed: 12, startAngle: 30, color: "#2563EB", blur: 1, opacity: 0.6, reverse: true },
+  { id: 5, orbitRadius: 180, size: 5, speed: 12, startAngle: 150, color: "#3B82F6", blur: 0, opacity: 0.7, reverse: true },
+  { id: 6, orbitRadius: 180, size: 2, speed: 12, startAngle: 270, color: "#60A5FA", blur: 2, opacity: 0.5, reverse: true },
+  // Outer orbit — slow, diffused
+  { id: 7, orbitRadius: 240, size: 2, speed: 18, startAngle: 60, color: "#1D4ED8", blur: 2, opacity: 0.35 },
+  { id: 8, orbitRadius: 240, size: 3, speed: 18, startAngle: 180, color: "#3B82F6", blur: 3, opacity: 0.25 },
+  { id: 9, orbitRadius: 240, size: 2, speed: 18, startAngle: 300, color: "#60A5FA", blur: 1, opacity: 0.3 },
+  // Elliptical extras
+  { id: 10, orbitRadius: 160, size: 2, speed: 15, startAngle: 45, color: "#818CF8", blur: 1, opacity: 0.4 },
+  { id: 11, orbitRadius: 200, size: 4, speed: 10, startAngle: 200, color: "#6366F1", blur: 0, opacity: 0.5, reverse: true },
+  { id: 12, orbitRadius: 260, size: 2, speed: 22, startAngle: 90, color: "#A5B4FC", blur: 3, opacity: 0.2 },
 ]
+
+/* ── Magnetic field line config ── */
+const FIELD_LINES = Array.from({ length: 8 }, (_, i) => ({
+  angle: i * 45,
+  length: 200 + (i % 3) * 40,
+  delay: i * 0.15,
+}))
 
 /* ── Keyframes ── */
 const STYLES = `
-  @keyframes sn-burst {
-    0% {
-      opacity: 0;
-      transform: translate(0, 0) rotate(0deg) scale(0.1);
-    }
-    40% { opacity: var(--b-op, 0.4); }
-    100% {
-      opacity: var(--b-op, 0.4);
-      transform:
-        translate(var(--b-tx, 0px), var(--b-ty, 0px))
-        rotate(var(--b-r, 0deg))
-        scale(var(--b-s, 0.4));
-    }
+  /* ── Orbital rotation ── */
+  @keyframes cl-orbit {
+    from { transform: rotate(0deg) translateX(var(--orbit-r)) rotate(0deg); }
+    to   { transform: rotate(360deg) translateX(var(--orbit-r)) rotate(-360deg); }
+  }
+  @keyframes cl-orbit-rev {
+    from { transform: rotate(360deg) translateX(var(--orbit-r)) rotate(-360deg); }
+    to   { transform: rotate(0deg) translateX(var(--orbit-r)) rotate(0deg); }
   }
 
-  @keyframes sn-breathe {
-    0%, 100% { filter: drop-shadow(0 0 20px rgba(255,51,0,0.15)); }
-    50%      { filter: drop-shadow(0 0 50px rgba(255,51,0,0.4)); }
+  /* ── Chromatic breathing ── */
+  @keyframes cl-chroma-idle {
+    0%, 100% { filter: drop-shadow(0 0 20px rgba(59,130,246,0.2)); }
+    50%      { filter: drop-shadow(0 0 45px rgba(59,130,246,0.4)); }
   }
 
-  @keyframes sn-glow-pulse {
-    0%, 100% { opacity: 0.3; transform: scale(1); }
-    50%      { opacity: 0.55; transform: scale(1.06); }
+  /* ── Holographic shimmer sweep ── */
+  @keyframes cl-shimmer {
+    0%   { transform: translateX(-200%) rotate(-25deg); }
+    100% { transform: translateX(200%) rotate(-25deg); }
   }
 
-  .sn-hero-logo {
-    animation: sn-breathe 4s ease-in-out infinite;
-    transition: transform 700ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* ── Magnetic pulse ── */
+  @keyframes cl-field-pulse {
+    0%   { opacity: 0; transform: rotate(var(--line-angle)) scaleX(0); }
+    30%  { opacity: 0.5; }
+    100% { opacity: 0; transform: rotate(var(--line-angle)) scaleX(1); }
   }
-  .group:hover .sn-hero-logo,
-  .sn-hero-logo.sn-active { transform: scale(1.1); }
 
-  .sn-glow { animation: sn-glow-pulse 5s ease-in-out infinite; }
+  /* ── Glitch scanline ── */
+  @keyframes cl-glitch-scan {
+    0%, 100% { transform: translateY(-100%); opacity: 0; }
+    10%  { opacity: 0.15; }
+    50%  { opacity: 0.08; }
+    90%  { opacity: 0.15; }
+    95%  { transform: translateY(100%); opacity: 0; }
+  }
 
-  .sn-burst-item {
+  /* ── Breathing ring ── */
+  @keyframes cl-ring-breathe {
+    0%, 100% { transform: scale(1); opacity: 0.15; }
+    50%      { transform: scale(1.08); opacity: 0.3; }
+  }
+
+  /* ── Title glow ── */
+  @keyframes cl-title-glow {
+    0%, 100% { text-shadow: 0 0 20px rgba(59,130,246,0.2); }
+    50%      { text-shadow: 0 0 40px rgba(59,130,246,0.5), 0 0 80px rgba(99,102,241,0.2); }
+  }
+
+  /* ── Video pulse ── */
+  @keyframes cl-video-pulse {
+    0%, 100% { opacity: 0.06; }
+    50%      { opacity: 0.12; }
+  }
+
+  /* ── Component classes ── */
+  .cl-logo-main {
+    animation: cl-chroma-idle 4s ease-in-out infinite;
+    transition: transform 600ms cubic-bezier(0.34, 1.56, 0.64, 1), filter 600ms ease;
+  }
+  .cl-footer:hover .cl-logo-main,
+  .cl-logo-main.cl-active {
+    transform: scale(1.08);
+    filter:
+      drop-shadow(-3px 0 0 rgba(255,50,50,0.35))
+      drop-shadow(3px 0 0 rgba(50,50,255,0.35))
+      drop-shadow(0 0 30px rgba(59,130,246,0.5));
+  }
+
+  .cl-orbital { will-change: transform; }
+  .cl-orbital.cl-running {
+    animation-name: cl-orbit;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+  .cl-orbital.cl-running.cl-reverse {
+    animation-name: cl-orbit-rev;
+  }
+
+  .cl-shimmer-bar {
     opacity: 0;
-    transform: translate(0, 0) rotate(0deg) scale(0.1);
-    will-change: transform, opacity;
+    transition: opacity 400ms ease;
   }
-  .group:hover .sn-burst-item,
-  .sn-burst-item.sn-active {
-    animation: sn-burst 700ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    animation-delay: var(--b-delay, 0ms);
-  }
-
-  .sn-title {
-    transition: text-shadow 700ms ease, letter-spacing 700ms ease;
-  }
-  .group:hover .sn-title,
-  .sn-title.sn-active {
-    text-shadow: 0 0 40px rgba(255,51,0,0.5), 0 0 80px rgba(255,51,0,0.2), 0 0 120px rgba(65,65,198,0.15);
-    letter-spacing: 0.35em;
+  .cl-footer:hover .cl-shimmer-bar,
+  .cl-shimmer-bar.cl-active {
+    opacity: 1;
+    animation: cl-shimmer 2s ease-in-out infinite;
   }
 
+  .cl-field-line {
+    opacity: 0;
+    transform-origin: left center;
+  }
+  .cl-footer:hover .cl-field-line,
+  .cl-field-line.cl-active {
+    animation: cl-field-pulse 2.5s ease-out infinite;
+  }
+
+  .cl-glitch-overlay {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .cl-footer:hover .cl-glitch-overlay,
+  .cl-glitch-overlay.cl-active {
+    animation: cl-glitch-scan 3s linear infinite;
+  }
+
+  .cl-ring {
+    animation: cl-ring-breathe 5s ease-in-out infinite;
+  }
+
+  .cl-title {
+    animation: cl-title-glow 5s ease-in-out infinite;
+    transition: letter-spacing 700ms ease;
+  }
+  .cl-footer:hover .cl-title,
+  .cl-title.cl-active {
+    letter-spacing: 0.4em;
+  }
+
+  .cl-video-bg {
+    animation: cl-video-pulse 6s ease-in-out infinite;
+  }
+
+  /* ── Reduced motion ── */
   @media (prefers-reduced-motion: reduce) {
-    .sn-hero-logo { animation: none !important; transition: none !important; }
-    .sn-glow { animation: none !important; }
-    .sn-burst-item { animation: none !important; }
-    .sn-title { transition: none !important; }
-    .group:hover .sn-burst-item,
-    .sn-burst-item.sn-active {
+    .cl-logo-main, .cl-orbital, .cl-shimmer-bar, .cl-field-line,
+    .cl-glitch-overlay, .cl-ring, .cl-title, .cl-video-bg {
       animation: none !important;
-      opacity: var(--b-op, 0.3);
-      transform:
-        translate(var(--b-tx, 0px), var(--b-ty, 0px))
-        rotate(var(--b-r, 0deg))
-        scale(var(--b-s, 0.4));
+      transition: none !important;
+    }
+    .cl-footer:hover .cl-logo-main,
+    .cl-logo-main.cl-active {
+      transform: none;
+      filter: drop-shadow(0 0 20px rgba(59,130,246,0.3));
+    }
+    .cl-orbital.cl-running {
+      animation: none !important;
+      transform: rotate(var(--start-angle)) translateX(var(--orbit-r)) rotate(calc(-1 * var(--start-angle)));
     }
   }
 `
-
-/* ── Star dots (decorative) ── */
-const STARS = Array.from({ length: 25 }, (_, i) => ({
-  w: 1 + (i % 2),
-  color: `hsl(${20 + (i % 30)}, ${50 + (i % 30)}%, ${70 + (i % 20)}%)`,
-  top: `${5 + ((i * 5.7) % 90)}%`,
-  left: `${3 + ((i * 7.3) % 94)}%`,
-}))
 
 export default function ShowcaseFooter() {
   const t = useTranslations("showcase")
   const [isVisible, setIsVisible] = useState(false)
   const [isTouch] = useState(
-    () => typeof window !== "undefined" && ("ontouchstart" in window || navigator.maxTouchPoints > 0),
+    () =>
+      typeof window !== "undefined" &&
+      ("ontouchstart" in window || navigator.maxTouchPoints > 0),
   )
   const sectionRef = useRef<HTMLElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
     const el = sectionRef.current
     if (!el) return
     const observer = new IntersectionObserver(
-      ([entry]) => { if (entry?.isIntersecting) setIsVisible(true) },
-      { threshold: 0.3 },
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setIsVisible(true)
+          videoRef.current?.play().catch(() => {})
+        }
+      },
+      { threshold: 0.2 },
     )
     observer.observe(el)
     return () => observer.disconnect()
   }, [])
 
-  const activeClass = isTouch && isVisible ? "sn-active" : ""
+  const activeClass = isTouch && isVisible ? "cl-active" : ""
+  const runClass = isVisible ? "cl-running" : ""
 
-  const burstLogos = isTouch
-    ? BURST_LOGOS.slice(0, 8).map(b => ({
-        ...b,
-        tx: Math.round(b.tx * 0.5),
-        ty: Math.round(b.ty * 0.5),
-        size: Math.round(b.size * 0.7),
-      }))
-    : BURST_LOGOS
+  /* ── Mouse parallax for logo ── */
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [parallax, setParallax] = useState({ x: 0, y: 0 })
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    const rect = containerRef.current?.getBoundingClientRect()
+    if (!rect) return
+    const cx = rect.left + rect.width / 2
+    const cy = rect.top + rect.height / 2
+    setParallax({
+      x: ((e.clientX - cx) / rect.width) * 12,
+      y: ((e.clientY - cy) / rect.height) * 12,
+    })
+  }, [])
+
+  const handleMouseLeave = useCallback(() => {
+    setParallax({ x: 0, y: 0 })
+  }, [])
 
   return (
     <footer
       ref={sectionRef}
-      className="group relative overflow-hidden"
+      className="cl-footer group relative overflow-hidden"
       style={{ backgroundColor: "#0A0E1A" }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
     >
       <style dangerouslySetInnerHTML={{ __html: STYLES }} />
 
-      {/* ── Atmospheric radial glow ── */}
+      {/* ── Video background (subtle) ── */}
+      <video
+        ref={videoRef}
+        className="cl-video-bg absolute inset-0 w-full h-full object-cover pointer-events-none"
+        src="/clarity_logo2.mp4"
+        muted
+        loop
+        playsInline
+        style={{ opacity: 0.08, mixBlendMode: "screen" }}
+      />
+
+      {/* ── Deep radial glow ── */}
       <div
-        className="absolute inset-0 pointer-events-none sn-glow"
+        className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse at 50% 40%, rgba(255,51,0,0.12) 0%, rgba(65,65,198,0.04) 40%, transparent 70%)",
+            "radial-gradient(ellipse at 50% 45%, rgba(59,130,246,0.1) 0%, rgba(99,102,241,0.04) 35%, transparent 65%)",
         }}
       />
 
-      {/* ── Star dots ── */}
-      <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.15 }}>
-        {STARS.map((s, i) => (
-          <div
-            key={`star-${i}`}
-            className="absolute rounded-full"
-            style={{
-              width: s.w,
-              height: s.w,
-              backgroundColor: s.color,
-              top: s.top,
-              left: s.left,
-            }}
-          />
-        ))}
-      </div>
+      {/* ── Noise texture overlay ── */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          opacity: 0.03,
+          backgroundImage:
+            "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
+          backgroundSize: "128px 128px",
+        }}
+      />
 
       {/* ── Content ── */}
-      <div className="relative z-10 flex flex-col items-center py-20 md:py-28 px-6">
+      <div className="relative z-10 flex flex-col items-center py-20 md:py-32 px-6">
 
         {/* Subtitle */}
         <p
-          className="text-xs font-medium tracking-[0.3em] uppercase mb-8"
+          className="text-xs font-medium tracking-[0.35em] uppercase mb-10"
           style={{
             fontFamily: "var(--font-space-mono, 'Space Mono', monospace)",
-            color: "rgba(255,255,255,0.4)",
+            color: "rgba(255,255,255,0.35)",
           }}
         >
           {t("hostLabel")}
         </p>
 
-        {/* ── Burst container ── */}
+        {/* ── Logo universe container ── */}
         <div
+          ref={containerRef}
           className="relative mx-auto"
-          style={{ width: 600, height: 400, maxWidth: "90vw" }}
+          style={{ width: 540, height: 540, maxWidth: "90vw", maxHeight: "90vw" }}
         >
-          {/* Burst logos */}
-          {burstLogos.map((b) => (
+          {/* ── Breathing concentric rings ── */}
+          {[160, 220, 290].map((r, i) => (
             <div
-              key={b.id}
-              className={`sn-burst-item absolute ${activeClass}`}
-              aria-hidden="true"
+              key={`ring-${i}`}
+              className="cl-ring absolute rounded-full pointer-events-none"
+              style={{
+                width: r * 2,
+                height: r * 2,
+                left: "50%",
+                top: "50%",
+                marginLeft: -r,
+                marginTop: -r,
+                border: `1px solid rgba(59,130,246,${0.12 - i * 0.03})`,
+                animationDelay: `${i * 0.8}s`,
+              }}
+            />
+          ))}
+
+          {/* ── Magnetic field lines ── */}
+          {FIELD_LINES.map((fl, i) => (
+            <div
+              key={`field-${i}`}
+              className={`cl-field-line absolute ${activeClass}`}
               style={{
                 left: "50%",
                 top: "50%",
-                width: b.size,
-                height: b.size,
-                marginLeft: -(b.size / 2),
-                marginTop: -(b.size / 2),
-                filter: b.filter,
-                mixBlendMode: (b.blendMode ?? "normal") as unknown as string,
-                "--b-tx": `${b.tx}px`,
-                "--b-ty": `${b.ty}px`,
-                "--b-r": `${b.rotate}deg`,
-                "--b-s": String(b.scale),
-                "--b-op": String(b.opacity),
-                "--b-delay": `${b.delay}ms`,
+                width: fl.length,
+                height: 1,
+                background: "linear-gradient(90deg, rgba(59,130,246,0.4), transparent)",
+                "--line-angle": `${fl.angle}deg`,
+                animationDelay: `${fl.delay}s`,
+              } as React.CSSProperties}
+            />
+          ))}
+
+          {/* ── Orbital particles ── */}
+          {ORBITAL_PARTICLES.map((p) => (
+            <div
+              key={`orb-${p.id}`}
+              className={`cl-orbital absolute ${runClass} ${p.reverse ? "cl-reverse" : ""}`}
+              style={{
+                left: "50%",
+                top: "50%",
+                width: p.size,
+                height: p.size,
+                marginLeft: -(p.size / 2),
+                marginTop: -(p.size / 2),
+                "--orbit-r": `${p.orbitRadius}px`,
+                "--start-angle": `${p.startAngle}deg`,
+                animationDuration: `${p.speed}s`,
+                animationDelay: `${-(p.startAngle / 360) * p.speed}s`,
               } as React.CSSProperties}
             >
-              <Image
-                src="/festival_logo_burst.png"
-                alt=""
-                width={b.size}
-                height={b.size}
-                sizes={`${b.size}px`}
-                className="object-contain"
+              <div
+                className="w-full h-full rounded-full"
+                style={{
+                  backgroundColor: p.color,
+                  opacity: p.opacity,
+                  filter: p.blur > 0 ? `blur(${p.blur}px)` : undefined,
+                  boxShadow: `0 0 ${6 + p.size * 2}px ${p.color}`,
+                }}
               />
             </div>
           ))}
 
-          {/* ── Hero logo (centered, on top) ── */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+          {/* ── Central logo with chromatic aberration ── */}
+          <div
+            className="absolute left-1/2 top-1/2 z-10"
+            style={{
+              transform: `translate(-50%, -50%) translate(${parallax.x}px, ${parallax.y}px)`,
+              transition: "transform 150ms ease-out",
+            }}
+          >
+            {/* Holographic shimmer sweep */}
             <div
-              className={`sn-hero-logo ${activeClass}`}
-              style={{ width: 240, height: 240 }}
+              className="absolute overflow-hidden rounded-full pointer-events-none z-20"
+              style={{ width: 220, height: 220 }}
+            >
+              <div
+                className={`cl-shimmer-bar absolute ${activeClass}`}
+                style={{
+                  background:
+                    "linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.12) 45%, rgba(59,130,246,0.08) 50%, rgba(255,255,255,0.12) 55%, transparent 70%)",
+                  width: "200%",
+                  height: "200%",
+                  top: "-50%",
+                  left: "-50%",
+                }}
+              />
+            </div>
+
+            {/* Glitch scanline overlay */}
+            <div
+              className={`cl-glitch-overlay absolute z-20 ${activeClass}`}
+              style={{
+                width: 220,
+                height: 220,
+                background:
+                  "repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(59,130,246,0.06) 2px, rgba(59,130,246,0.06) 4px)",
+              }}
+            />
+
+            {/* Logo image */}
+            <div
+              className={`cl-logo-main ${activeClass}`}
+              style={{ width: 220, height: 220 }}
             >
               <Image
-                src="/festival_logo_burst.png"
-                alt="Festival Logo"
-                width={240}
-                height={240}
-                sizes="240px"
+                src="/clarity-logo-dark.png"
+                alt="Clarity Structures Digital SLU"
+                width={220}
+                height={220}
+                sizes="220px"
                 className="object-contain"
+                priority
               />
             </div>
           </div>
@@ -255,37 +435,48 @@ export default function ShowcaseFooter() {
 
         {/* ── Title ── */}
         <h2
-          className={`sn-title mt-8 text-3xl md:text-5xl font-bold tracking-[0.25em] uppercase text-center ${activeClass}`}
+          className={`cl-title mt-6 text-2xl md:text-4xl font-bold tracking-[0.25em] uppercase text-center ${activeClass}`}
           style={{
             fontFamily: "var(--font-space-mono, 'Space Mono', monospace)",
             color: "#ffffff",
           }}
         >
-          {t("title")}
+          Clarity Structures
         </h2>
+
+        {/* ── Subtitle ── */}
+        <p
+          className="mt-2 text-sm md:text-base tracking-[0.15em] uppercase"
+          style={{
+            fontFamily: "var(--font-space-mono, 'Space Mono', monospace)",
+            color: "rgba(59,130,246,0.6)",
+          }}
+        >
+          Digital SLU
+        </p>
 
         {/* ── Gradient horizon line ── */}
         <div
-          className="mt-6 w-48 h-px"
+          className="mt-8 w-56 h-px"
           style={{
             background:
-              "linear-gradient(90deg, transparent, #FF3300, #4141C6, transparent)",
+              "linear-gradient(90deg, transparent, #3B82F6, #6366F1, #3B82F6, transparent)",
           }}
         />
 
         {/* ── Tagline ── */}
         <p
-          className="mt-4 text-xs tracking-[0.2em] uppercase"
+          className="mt-5 text-xs tracking-[0.2em] uppercase"
           style={{
             fontFamily: "var(--font-space-mono, 'Space Mono', monospace)",
-            color: "rgba(255,255,255,0.35)",
+            color: "rgba(255,255,255,0.3)",
           }}
         >
           {t("tagline")}
         </p>
       </div>
 
-      {/* ── Site credit (existing .site-credit styles from globals.css) ── */}
+      {/* ── Site credit ── */}
       <div className="site-credit">
         <span>{t("credit")}</span>
       </div>

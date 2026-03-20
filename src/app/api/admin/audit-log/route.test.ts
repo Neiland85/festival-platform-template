@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest"
 import { NextRequest } from "next/server"
 import { GET } from "./route"
-import { createSession, _clearAllSessions } from "@/lib/auth/sessionStore"
+import { createSessionAsync, _clearAllSessions } from "@/lib/auth/sessionStore"
 import { audit } from "@/lib/observability/auditLog"
 
 function makeReq(query = "", token?: string): NextRequest {
@@ -25,7 +25,7 @@ describe("GET /api/admin/audit-log", () => {
   })
 
   it("returns audit entries with valid session", async () => {
-    const session = createSession()
+    const session = await createSessionAsync()
 
     // Generate a few audit entries
     audit({ action: "admin.login", ip: "1.2.3.4", actor: "admin" })
@@ -43,7 +43,7 @@ describe("GET /api/admin/audit-log", () => {
   })
 
   it("filters by action parameter", async () => {
-    const session = createSession()
+    const session = await createSessionAsync()
 
     audit({ action: "admin.login", ip: "1.2.3.4" })
     audit({ action: "event.create", ip: "1.2.3.4" })
@@ -58,7 +58,7 @@ describe("GET /api/admin/audit-log", () => {
   })
 
   it("returns 400 for invalid action filter", async () => {
-    const session = createSession()
+    const session = await createSessionAsync()
     const res = await GET(makeReq("?action=invalid.action", session.token))
     expect(res.status).toBe(400)
 
@@ -68,7 +68,7 @@ describe("GET /api/admin/audit-log", () => {
   })
 
   it("respects limit parameter", async () => {
-    const session = createSession()
+    const session = await createSessionAsync()
     const res = await GET(makeReq("?limit=2", session.token))
     expect(res.status).toBe(200)
 
@@ -77,7 +77,7 @@ describe("GET /api/admin/audit-log", () => {
   })
 
   it("sets Cache-Control: no-store", async () => {
-    const session = createSession()
+    const session = await createSessionAsync()
     const res = await GET(makeReq("", session.token))
     expect(res.headers.get("Cache-Control")).toBe("no-store")
   })

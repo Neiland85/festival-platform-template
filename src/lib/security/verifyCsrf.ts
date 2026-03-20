@@ -1,12 +1,13 @@
 import { NextRequest } from "next/server"
 import { verifyCsrfToken } from "@/lib/csrf"
+import { serverEnv } from "@/lib/env"
 
 /**
  * Validates the CSRF token from the x-csrf-token header against the session cookie.
  * Returns true if valid or if CSRF_SECRET is not configured (opt-in enforcement).
  */
 export function verifyCsrf(req: NextRequest): boolean {
-  const secret = process.env["CSRF_SECRET"]
+  const secret = serverEnv.CSRF_SECRET
   if (!secret) return true // CSRF not configured = skip (opt-in)
 
   const token = req.headers.get("x-csrf-token")

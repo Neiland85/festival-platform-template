@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest"
 import { NextRequest } from "next/server"
 import { GET } from "./route"
-import { createSession, _clearAllSessions } from "@/lib/auth/sessionStore"
+import { createSessionAsync, _clearAllSessions } from "@/lib/auth/sessionStore"
 
 function makeReq(token?: string): NextRequest {
   const headers: Record<string, string> = {}
@@ -24,7 +24,7 @@ describe("GET /api/admin/scorecard", () => {
   })
 
   it("returns scorecard data with valid session", async () => {
-    const session = createSession()
+    const session = await createSessionAsync()
     const res = await GET(makeReq(session.token))
     expect(res.status).toBe(200)
 
@@ -35,7 +35,7 @@ describe("GET /api/admin/scorecard", () => {
   })
 
   it("sets Cache-Control: no-store", async () => {
-    const session = createSession()
+    const session = await createSessionAsync()
     const res = await GET(makeReq(session.token))
     expect(res.headers.get("Cache-Control")).toBe("no-store")
   })

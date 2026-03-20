@@ -28,6 +28,7 @@
 
 import { reconcileProcessing } from "@/lib/security/redisQueue"
 import { log } from "@/lib/logger"
+import { serverEnv } from "@/lib/env"
 
 export const maxDuration = 60 // 60 second timeout (needed if queue is large)
 export const dynamic = "force-dynamic"
@@ -36,7 +37,7 @@ export async function POST(req: Request) {
   try {
     // Optional: Verify authorization (API key, IP, etc.)
     const authHeader = req.headers.get("authorization")
-    const expectedKey = process.env["QUEUE_RECONCILE_KEY"]
+    const expectedKey = serverEnv.QUEUE_RECONCILE_KEY
 
     if (expectedKey && authHeader !== `Bearer ${expectedKey}`) {
       log("warn", "reconcile_unauthorized", { authHeader: authHeader?.slice(0, 20) })
