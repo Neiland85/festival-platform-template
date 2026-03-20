@@ -155,7 +155,8 @@ export async function dequeueRedis(): Promise<{
     await chaos.inject("dequeue_before")
 
     // Step 1: Atomically move jobId from pending → processing
-    const jobId = await redis.rpoplpush<string>(PENDING_LIST, PROCESSING_SET)
+    // Upstash Redis uses lmove (rpoplpush is deprecated in Redis 6.2+)
+    const jobId = await redis.lmove(PENDING_LIST, PROCESSING_SET, "right", "left") as string | null
 
     // Chaos injection: after dequeue (before lease setup)
     await chaos.inject("dequeue_after_pop")
@@ -211,7 +212,7 @@ export async function dequeueRedis(): Promise<{
     // Step 4: Set lease (5 min TTL) + store processing token
     const leaseToken = `${jobId}:${Date.now()}:${Math.random()}`
     await redis.setex(`${LEASE_PREFIX}${jobId}`, LEASE_TTL_SECONDS, leaseToken)
-    await redis.hset(jobKey, "processingToken", processingToken)
+    await redis.hset(jobKey, { processingToken })
 
     // Step 5: Update Postgres (job is now in-flight)
     await db.query(
@@ -269,7 +270,7 @@ export async function checkIdempotency(idempotencyToken: string): Promise<{
     if (result.rows.length > 0) {
       return {
         processed: true,
-        result: result.rows[0].result,
+        result: result.rows[0]?.["result"],
       }
     }
 
@@ -348,7 +349,7 @@ export async function ackJob(
         [idempotencyToken]
       )
 
-      if (existing.rows.length > 0 && existing.rows[0].status === "completed") {
+      if (existing.rows.length > 0 && existing.rows[0]?.["status"] === "completed") {
         // Job was already completed: idempotent success
         log("info", "job_acked_idempotent_duplicate", {
           jobId,
@@ -467,7 +468,7 @@ export async function nackJob(
       // Retry available: move back to pending
       // FIX: Add to pending FIRST, then remove from processing (atomic retry)
       const retryJob: QueueItem = { ...job, retryCount: nextRetryCount }
-      await redis.hset(jobKey, "data", JSON.stringify(retryJob))
+      await redis.hset(jobKey, { data: JSON.stringify(retryJob) })
       await redis.lpush(PENDING_LIST, jobId)
       // Update Postgres before removing (durability first)
       await db.query(
@@ -590,7 +591,7 @@ export async function reconcileProcessing(): Promise<{
         )
 
         if (jobStatus.rows.length > 0) {
-          const status = jobStatus.rows[0].status
+          const status = jobStatus.rows[0]?.["status"]
 
           if (status === "completed") {
             // Job was already successfully processed
@@ -619,7 +620,7 @@ export async function reconcileProcessing(): Promise<{
           // FIX: Use Lua script to atomically check lease still doesn't exist, then move
           // This prevents race where heartbeat renews lease between our checks
           const retryJob: QueueItem = { ...job, retryCount: retryCount + 1 }
-          await redis.hset(jobKey, "data", JSON.stringify(retryJob))
+          await redis.hset(jobKey, { data: JSON.stringify(retryJob) })
 
           // Atomic check-and-move: only move if lease STILL doesn't exist
           const moved = await redis.eval(
@@ -629,17 +630,14 @@ export async function reconcileProcessing(): Promise<{
               return 1
             end
             return 0`,
-            3,
-            leaseKey,
-            PENDING_LIST,
-            PROCESSING_SET,
-            jobId
+            [leaseKey, PENDING_LIST, PROCESSING_SET],
+            [jobId]
           )
 
           if (!moved) {
             // Lease was renewed by heartbeat between our final check and move
             // Job is alive, don't retry. Restore job data to original state.
-            await redis.hset(jobKey, "data", JSON.stringify(job))
+            await redis.hset(jobKey, { data: JSON.stringify(job) })
             log("info", "reconciliation_lease_reappeared_skipped", { jobId })
             continue
           }
@@ -665,8 +663,8 @@ export async function reconcileProcessing(): Promise<{
               return 1
             end
             return 0`,
-            1,
-            leaseKey
+            [leaseKey],
+            []
           )
 
           if (!canFail) {
@@ -826,27 +824,31 @@ export async function getDLQItems(): Promise<
   }> = []
 
   try {
-    let cursor = 0
+    let cursor: string | number = 0
     do {
-      const [nextCursor, keys] = await redis.scan<string>(cursor, {
+      const result = await redis.scan(cursor, {
         match: pattern,
         count: 100,
       })
+
+      const [nextCursor, keys] = result as [string, string[]]
 
       for (const key of keys) {
         const jobId = key.replace(FAILED_PREFIX, "")
         const data = await redis.hgetall<Record<string, string>>(key)
 
-        dlqItems.push({
-          jobId,
-          error: data.error || "Unknown error",
-          retries: parseInt(data.retries || "0", 10),
-          failedAt: data.failedAt || new Date().toISOString(),
-        })
+        if (data) {
+          dlqItems.push({
+            jobId,
+            error: data["error"] || "Unknown error",
+            retries: parseInt(data["retries"] || "0", 10),
+            failedAt: data["failedAt"] || new Date().toISOString(),
+          })
+        }
       }
 
       cursor = nextCursor
-      if (cursor === 0) break
+      if (cursor === "0") break
     } while (true)
 
     return dlqItems

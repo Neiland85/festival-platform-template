@@ -4,17 +4,22 @@
  * En producción con UPSTASH_REDIS_REST_URL: usa Redis (persistente entre cold starts).
  * Sin Redis o si Redis falla: fallback a burstQueue (in-memory).
  */
-type QueueItem = Record<string, unknown>
 
 import { enqueueRedis, dequeueRedis } from "./redisQueue"
 import { enqueue as enqueueLocal, dequeue as dequeueLocal } from "./burstQueue"
 import { log } from "@/lib/logger"
 
+interface QueueJobInput {
+  jobId: string
+  idempotencyToken: string
+  payload: Record<string, unknown>
+}
+
 function hasRedis(): boolean {
   return !!process.env["UPSTASH_REDIS_REST_URL"]
 }
 
-export async function enqueue(item: QueueItem): Promise<void> {
+export async function enqueue(item: QueueJobInput): Promise<void> {
   if (hasRedis()) {
     try {
       await enqueueRedis(item)
@@ -25,10 +30,10 @@ export async function enqueue(item: QueueItem): Promise<void> {
       })
     }
   }
-  enqueueLocal(item)
+  enqueueLocal(item as unknown as Record<string, unknown>)
 }
 
-export async function dequeue(): Promise<QueueItem | undefined> {
+export async function dequeue(): Promise<Record<string, unknown> | undefined> {
   if (hasRedis()) {
     try {
       const item = await dequeueRedis()

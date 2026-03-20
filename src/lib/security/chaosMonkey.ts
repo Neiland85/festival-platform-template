@@ -24,12 +24,12 @@ export interface ChaosConfig {
 }
 
 const DEFAULT_CONFIG: ChaosConfig = {
-  enabled: process.env.CHAOS === "true",
-  errorRate: parseFloat(process.env.CHAOS_ERROR_RATE || "0.05"),
-  latencyRate: parseFloat(process.env.CHAOS_LATENCY_RATE || "0.1"),
-  maxLatencyMs: parseInt(process.env.CHAOS_MAX_LATENCY_MS || "3000", 10),
-  killRate: parseFloat(process.env.CHAOS_KILL_RATE || "0.01"),
-  logVerbose: process.env.CHAOS_VERBOSE === "true",
+  enabled: process.env["CHAOS"] === "true",
+  errorRate: parseFloat(process.env["CHAOS_ERROR_RATE"] || "0.05"),
+  latencyRate: parseFloat(process.env["CHAOS_LATENCY_RATE"] || "0.1"),
+  maxLatencyMs: parseInt(process.env["CHAOS_MAX_LATENCY_MS"] || "3000", 10),
+  killRate: parseFloat(process.env["CHAOS_KILL_RATE"] || "0.01"),
+  logVerbose: process.env["CHAOS_VERBOSE"] === "true",
 }
 
 // ── Metrics for observability ──────────────────────────────

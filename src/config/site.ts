@@ -86,6 +86,11 @@ export const HAS_META_PIXEL = Boolean(
   process.env["NEXT_PUBLIC_FB_PIXEL_ID"],
 )
 
+/** Is Stripe configured? Enables event ticket checkout (ADR-003). */
+export const HAS_STRIPE = Boolean(
+  process.env["STRIPE_SECRET_KEY"],
+)
+
 // ── Theme ─────────────────────────────────────────────
 
 export const THEME = {
