@@ -90,6 +90,7 @@ export async function POST(req: Request) {
  * Response:
  *   { status: "ok", message: "POST to run reconciliation" }
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(req: Request) {
   return Response.json(
     {
