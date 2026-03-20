@@ -18,8 +18,8 @@ export default async function HomePage({ params }: Props) {
   return (
     <main>
       <HeroVideo />
-      <CarouselSection />
       <ProgrammingSection />
+      <CarouselSection />
       <PricingSection />
       <ShowcaseFooter />
     </main>
