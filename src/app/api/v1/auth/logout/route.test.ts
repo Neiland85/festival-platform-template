@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest"
 import { NextRequest } from "next/server"
 import { POST } from "./route"
-import { createSession, validateSession, _clearAllSessions } from "@/lib/auth/sessionStore"
+import { createSessionAsync, validateSession, _clearAllSessions } from "@/lib/auth/sessionStore"
 
 function makeRequest(token?: string): NextRequest {
   const headers: Record<string, string> = {}
@@ -20,7 +20,7 @@ describe("POST /api/v1/auth/logout", () => {
   })
 
   it("returns 200 on logout with valid session", async () => {
-    const session = createSession()
+    const session = await createSessionAsync()
     expect(validateSession(session.token)).toBe(true)
 
     const res = await POST(makeRequest(session.token))
@@ -31,14 +31,14 @@ describe("POST /api/v1/auth/logout", () => {
   })
 
   it("invalidates session token after logout", async () => {
-    const session = createSession()
+    const session = await createSessionAsync()
     await POST(makeRequest(session.token))
 
     expect(validateSession(session.token)).toBe(false)
   })
 
   it("clears admin_session cookie with maxAge=0", async () => {
-    const session = createSession()
+    const session = await createSessionAsync()
     const res = await POST(makeRequest(session.token))
 
     const cookie = res.cookies.get("admin_session")
