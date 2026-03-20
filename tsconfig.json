@@ -41,6 +41,8 @@
   },
   "include": [
     "next-env.d.ts",
+    "sanity.config.ts",
+    "sanity/**/*.ts",
     "src/**/*.ts",
     "src/**/*.tsx",
     ".next/types/**/*.ts",

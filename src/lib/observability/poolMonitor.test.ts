@@ -186,8 +186,8 @@ describe("poolMonitor", () => {
       getPoolHealth(mockPool({ totalCount: 5, idleCount: 0, waitingCount: 3 }))
 
       expect(spy).toHaveBeenCalled()
-      const calls = spy.mock.calls.map((c) => JSON.parse(c[0] as string))
-      expect(calls.some((c) => c.code === "pool_exhausted")).toBe(true)
+      const calls = spy.mock.calls.map((c: unknown[]) => JSON.parse(c[0] as string))
+      expect(calls.some((c: Record<string, unknown>) => c["code"] === "pool_exhausted")).toBe(true)
     })
 
     it("does NOT log when healthy", () => {
