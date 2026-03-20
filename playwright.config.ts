@@ -8,9 +8,13 @@ export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
   forbidOnly: IS_CI,
-  retries: IS_CI ? 2 : 0,
+  retries: IS_CI ? 1 : 0,
   workers: IS_CI ? 1 : undefined,
   reporter: IS_CI ? "github" : "html",
+  /* Hard cap: if all tests together exceed this, abort immediately. */
+  globalTimeout: IS_CI ? 5 * 60_000 : 0,
+  /* Per-test timeout */
+  timeout: IS_CI ? 15_000 : 30_000,
 
   use: {
     baseURL: BASE_URL,
