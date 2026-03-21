@@ -54,11 +54,9 @@ const serverSchema = z.object({
     .default("development"),
 
   // ── Database (required) ──────────────────────────
-  // Accepts DATABASE_URL or POSTGRES_URL (Vercel Postgres/Neon sets the latter).
-  DATABASE_URL: z.string().url().min(1).default(
-    process.env["POSTGRES_URL"] ?? "",
-  ).describe(
-    "PostgreSQL connection string. Falls back to POSTGRES_URL if not set.",
+  // Explicit DATABASE_URL required. No fallbacks — fail fast if missing.
+  DATABASE_URL: z.string().url().min(1).describe(
+    "PostgreSQL connection string. Set in .env.local (dev) or Vercel env vars (prod).",
   ),
 
   // ── Auth (required) ──────────────────────────────
@@ -269,6 +267,32 @@ function parseEnv<T extends z.ZodTypeAny>(
  * server-only imports), but prefer clientEnv for client components.
  */
 export const serverEnv = parseEnv(serverSchema, "SERVER ENV")
+
+// ── Production safety checks (post-parse) ────────────────
+// These catch "technically valid but dangerous" configurations
+// that Zod schema alone can't express.
+if (!isBuildPhase && serverEnv.NODE_ENV === "production") {
+  const warnings: string[] = []
+
+  if (serverEnv.CSRF_SECRET === "dev-csrf-change-me-in-production") {
+    warnings.push("CSRF_SECRET is using the default dev value in production!")
+  }
+  if (serverEnv.IP_HASH_SALT === "dev-salt-change-me") {
+    warnings.push("IP_HASH_SALT is using the default dev value in production!")
+  }
+  if (serverEnv.DATABASE_URL.includes("localhost")) {
+    warnings.push("DATABASE_URL points to localhost in production!")
+  }
+  if (serverEnv.STRIPE_SECRET_KEY && !serverEnv.STRIPE_WEBHOOK_SECRET) {
+    warnings.push("STRIPE_SECRET_KEY is set but STRIPE_WEBHOOK_SECRET is missing — webhooks will fail.")
+  }
+
+  if (warnings.length > 0) {
+    console.warn(
+      `\n⚠️  PRODUCTION CONFIG WARNINGS:\n${warnings.map((w) => `  → ${w}`).join("\n")}\n`,
+    )
+  }
+}
 
 /**
  * Client-safe environment — NEXT_PUBLIC_* only.
