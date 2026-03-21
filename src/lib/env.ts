@@ -54,8 +54,11 @@ const serverSchema = z.object({
     .default("development"),
 
   // ── Database (required) ──────────────────────────
-  DATABASE_URL: nonEmpty.url().describe(
-    "PostgreSQL connection string. Required for any persistence.",
+  // Accepts DATABASE_URL or POSTGRES_URL (Vercel Postgres/Neon sets the latter).
+  DATABASE_URL: z.string().url().min(1).default(
+    process.env["POSTGRES_URL"] ?? "",
+  ).describe(
+    "PostgreSQL connection string. Falls back to POSTGRES_URL if not set.",
   ),
 
   // ── Auth (required) ──────────────────────────────
