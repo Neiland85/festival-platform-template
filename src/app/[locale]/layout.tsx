@@ -21,18 +21,19 @@ export async function generateMetadata({
 
   const SITE_URL =
     process.env["NEXT_PUBLIC_SITE_URL"] ?? "https://www.your-festival.com"
+  const siteName = process.env["NEXT_PUBLIC_SITE_NAME"] ?? "Festival Name"
 
   return {
     title: {
-      default: t("title"),
-      template: `%s — ${process.env["NEXT_PUBLIC_SITE_NAME"] ?? "Festival Name"}`,
+      default: t("title", { siteName }),
+      template: `%s — ${siteName}`,
     },
     description: t("description"),
     openGraph: {
       type: "website",
       locale: locale === "es" ? "es_ES" : "en_US",
       siteName: process.env["NEXT_PUBLIC_SITE_NAME"] ?? "Festival Name",
-      title: t("title"),
+      title: t("title", { siteName }),
       description: t("ogDescription"),
       url: SITE_URL,
       images: [
@@ -40,13 +41,13 @@ export async function generateMetadata({
           url: "/og-image.jpg",
           width: 1200,
           height: 630,
-          alt: t("ogAlt"),
+          alt: t("ogAlt", { siteName }),
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: t("title"),
+      title: t("title", { siteName }),
       description: t("ogDescription"),
       images: ["/og-image.jpg"],
     },
