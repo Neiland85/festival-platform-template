@@ -121,6 +121,24 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      DATABASE_URL: "postgres://ci:ci@localhost:5432/ci_e2e"
+      SESSION_SECRET: "ci-session-secret-must-be-at-least-32-characters-long-for-zod"
+      ADMIN_PASSWORD: "ci-admin-password"
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci -d ci_e2e"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
     # Runtime env vars for the web server that Playwright starts.
     # These are CI-only dummy values — no real secrets needed.
     env:
@@ -137,6 +155,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Push DB schema to test database
+        run: pnpm exec drizzle-kit push --force
       - name: Cache Playwright browsers
         id: pw-cache
         uses: actions/cache@v4
