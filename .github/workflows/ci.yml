@@ -139,6 +139,12 @@ jobs:
           --health-interval 5s
           --health-timeout 3s
           --health-retries 5
+    # Runtime env vars for the web server that Playwright starts.
+    # These are CI-only dummy values — no real secrets needed.
+    env:
+      DATABASE_URL: "postgres://ci:ci@localhost:5432/ci"
+      SESSION_SECRET: "ci-session-secret-must-be-at-least-32-characters-long-for-zod"
+      ADMIN_PASSWORD: "ci-admin-password"
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
