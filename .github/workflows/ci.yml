@@ -58,6 +58,10 @@ jobs:
     name: "🧪 Tests"
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      DATABASE_URL: "postgres://ci:ci@localhost:5432/ci"
+      SESSION_SECRET: "ci-session-secret-must-be-at-least-32-characters-long-for-zod"
+      ADMIN_PASSWORD: "ci-admin-password"
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -105,6 +109,11 @@ jobs:
       - run: pnpm build
         env:
           NEXT_TELEMETRY_DISABLED: "1"
+          # Build-phase detection (NEXT_PHASE) handles missing runtime vars,
+          # but we still set them so the build log stays clean.
+          DATABASE_URL: "postgres://ci:ci@localhost:5432/ci"
+          SESSION_SECRET: "ci-session-secret-must-be-at-least-32-characters-long-for-zod"
+          ADMIN_PASSWORD: "ci-admin-password"
 
   # ── E2E (after build) ────────────────────────────────────
   e2e:
@@ -112,6 +121,12 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # Runtime env vars for the web server that Playwright starts.
+    # These are CI-only dummy values — no real secrets needed.
+    env:
+      DATABASE_URL: "postgres://ci:ci@localhost:5432/ci"
+      SESSION_SECRET: "ci-session-secret-must-be-at-least-32-characters-long-for-zod"
+      ADMIN_PASSWORD: "ci-admin-password"
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
