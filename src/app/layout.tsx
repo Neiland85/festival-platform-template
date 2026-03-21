@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next"
 import { Space_Mono } from "next/font/google"
+import { getLocale } from "next-intl/server"
 import MetaPixel from "@/ui/components/MetaPixel"
 import "./globals.css"
 
@@ -22,13 +23,15 @@ export const metadata: Metadata = {
   ),
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const locale = await getLocale()
+
   return (
-    <html className={spaceMono.variable} suppressHydrationWarning>
+    <html lang={locale} className={spaceMono.variable} suppressHydrationWarning>
       <body>
         <MetaPixel />
         {children}
