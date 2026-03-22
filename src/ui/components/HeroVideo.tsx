@@ -4,11 +4,43 @@ import { useTranslations } from "next-intl"
 import { useEffect, useRef, useState, useCallback } from "react"
 import { SITE_NAME } from "@/config/site"
 
-// ── Config ───────────────────────────────────────────
+// ── CDN / Local asset resolution ────────────────────
+//
+// If NEXT_PUBLIC_CDN_HERO_URL is set (e.g., https://d1abc.cloudfront.net/hero/),
+// videos are served from CDN. Otherwise falls back to /public/hero/ for local dev.
+//
+// The CDN path should end with `/` and contain the same filenames.
+// For responsive delivery, the CDN variant uses WebM with MP4 fallback.
 
-const VIDEOS = [
-  { src: "/hero/Tomorrowland-Belgium_2016_Official-Aftermovie_corto.mov", type: "video/mp4" },
-  { src: "/hero/The Architecture of Experience_1080p_caption.mp4", type: "video/mp4" },
+const CDN_BASE = process.env["NEXT_PUBLIC_CDN_HERO_URL"] ?? ""
+
+function heroSrc(filename: string): string {
+  if (CDN_BASE) {
+    const base = CDN_BASE.endsWith("/") ? CDN_BASE : `${CDN_BASE}/`
+    return `${base}${filename}`
+  }
+  return `/hero/${filename}`
+}
+
+// ── Video manifest ──────────────────────────────────
+//
+// Each entry supports optional WebM (preferred) + MP4 fallback.
+// The component picks the first playable source.
+
+interface HeroVideoEntry {
+  webm?: string
+  mp4: string
+}
+
+const VIDEO_MANIFEST: HeroVideoEntry[] = [
+  {
+    webm: heroSrc("aftermovie-corto.webm"),
+    mp4: heroSrc("Tomorrowland-Belgium_2016_Official-Aftermovie_corto.mov"),
+  },
+  {
+    webm: heroSrc("architecture-1080p.webm"),
+    mp4: heroSrc("The Architecture of Experience_1080p_caption.mp4"),
+  },
 ]
 
 /** Ticketmaster URL — replace with real event link */
@@ -48,12 +80,13 @@ export default function HeroVideo() {
 
   // Crossfade between videos when one ends
   const handleVideoEnd = useCallback(() => {
-    const nextIndex = (activeIndex + 1) % VIDEOS.length
+    const nextIndex = (activeIndex + 1) % VIDEO_MANIFEST.length
     const nextRef = showA ? videoBRef : videoARef
+    const entry = VIDEO_MANIFEST[nextIndex]!
 
-    // Preload next video
+    // Preload next video — prefer WebM, fallback to MP4
     if (nextRef.current) {
-      nextRef.current.src = VIDEOS[nextIndex]!.src
+      nextRef.current.src = entry.webm ?? entry.mp4
       nextRef.current.load()
       nextRef.current.play().catch(() => {})
     }
@@ -84,7 +117,10 @@ export default function HeroVideo() {
           willChange: "opacity, transform",
         }}
       >
-        <source src={VIDEOS[0]!.src} type={VIDEOS[0]!.type} />
+        {VIDEO_MANIFEST[0]!.webm && (
+          <source src={VIDEO_MANIFEST[0]!.webm} type="video/webm" />
+        )}
+        <source src={VIDEO_MANIFEST[0]!.mp4} type="video/mp4" />
       </video>
 
       {/* ── Video Layer B ── */}
@@ -101,7 +137,10 @@ export default function HeroVideo() {
           willChange: "opacity, transform",
         }}
       >
-        <source src={VIDEOS[1]!.src} type={VIDEOS[1]!.type} />
+        {VIDEO_MANIFEST[1]!.webm && (
+          <source src={VIDEO_MANIFEST[1]!.webm} type="video/webm" />
+        )}
+        <source src={VIDEO_MANIFEST[1]!.mp4} type="video/mp4" />
       </video>
 
       {/* ── Grain / noise overlay (subtle texture) ── */}

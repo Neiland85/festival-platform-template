@@ -160,6 +160,12 @@ const clientSchema = z.object({
   NEXT_PUBLIC_SOCIAL_TIKTOK: z.string().default(""),
   NEXT_PUBLIC_SOCIAL_YOUTUBE: z.string().default(""),
 
+  // ── CDN (optional — falls back to /public/hero/) ───
+  NEXT_PUBLIC_CDN_HERO_URL: z.string().url().optional().describe(
+    "CloudFront / S3 base URL for hero video assets. " +
+    "Without it, videos are served from /public/hero/.",
+  ),
+
   // ── Analytics (optional — loaded after consent) ──
   NEXT_PUBLIC_GA_ID: z.string().optional(),
   NEXT_PUBLIC_FB_PIXEL_ID: z.string().default(""),
