@@ -22,12 +22,16 @@ concurrency:
   cancel-in-progress: true
 
 # ── Global shell hardening ────────────────────────────────────
-# Ensures every `run:` step uses strict mode: errexit + nounset + pipefail.
-# Without this, a failing command mid-pipe (e.g. `cmd | grep`) exits 0
+# errexit + pipefail on every `run:` step.
+# Without pipefail, a failing command mid-pipe (e.g. `cmd | grep`) exits 0
 # and the step appears green even though data was lost.
+# NOTE: we intentionally omit --nounset (-u) at this level because
+#   pnpm/corepack wrappers and lifecycle scripts reference optional
+#   env vars without ${VAR:-} guards — causing spurious failures.
+#   Our own multi-line scripts use `set -u` explicitly where safe.
 defaults:
   run:
-    shell: bash --nounset -eo pipefail {0}
+    shell: bash -eo pipefail {0}
 
 env:
   NODE_VERSION: "20"
@@ -90,6 +94,7 @@ jobs:
           cache: pnpm
       - name: "🔒 Mask CI secrets"
         run: |
+          set -u
           echo "::add-mask::$SESSION_SECRET"
           echo "::add-mask::$ADMIN_PASSWORD"
           echo "::add-mask::$DATABASE_URL"
@@ -137,6 +142,7 @@ jobs:
           SESSION_SECRET: "ci-session-secret-must-be-at-least-32-characters-long-for-zod"
           ADMIN_PASSWORD: "ci-admin-password"
         run: |
+          set -u
           echo "::add-mask::$SESSION_SECRET"
           echo "::add-mask::$ADMIN_PASSWORD"
           echo "::add-mask::$DATABASE_URL"
@@ -178,6 +184,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: "🔒 Mask E2E secrets"
         run: |
+          set -u
           echo "::add-mask::$SESSION_SECRET"
           echo "::add-mask::$ADMIN_PASSWORD"
           echo "::add-mask::$DATABASE_URL"
@@ -219,6 +226,7 @@ jobs:
         if: always()
         id: audit-scrub
         run: |
+          set -u
           PATTERN='(API_KEY|SECRET|PASSWORD|SESSION_SECRET|ADMIN_PASSWORD|STRIPE_SECRET|DATABASE_URL|SENTRY_AUTH_TOKEN|CSRF_SECRET|IP_HASH_SALT)\s*[=:]\s*[^\s*]{4,}'
           DIRS=()
           [[ -d test-results ]]      && DIRS+=(test-results)
