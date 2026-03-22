@@ -1,20 +1,3 @@
-# ──────────────────────────────────────────────────────────────
-# Neon Preview Branches — festival-platform-template
-#
-# Lifecycle:
-#   PR opened/reopened/synchronize → create Neon branch + set Vercel env
-#   PR closed (merged or abandoned) → delete Neon branch + unset Vercel env
-#
-# Secrets required:
-#   NEON_API_KEY       — Neon API key (Settings → API Keys)
-#   NEON_PROJECT_ID    — Neon project ID (e.g. green-cloud-183924)
-#   VERCEL_TOKEN       — Vercel API token
-#   VERCEL_PROJECT_ID  — Vercel project ID
-#   VERCEL_ORG_ID      — Vercel team/org ID (Settings → General)
-#
-# Flow: create Neon branch → push schema → set env → redeploy Vercel
-# Branch naming: preview/pr-{number} (deterministic, avoids duplicates)
-# ──────────────────────────────────────────────────────────────
 name: "Neon Preview Branches"
 
 on:
@@ -25,7 +8,7 @@ on:
 
 concurrency:
   group: neon-preview-${{ github.event.pull_request.number }}
-  cancel-in-progress: false  # Don't cancel deletes mid-flight
+  cancel-in-progress: false
 
 defaults:
   run:
@@ -35,291 +18,174 @@ env:
   NEON_BRANCH_NAME: "preview/pr-${{ github.event.pull_request.number }}"
 
 jobs:
-  # ── Create or update Neon preview branch ────────────────────
   create-branch:
     name: "🗄️ Create Neon preview branch"
     if: github.event.action != 'closed'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     permissions:
-      pull-requests: write  # For PR comments
-    outputs:
-      database_url: ${{ steps.branch.outputs.database_url }}
-      branch_id: ${{ steps.branch.outputs.branch_id }}
+      pull-requests: write
+
     steps:
+      # ─────────────────────────────
+      # 1. Checkout repo
+      # ─────────────────────────────
       - uses: actions/checkout@v4
 
+      # ─────────────────────────────
+      # 2. Setup pnpm
+      # ─────────────────────────────
       - uses: pnpm/action-setup@v4
         with:
           version: "10"
 
+      # ─────────────────────────────
+      # 3. Setup Node
+      # ─────────────────────────────
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: pnpm
 
-      - name: "Install dependencies"
+      # ─────────────────────────────
+      # 4. Install deps + neonctl
+      # ─────────────────────────────
+      - name: Install dependencies
         run: |
           pnpm install --frozen-lockfile
           npm install -g neonctl@latest
 
-      - name: "Create or reuse Neon branch"
-        id: branch
+      # ─────────────────────────────
+      # 5. 🔥 AUTH NEON (CRÍTICO)
+      # ─────────────────────────────
+      - name: Authenticate Neon
         env:
           NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+        run: |
+          neonctl auth login --api-key "$NEON_API_KEY"
+
+      # ─────────────────────────────
+      # 6. Create / reuse branch
+      # ─────────────────────────────
+      - name: Create or reuse Neon branch
+        id: branch
+        env:
           NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
         run: |
           set -u
 
-          echo "::group::🔍 Check if branch already exists"
+          echo "::group::Check existing branch"
           EXISTING=$(neonctl branches list \
             --project-id "$NEON_PROJECT_ID" \
-            --output json 2>/dev/null \
-            | jq -r --arg name "$NEON_BRANCH_NAME" \
-              '.[] | select(.name == $name) | .id // empty' \
-          ) || true
+            --output json | jq -r --arg name "$NEON_BRANCH_NAME" \
+            '.[] | select(.name == $name) | .id // empty')
           echo "::endgroup::"
 
           if [[ -n "$EXISTING" ]]; then
-            echo "ℹ️  Branch '$NEON_BRANCH_NAME' already exists (id: $EXISTING) — reusing"
+            echo "Reusing branch $EXISTING"
             BRANCH_ID="$EXISTING"
           else
-            echo "::group::🆕 Creating Neon branch '$NEON_BRANCH_NAME'"
-            CREATE_OUTPUT=$(neonctl branches create \
+            echo "::group::Creating branch"
+            CREATE=$(neonctl branches create \
               --project-id "$NEON_PROJECT_ID" \
               --name "$NEON_BRANCH_NAME" \
-              --output json \
-              2>&1) || {
-                echo "::error::Failed to create Neon branch"
-                echo "$CREATE_OUTPUT"
-                exit 1
-              }
-            BRANCH_ID=$(echo "$CREATE_OUTPUT" | jq -r '.branch.id')
-            echo "✅ Created branch: $BRANCH_ID"
+              --output json)
+            BRANCH_ID=$(echo "$CREATE" | jq -r '.branch.id')
+            echo "Created $BRANCH_ID"
             echo "::endgroup::"
           fi
 
           echo "branch_id=$BRANCH_ID" >> "$GITHUB_OUTPUT"
 
-          # Get connection string for this branch
-          echo "::group::🔗 Fetching connection string"
-          CONN_STR=$(neonctl connection-string \
+          echo "::group::Get connection string"
+          CONN=$(neonctl connection-string \
             --project-id "$NEON_PROJECT_ID" \
-            --branch "$BRANCH_ID" \
-            2>&1) || {
-              echo "::error::Failed to get connection string for branch $BRANCH_ID"
-              exit 1
-            }
+            --branch "$BRANCH_ID")
 
-          # Mask the full connection string — it contains credentials
-          echo "::add-mask::$CONN_STR"
-          echo "database_url=$CONN_STR" >> "$GITHUB_OUTPUT"
-          echo "✅ Connection string retrieved and masked"
+          echo "::add-mask::$CONN"
+          echo "database_url=$CONN" >> "$GITHUB_OUTPUT"
           echo "::endgroup::"
 
-      # ── Push schema to the preview branch ───────────────────
-      # Neon branches inherit data from parent, but if schema changed
-      # in this PR we need to push it. drizzle-kit push --force is safe
-      # here because this is an ephemeral preview branch.
-      - name: "🗄️ Push DB schema to preview branch"
+      # ─────────────────────────────
+      # 7. Push schema (Drizzle)
+      # ─────────────────────────────
+      - name: Push DB schema
         env:
           DATABASE_URL: ${{ steps.branch.outputs.database_url }}
         run: |
-          set -u
           echo "::add-mask::$DATABASE_URL"
-          echo "::group::🗄️ Pushing schema via drizzle-kit"
-          pnpm exec drizzle-kit push --force 2>&1
-          echo "✅ Schema pushed to preview branch"
-          echo "::endgroup::"
+          pnpm exec drizzle-kit push --force
 
-      # ── Set DATABASE_URL on Vercel for this git branch ──────
-      - name: "🔧 Set DATABASE_URL on Vercel preview"
-        if: steps.branch.outputs.database_url != ''
+      # ─────────────────────────────
+      # 8. Set Vercel env
+      # ─────────────────────────────
+      - name: Set DATABASE_URL in Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           DATABASE_URL: ${{ steps.branch.outputs.database_url }}
         run: |
-          set -u
           echo "::add-mask::$DATABASE_URL"
 
-          echo "::group::🔧 Setting Vercel env var"
-
-          # Find any existing DATABASE_URL scoped to this git branch
-          EXISTING_ID=$(curl -s \
-            -H "Authorization: Bearer $VERCEL_TOKEN" \
-            "https://api.vercel.com/v9/projects/$VERCEL_PROJECT_ID/env" \
-            | jq -r --arg branch "${{ github.head_ref }}" \
-              '.envs[] | select(.key == "DATABASE_URL" and .gitBranch == $branch) | .id // empty' \
-          ) || true
-
-          if [[ -n "$EXISTING_ID" ]]; then
-            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-              -X PATCH \
-              -H "Authorization: Bearer $VERCEL_TOKEN" \
-              -H "Content-Type: application/json" \
-              "https://api.vercel.com/v9/projects/$VERCEL_PROJECT_ID/env/$EXISTING_ID" \
-              -d "{\"value\": \"$DATABASE_URL\", \"target\": [\"preview\"], \"gitBranch\": \"${{ github.head_ref }}\"}")
-            echo "Updated existing env var (HTTP $HTTP_CODE)"
-          else
-            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-              -X POST \
-              -H "Authorization: Bearer $VERCEL_TOKEN" \
-              -H "Content-Type: application/json" \
-              "https://api.vercel.com/v10/projects/$VERCEL_PROJECT_ID/env" \
-              -d "{
-                \"key\": \"DATABASE_URL\",
-                \"value\": \"$DATABASE_URL\",
-                \"target\": [\"preview\"],
-                \"type\": \"encrypted\",
-                \"gitBranch\": \"${{ github.head_ref }}\"
-              }")
-            echo "Created new env var (HTTP $HTTP_CODE)"
-          fi
-
-          if [[ "$HTTP_CODE" -lt 200 || "$HTTP_CODE" -ge 300 ]]; then
-            echo "::error::Vercel API returned HTTP $HTTP_CODE"
-            exit 1
-          fi
-
-          echo "✅ DATABASE_URL set for preview branch '${{ github.head_ref }}'"
-          echo "::endgroup::"
-
-      # ── Wait for Vercel env propagation ─────────────────────
-      # Vercel's API is eventually consistent — env vars may not be
-      # readable by the build system immediately after creation/update.
-      - name: "⏳ Wait for env propagation"
-        run: |
-          echo "Waiting 5s for Vercel env var propagation..."
-          sleep 5
-
-      # ── Force Vercel redeploy so it picks up the new env var ─
-      - name: "🚀 Trigger Vercel redeploy"
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: |
-          set -u
-
-          echo "::group::🚀 Triggering Vercel redeploy for ${{ github.head_ref }}"
-
-          # Create a new deployment via the Vercel API
-          # This triggers a fresh build with the updated DATABASE_URL
-          REDEPLOY_RESPONSE=$(curl -s -w "\n%{http_code}" \
-            -X POST \
+          curl -X POST "https://api.vercel.com/v10/projects/$VERCEL_PROJECT_ID/env" \
             -H "Authorization: Bearer $VERCEL_TOKEN" \
             -H "Content-Type: application/json" \
-            "https://api.vercel.com/v13/deployments" \
             -d "{
-              \"name\": \"$VERCEL_PROJECT_ID\",
-              \"project\": \"$VERCEL_PROJECT_ID\",
-              \"target\": \"preview\",
-              \"gitSource\": {
-                \"type\": \"github\",
-                \"ref\": \"${{ github.head_ref }}\",
-                \"sha\": \"${{ github.event.pull_request.head.sha }}\"
-              }
-            }")
+              \"key\": \"DATABASE_URL\",
+              \"value\": \"$DATABASE_URL\",
+              \"target\": [\"preview\"],
+              \"gitBranch\": \"${{ github.head_ref }}\"
+            }"
 
-          HTTP_CODE=$(echo "$REDEPLOY_RESPONSE" | tail -1)
-          BODY=$(echo "$REDEPLOY_RESPONSE" | sed '$d')
+      # ─────────────────────────────
+      # 9. Wait (race condition fix)
+      # ─────────────────────────────
+      - name: Wait for env propagation
+        run: sleep 5
 
-          if [[ "$HTTP_CODE" -ge 200 && "$HTTP_CODE" -lt 300 ]]; then
-            DEPLOY_URL=$(echo "$BODY" | jq -r '.url // "pending"')
-            echo "✅ Redeploy triggered (HTTP $HTTP_CODE) → $DEPLOY_URL"
-          else
-            echo "::warning::Vercel redeploy returned HTTP $HTTP_CODE — Vercel's own webhook may handle it"
-            echo "$BODY" | jq . 2>/dev/null || echo "$BODY"
-          fi
-          echo "::endgroup::"
+      # ─────────────────────────────
+      # 10. Redeploy Vercel
+      # ─────────────────────────────
+      - name: Trigger Vercel redeploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          curl -X POST "https://api.vercel.com/v13/deployments" \
+            -H "Authorization: Bearer $VERCEL_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"name\": \"$VERCEL_PROJECT_ID\"
+            }"
 
-      - name: "📝 Post connection info to PR"
-        if: github.event.action == 'opened'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: `🗄️ **Neon preview branch created**\n\n` +
-                    `- Branch: \`${{ env.NEON_BRANCH_NAME }}\`\n` +
-                    `- Branch ID: \`${{ steps.branch.outputs.branch_id }}\`\n` +
-                    `- Schema pushed via \`drizzle-kit push\`\n` +
-                    `- Vercel preview will redeploy with this database automatically.\n\n` +
-                    `> Branch will be deleted when this PR is closed.`
-            });
-
-  # ── Delete Neon preview branch on PR close ──────────────────
   delete-branch:
     name: "🗑️ Delete Neon preview branch"
     if: github.event.action == 'closed'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+
     steps:
-      - name: "Install Neon CLI"
+      - name: Install Neon CLI
         run: npm install -g neonctl@latest
 
-      - name: "Delete Neon branch"
+      # 🔥 TAMBIÉN NECESITA AUTH
+      - name: Authenticate Neon
         env:
           NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+        run: |
+          neonctl auth login --api-key "$NEON_API_KEY"
+
+      - name: Delete branch
+        env:
           NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
         run: |
-          set -u
-
-          echo "::group::🔍 Finding branch '$NEON_BRANCH_NAME'"
-          BRANCH_ID=$(neonctl branches list \
+          ID=$(neonctl branches list \
             --project-id "$NEON_PROJECT_ID" \
-            --output json 2>/dev/null \
-            | jq -r --arg name "$NEON_BRANCH_NAME" \
-              '.[] | select(.name == $name) | .id // empty' \
-          ) || true
-          echo "::endgroup::"
+            --output json | jq -r --arg name "$NEON_BRANCH_NAME" \
+            '.[] | select(.name == $name) | .id // empty')
 
-          if [[ -z "$BRANCH_ID" ]]; then
-            echo "⚠️  Branch '$NEON_BRANCH_NAME' not found — already deleted or never created"
-            exit 0
-          fi
-
-          echo "::group::🗑️ Deleting branch $BRANCH_ID"
-          neonctl branches delete "$BRANCH_ID" \
-            --project-id "$NEON_PROJECT_ID" \
-            2>&1 || {
-              echo "::warning::Failed to delete Neon branch $BRANCH_ID — may need manual cleanup"
-              exit 0  # Don't fail the workflow for cleanup issues
-            }
-          echo "✅ Deleted Neon branch: $NEON_BRANCH_NAME ($BRANCH_ID)"
-          echo "::endgroup::"
-
-      - name: "Remove Vercel env var"
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: |
-          set -u
-
-          echo "::group::🧹 Removing DATABASE_URL for closed PR"
-          # Find the env var scoped to this git branch
-          ENV_ID=$(curl -s \
-            -H "Authorization: Bearer $VERCEL_TOKEN" \
-            "https://api.vercel.com/v9/projects/$VERCEL_PROJECT_ID/env" \
-            | jq -r --arg branch "${{ github.head_ref }}" \
-              '.envs[] | select(.key == "DATABASE_URL" and .gitBranch == $branch) | .id // empty' \
-          ) || true
-
-          if [[ -z "$ENV_ID" ]]; then
-            echo "ℹ️  No branch-scoped DATABASE_URL found — nothing to remove"
-            exit 0
-          fi
-
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-            -X DELETE \
-            -H "Authorization: Bearer $VERCEL_TOKEN" \
-            "https://api.vercel.com/v9/projects/$VERCEL_PROJECT_ID/env/$ENV_ID")
-
-          if [[ "$HTTP_CODE" -ge 200 && "$HTTP_CODE" -lt 300 ]]; then
-            echo "✅ Removed DATABASE_URL env var for branch '${{ github.head_ref }}'"
+          if [[ -n "$ID" ]]; then
+            neonctl branches delete "$ID" --project-id "$NEON_PROJECT_ID"
+            echo "Deleted $NEON_BRANCH_NAME"
           else
-            echo "::warning::Failed to remove Vercel env var (HTTP $HTTP_CODE) — may need manual cleanup"
+            echo "Branch not found"
           fi
-          echo "::endgroup::"
