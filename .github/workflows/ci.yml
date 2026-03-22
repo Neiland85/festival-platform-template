@@ -1,6 +1,11 @@
 # ──────────────────────────────────────────────────────────────
 # CI Pipeline — festival-platform-template
 #
+# Hardening:
+#   - `set -euo pipefail` on every `run:` step (defaults.run.shell)
+#   - Secrets masked via `::add-mask::` before any job that sets env vars
+#   - `audit-logs-scrub` post-job scans artifacts for leaked secrets
+#
 # Strategy: each job installs via pnpm (cached store = fast).
 # Parallel quality gates → build → e2e.
 # ──────────────────────────────────────────────────────────────
@@ -15,6 +20,18 @@ on:
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
+
+# ── Global shell hardening ────────────────────────────────────
+# errexit + pipefail on every `run:` step.
+# Without pipefail, a failing command mid-pipe (e.g. `cmd | grep`) exits 0
+# and the step appears green even though data was lost.
+# NOTE: we intentionally omit --nounset (-u) at this level because
+#   pnpm/corepack wrappers and lifecycle scripts reference optional
+#   env vars without ${VAR:-} guards — causing spurious failures.
+#   Our own multi-line scripts use `set -u` explicitly where safe.
+defaults:
+  run:
+    shell: bash -eo pipefail {0}
 
 env:
   NODE_VERSION: "20"
@@ -59,6 +76,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
+      # ⚠️ These are CI-only test values — NOT real secrets.
+      # They must match src/test/setup.ts defaults exactly (Zod singleton).
+      # Even so, we mask them to prevent accidental copy-paste into logs
+      # that a downstream consumer might treat as real credentials.
       DATABASE_URL: "postgres://ci:ci@localhost:5432/ci"
       SESSION_SECRET: "test-session-secret-must-be-at-least-32-characters-long"
       ADMIN_PASSWORD: "test-admin-password"
@@ -71,8 +92,15 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
+      - name: "🔒 Mask CI secrets"
+        run: |
+          set -u
+          echo "::add-mask::$SESSION_SECRET"
+          echo "::add-mask::$ADMIN_PASSWORD"
+          echo "::add-mask::$DATABASE_URL"
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test
+      - name: "🧪 Run tests"
+        run: pnpm test
 
   audit:
     name: "🛡️ Audit"
@@ -96,6 +124,8 @@ jobs:
     needs: [lint, typecheck, test, audit]
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -106,9 +136,18 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: "🔒 Mask build env"
+        env:
+          DATABASE_URL: "postgres://ci:ci@localhost:5432/ci"
+          SESSION_SECRET: "ci-session-secret-must-be-at-least-32-characters-long-for-zod"
+          ADMIN_PASSWORD: "ci-admin-password"
+        run: |
+          set -u
+          echo "::add-mask::$SESSION_SECRET"
+          echo "::add-mask::$ADMIN_PASSWORD"
+          echo "::add-mask::$DATABASE_URL"
       - run: pnpm build
         env:
-          NEXT_TELEMETRY_DISABLED: "1"
           # Build-phase detection (NEXT_PHASE) handles missing runtime vars,
           # but we still set them so the build log stays clean.
           DATABASE_URL: "postgres://ci:ci@localhost:5432/ci"
@@ -122,6 +161,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
+      # ⚠️ CI-only values — masked in the step below.
+      # E2E DATABASE_URL uses ci_e2e DB to avoid collisions with unit tests.
       DATABASE_URL: "postgres://ci:ci@localhost:5432/ci_e2e"
       SESSION_SECRET: "ci-session-secret-must-be-at-least-32-characters-long-for-zod"
       ADMIN_PASSWORD: "ci-admin-password"
@@ -139,10 +180,14 @@ jobs:
           --health-interval 5s
           --health-timeout 3s
           --health-retries 5
-    # Runtime env vars are set in the first `env:` block above (lines 124-127).
-    # DATABASE_URL points to ci_e2e which matches the Postgres service container.
     steps:
       - uses: actions/checkout@v4
+      - name: "🔒 Mask E2E secrets"
+        run: |
+          set -u
+          echo "::add-mask::$SESSION_SECRET"
+          echo "::add-mask::$ADMIN_PASSWORD"
+          echo "::add-mask::$DATABASE_URL"
       - uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
@@ -169,11 +214,50 @@ jobs:
         run: pnpm build
         env:
           NEXT_TELEMETRY_DISABLED: "1"
-      - run: pnpm exec playwright test
+      - name: Run Playwright tests
+        run: pnpm exec playwright test
         env:
           CI: "true"
-      - name: Upload test artifacts on failure
-        if: failure()
+
+      # ── Audit logs scrub ──────────────────────────────────
+      # Scans test-results/ and playwright-report/ for leaked secrets
+      # BEFORE uploading artifacts. Fails the job if any are found.
+      - name: "🔍 Audit logs for secret leaks"
+        if: always()
+        id: audit-scrub
+        run: |
+          set -u
+          PATTERN='(API_KEY|SECRET|PASSWORD|SESSION_SECRET|ADMIN_PASSWORD|STRIPE_SECRET|DATABASE_URL|SENTRY_AUTH_TOKEN|CSRF_SECRET|IP_HASH_SALT)\s*[=:]\s*[^\s*]{4,}'
+          DIRS=()
+          [[ -d test-results ]]      && DIRS+=(test-results)
+          [[ -d playwright-report ]] && DIRS+=(playwright-report)
+
+          if [[ ${#DIRS[@]} -eq 0 ]]; then
+            echo "ℹ️  No artifact directories found — nothing to scrub"
+            exit 0
+          fi
+
+          echo "🔍 Scanning ${DIRS[*]} for secret patterns..."
+          HITS=$(grep -rEn "$PATTERN" "${DIRS[@]}" 2>/dev/null || true)
+
+          if [[ -n "$HITS" ]]; then
+            # Count and show filenames + line numbers only (NOT the actual values)
+            FILECOUNT=$(echo "$HITS" | cut -d: -f1 | sort -u | wc -l)
+            HITCOUNT=$(echo "$HITS" | wc -l)
+            echo "::error::🚨 Found $HITCOUNT potential secret leak(s) across $FILECOUNT file(s):"
+            echo "$HITS" | cut -d: -f1-2 | sort -u | while read -r loc; do
+              echo "::error::  → $loc"
+            done
+            echo ""
+            echo "❌ Artifacts contain secret-like values. Fix the tests to avoid logging credentials."
+            echo "   Tip: use vitest.mock() or redact env vars before assertions that stringify responses."
+            exit 1
+          fi
+
+          echo "✅ No secret patterns detected in artifact directories"
+
+      - name: "📦 Upload test artifacts on failure"
+        if: failure() && steps.audit-scrub.outcome != 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: e2e-results
@@ -181,3 +265,10 @@ jobs:
             test-results/
             playwright-report/
           retention-days: 7
+
+      - name: "🚫 Block artifact upload — secrets detected"
+        if: steps.audit-scrub.outcome == 'failure'
+        run: |
+          echo "::error::Artifact upload BLOCKED — audit-logs-scrub detected secret leaks."
+          echo "Fix the leak source and re-run. See the 'Audit logs for secret leaks' step above."
+          exit 1
