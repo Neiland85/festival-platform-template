@@ -72,8 +72,10 @@ export function getPool(): Pool {
       idleTimeoutMillis: isLocal ? 30_000 : 4_000,
       connectionTimeoutMillis: 10_000,
 
-      // Prevent runaway queries (25s < Vercel's 30s function timeout)
-      options: "-c statement_timeout=25000",
+      // NOTE: statement_timeout via `options: "-c ..."` is NOT compatible
+      // with Neon's pooler (PgBouncer in transaction mode rejects SET).
+      // Instead, set it per-query: `SET LOCAL statement_timeout = 25000`
+      // inside transactions, or rely on Vercel's function timeout (30s).
     })
 
     globalPool.__pgPool.on("error", (err) => {
