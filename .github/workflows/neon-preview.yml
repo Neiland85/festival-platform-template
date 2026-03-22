@@ -185,22 +185,23 @@ jobs:
           echo "✅ DATABASE_URL set for preview branch '${{ github.head_ref }}'"
           echo "::endgroup::"
 
+      # ── Wait for Vercel env propagation ─────────────────────
+      # Vercel's API is eventually consistent — env vars may not be
+      # readable by the build system immediately after creation/update.
+      - name: "⏳ Wait for env propagation"
+        run: |
+          echo "Waiting 5s for Vercel env var propagation..."
+          sleep 5
+
       # ── Force Vercel redeploy so it picks up the new env var ─
       - name: "🚀 Trigger Vercel redeploy"
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
         run: |
           set -u
 
           echo "::group::🚀 Triggering Vercel redeploy for ${{ github.head_ref }}"
-
-          # Get the latest deployment for this branch to extract its meta
-          DEPLOY_RESPONSE=$(curl -s \
-            -H "Authorization: Bearer $VERCEL_TOKEN" \
-            "https://api.vercel.com/v6/deployments?projectId=$VERCEL_PROJECT_ID&target=preview&limit=1&state=ERROR,READY" \
-          )
 
           # Create a new deployment via the Vercel API
           # This triggers a fresh build with the updated DATABASE_URL
