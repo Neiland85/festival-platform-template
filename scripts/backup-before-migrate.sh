@@ -16,8 +16,8 @@
 #   - Verifies backup integrity with pg_restore --list
 #
 # Prerequisites:
-#   - pg_dump (PostgreSQL client tools)
-#   - gzip
+#   - pg_dump & pg_restore (PostgreSQL client tools)
+#   - python3 (for URL parsing)
 # ──────────────────────────────────────────────────────────────
 set -euo pipefail
 
@@ -40,16 +40,34 @@ if [[ -z "${DB_URL}" ]]; then
   exit 1
 fi
 
-# Check pg_dump is installed
-if ! command -v pg_dump &>/dev/null; then
-  echo -e "${RED}Error: pg_dump not found.${NC}"
-  echo "  Install: brew install libpq (macOS) or apt install postgresql-client (Linux)"
+# Check pg_dump and pg_restore are installed
+for cmd in pg_dump pg_restore; do
+  if ! command -v "$cmd" &>/dev/null; then
+    echo -e "${RED}Error: ${cmd} not found.${NC}"
+    echo "  Install: brew install libpq (macOS) or apt install postgresql-client (Linux)"
+    exit 1
+  fi
+done
+
+# Extract host and DB name using python3 URL parser (handles IPv6, missing userinfo, etc.)
+if ! read -r DB_HOST DB_NAME < <(DB_URL="${DB_URL}" python3 -c '
+import os, sys
+from urllib.parse import urlparse
+url = os.environ.get("DB_URL", "")
+if not url:
+    sys.exit(1)
+parsed = urlparse(url)
+host = parsed.hostname or ""
+dbname = (parsed.path or "").lstrip("/").split("?")[0]
+if not host or not dbname:
+    sys.exit(1)
+print(host, dbname)
+'); then
+  echo -e "${RED}Error: Failed to parse DATABASE_URL for host and database name.${NC}"
+  echo "  URL: ${DB_URL}"
+  echo "  Expected format: postgres://user:pass@host:5432/dbname"
   exit 1
 fi
-
-# Extract host and DB name for safety checks and naming
-DB_HOST=$(echo "$DB_URL" | sed -E 's|.*@([^:/]+).*|\1|')
-DB_NAME=$(echo "$DB_URL" | sed -E 's|.*/([^?]+).*|\1|')
 
 # ── Safety: refuse localhost/CI databases ───────────────────────
 BLOCKED_HOSTS=("localhost" "127.0.0.1" "postgres")
@@ -58,16 +76,16 @@ BLOCKED_DBS=("ci" "ci_e2e" "ci_test" "test")
 for h in "${BLOCKED_HOSTS[@]}"; do
   if [[ "$DB_HOST" == "$h" ]]; then
     echo -e "${YELLOW}Warning: DATABASE_URL points to '${DB_HOST}' — this looks like a local/CI database.${NC}"
-    echo -e "${YELLOW}Backups are intended for staging/production. Skipping.${NC}"
-    exit 0
+    echo -e "${YELLOW}Backups are intended for staging/production. Refusing to backup local/CI DB.${NC}"
+    exit 2
   fi
 done
 
 for d in "${BLOCKED_DBS[@]}"; do
   if [[ "$DB_NAME" == "$d" ]]; then
     echo -e "${YELLOW}Warning: Database name '${DB_NAME}' looks like a CI/test database.${NC}"
-    echo -e "${YELLOW}Backups are intended for staging/production. Skipping.${NC}"
-    exit 0
+    echo -e "${YELLOW}Backups are intended for staging/production. Refusing to backup CI/test DB.${NC}"
+    exit 2
   fi
 done
 
@@ -92,7 +110,7 @@ pg_dump \
   --no-owner \
   --no-privileges \
   --file="${BACKUP_FILE}" \
-  "${DB_URL}" 2>&1 | tail -5
+  "${DB_URL}" 2>&1
 
 # ── Verify backup integrity ────────────────────────────────────
 echo ""
