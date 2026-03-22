@@ -44,7 +44,7 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: "🔧 Install k6"
         run: |
@@ -144,7 +144,7 @@ jobs:
 
       - name: "📦 Upload k6 results"
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: k6-results-${{ steps.config.outputs.profile }}-${{ github.run_number }}
           path: k6/results/
