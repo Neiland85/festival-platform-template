@@ -1,0 +1,115 @@
+# ──────────────────────────────────────────────────────────────
+# Prometheus Alerting Rules — Festival Platform
+#
+# Prerequisites:
+#   - k6 Prometheus remote-write output (k6 --out experimental-prometheus-rw)
+#     OR application-level metrics via Next.js custom /metrics endpoint
+#   - Prometheus configured to scrape the target
+#
+# Metrics used:
+#   k6_http_req_duration_p95   — k6 remote-write histogram percentile
+#   http_request_duration_seconds — app-level histogram (if instrumented)
+#   http_requests_total        — app-level counter with status label
+#
+# Deploy: copy to /etc/prometheus/rules.d/ and reload Prometheus.
+# ──────────────────────────────────────────────────────────────
+groups:
+  - name: festival_platform_slo
+    interval: 30s
+    rules:
+
+      # ── Latency: p95 > 500ms for 5 minutes ─────────────────
+      - alert: HighP95Latency
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le, job)
+          ) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+          service: festival-platform
+        annotations:
+          summary: "p95 latency > 500ms on {{ $labels.job }}"
+          description: |
+            The 95th percentile response time has exceeded 500ms
+            for the last 5 minutes.
+            Current value: {{ $value | printf "%.0f" }}ms
+            Job: {{ $labels.job }}
+          runbook: "https://wiki.internal/runbooks/high-latency"
+          dashboard: "https://grafana.internal/d/festival-overview"
+
+      # ── Latency: p95 > 1500ms — critical ───────────────────
+      - alert: CriticalP95Latency
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le, job)
+          ) > 1.5
+        for: 3m
+        labels:
+          severity: critical
+          team: platform
+          service: festival-platform
+        annotations:
+          summary: "CRITICAL: p95 latency > 1500ms on {{ $labels.job }}"
+          description: |
+            The 95th percentile response time has exceeded 1500ms
+            for 3 minutes. Immediate investigation required.
+            Current value: {{ $value | printf "%.0f" }}ms
+
+      # ── Error rate: > 1% for 5 minutes ─────────────────────
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m])) by (job)
+            /
+            sum(rate(http_requests_total[5m])) by (job)
+          ) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+          service: festival-platform
+        annotations:
+          summary: "Error rate > 1% on {{ $labels.job }}"
+          description: |
+            HTTP 5xx error rate has exceeded 1% for 5 minutes.
+            Current rate: {{ $value | printf "%.2f" }}%
+            This may indicate a backend issue or dependency failure.
+          runbook: "https://wiki.internal/runbooks/high-error-rate"
+
+      # ── Error rate: > 5% — critical ────────────────────────
+      - alert: CriticalErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m])) by (job)
+            /
+            sum(rate(http_requests_total[5m])) by (job)
+          ) > 0.05
+        for: 3m
+        labels:
+          severity: critical
+          team: platform
+          service: festival-platform
+        annotations:
+          summary: "CRITICAL: Error rate > 5% on {{ $labels.job }}"
+          description: |
+            HTTP 5xx error rate exceeds 5% for 3 minutes.
+            Possible outage scenario. Check dependency health.
+
+      # ── k6 specific: remote-write metrics from CI runs ─────
+      # These fire during k6 CI runs if thresholds breach.
+      - alert: K6ThresholdBreach
+        expr: |
+          k6_http_req_duration{quantile="0.95"} > 500
+        for: 1m
+        labels:
+          severity: info
+          team: platform
+          source: k6-ci
+        annotations:
+          summary: "k6 CI: p95 > 500ms during performance test"
+          description: |
+            A k6 CI run reported p95 latency above 500ms.
+            Test: {{ $labels.test_name }}
+            Value: {{ $value | printf "%.0f" }}ms
