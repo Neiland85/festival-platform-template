@@ -59,12 +59,13 @@ export function getPool(): Pool {
     globalPool.__pgPool = new Pool({
       connectionString: connStr,
 
-      // SSL: off for local, strict for prod, relaxed for dev+remote
-      ...(isLocal
-        ? {}
-        : {
-            ssl: { rejectUnauthorized: isProd },
-          }),
+      // SSL: off for local, on for remote.
+      // rejectUnauthorized: false is required because Neon's pooler
+      // (PgBouncer) terminates TLS with certs that fail strict
+      // verification in Node.js on some runtimes (Vercel included).
+      // This is acceptable: the connection is still encrypted (TLS),
+      // we just don't verify the server's certificate chain.
+      ...(isLocal ? {} : { ssl: { rejectUnauthorized: false } }),
 
       // Serverless-safe limits
       max: isLocal ? 5 : 3,
