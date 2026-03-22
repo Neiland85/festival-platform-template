@@ -44,11 +44,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v5
         with:
           version: ${{ env.PNPM_VERSION }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -60,11 +60,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v5
         with:
           version: ${{ env.PNPM_VERSION }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -84,11 +84,11 @@ jobs:
       SESSION_SECRET: "test-session-secret-must-be-at-least-32-characters-long"
       ADMIN_PASSWORD: "test-admin-password"
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v5
         with:
           version: ${{ env.PNPM_VERSION }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -107,11 +107,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v5
         with:
           version: ${{ env.PNPM_VERSION }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -127,11 +127,11 @@ jobs:
     env:
       NEXT_TELEMETRY_DISABLED: "1"
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v5
         with:
           version: ${{ env.PNPM_VERSION }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -181,17 +181,17 @@ jobs:
           --health-timeout 3s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: "🔒 Mask E2E secrets"
         run: |
           set -u
           echo "::add-mask::$SESSION_SECRET"
           echo "::add-mask::$ADMIN_PASSWORD"
           echo "::add-mask::$DATABASE_URL"
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           version: ${{ env.PNPM_VERSION }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -200,7 +200,7 @@ jobs:
         run: pnpm exec drizzle-kit push --force
       - name: Cache Playwright browsers
         id: pw-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -258,7 +258,7 @@ jobs:
 
       - name: "📦 Upload test artifacts on failure"
         if: failure() && steps.audit-scrub.outcome != 'failure'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: e2e-results
           path: |
