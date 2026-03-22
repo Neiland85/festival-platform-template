@@ -10,7 +10,9 @@
 #   NEON_PROJECT_ID    — Neon project ID (e.g. green-cloud-183924)
 #   VERCEL_TOKEN       — Vercel API token
 #   VERCEL_PROJECT_ID  — Vercel project ID
+#   VERCEL_ORG_ID      — Vercel team/org ID (Settings → General)
 #
+# Flow: create Neon branch → push schema → set env → redeploy Vercel
 # Branch naming: preview/pr-{number} (deterministic, avoids duplicates)
 # ──────────────────────────────────────────────────────────────
 name: "Neon Preview Branches"
@@ -45,8 +47,21 @@ jobs:
       database_url: ${{ steps.branch.outputs.database_url }}
       branch_id: ${{ steps.branch.outputs.branch_id }}
     steps:
-      - name: "Install Neon CLI"
-        run: npm install -g neonctl@latest
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: "10"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+
+      - name: "Install dependencies"
+        run: |
+          pnpm install --frozen-lockfile
+          npm install -g neonctl@latest
 
       - name: "Create or reuse Neon branch"
         id: branch
@@ -102,7 +117,23 @@ jobs:
           echo "✅ Connection string retrieved and masked"
           echo "::endgroup::"
 
-      - name: "Set DATABASE_URL on Vercel preview"
+      # ── Push schema to the preview branch ───────────────────
+      # Neon branches inherit data from parent, but if schema changed
+      # in this PR we need to push it. drizzle-kit push --force is safe
+      # here because this is an ephemeral preview branch.
+      - name: "🗄️ Push DB schema to preview branch"
+        env:
+          DATABASE_URL: ${{ steps.branch.outputs.database_url }}
+        run: |
+          set -u
+          echo "::add-mask::$DATABASE_URL"
+          echo "::group::🗄️ Pushing schema via drizzle-kit"
+          pnpm exec drizzle-kit push --force 2>&1
+          echo "✅ Schema pushed to preview branch"
+          echo "::endgroup::"
+
+      # ── Set DATABASE_URL on Vercel for this git branch ──────
+      - name: "🔧 Set DATABASE_URL on Vercel preview"
         if: steps.branch.outputs.database_url != ''
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -114,15 +145,15 @@ jobs:
 
           echo "::group::🔧 Setting Vercel env var"
 
-          # Check if DATABASE_URL already exists for preview
+          # Find any existing DATABASE_URL scoped to this git branch
           EXISTING_ID=$(curl -s \
             -H "Authorization: Bearer $VERCEL_TOKEN" \
             "https://api.vercel.com/v9/projects/$VERCEL_PROJECT_ID/env" \
-            | jq -r '.envs[] | select(.key == "DATABASE_URL" and (.target | index("preview"))) | .id // empty' \
+            | jq -r --arg branch "${{ github.head_ref }}" \
+              '.envs[] | select(.key == "DATABASE_URL" and .gitBranch == $branch) | .id // empty' \
           ) || true
 
           if [[ -n "$EXISTING_ID" ]]; then
-            # Update existing env var
             HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
               -X PATCH \
               -H "Authorization: Bearer $VERCEL_TOKEN" \
@@ -131,7 +162,6 @@ jobs:
               -d "{\"value\": \"$DATABASE_URL\", \"target\": [\"preview\"], \"gitBranch\": \"${{ github.head_ref }}\"}")
             echo "Updated existing env var (HTTP $HTTP_CODE)"
           else
-            # Create new env var scoped to this git branch
             HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
               -X POST \
               -H "Authorization: Bearer $VERCEL_TOKEN" \
@@ -155,6 +185,53 @@ jobs:
           echo "✅ DATABASE_URL set for preview branch '${{ github.head_ref }}'"
           echo "::endgroup::"
 
+      # ── Force Vercel redeploy so it picks up the new env var ─
+      - name: "🚀 Trigger Vercel redeploy"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        run: |
+          set -u
+
+          echo "::group::🚀 Triggering Vercel redeploy for ${{ github.head_ref }}"
+
+          # Get the latest deployment for this branch to extract its meta
+          DEPLOY_RESPONSE=$(curl -s \
+            -H "Authorization: Bearer $VERCEL_TOKEN" \
+            "https://api.vercel.com/v6/deployments?projectId=$VERCEL_PROJECT_ID&target=preview&limit=1&state=ERROR,READY" \
+          )
+
+          # Create a new deployment via the Vercel API
+          # This triggers a fresh build with the updated DATABASE_URL
+          REDEPLOY_RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -X POST \
+            -H "Authorization: Bearer $VERCEL_TOKEN" \
+            -H "Content-Type: application/json" \
+            "https://api.vercel.com/v13/deployments" \
+            -d "{
+              \"name\": \"$VERCEL_PROJECT_ID\",
+              \"project\": \"$VERCEL_PROJECT_ID\",
+              \"target\": \"preview\",
+              \"gitSource\": {
+                \"type\": \"github\",
+                \"ref\": \"${{ github.head_ref }}\",
+                \"sha\": \"${{ github.event.pull_request.head.sha }}\"
+              }
+            }")
+
+          HTTP_CODE=$(echo "$REDEPLOY_RESPONSE" | tail -1)
+          BODY=$(echo "$REDEPLOY_RESPONSE" | sed '$d')
+
+          if [[ "$HTTP_CODE" -ge 200 && "$HTTP_CODE" -lt 300 ]]; then
+            DEPLOY_URL=$(echo "$BODY" | jq -r '.url // "pending"')
+            echo "✅ Redeploy triggered (HTTP $HTTP_CODE) → $DEPLOY_URL"
+          else
+            echo "::warning::Vercel redeploy returned HTTP $HTTP_CODE — Vercel's own webhook may handle it"
+            echo "$BODY" | jq . 2>/dev/null || echo "$BODY"
+          fi
+          echo "::endgroup::"
+
       - name: "📝 Post connection info to PR"
         if: github.event.action == 'opened'
         uses: actions/github-script@v7
@@ -167,7 +244,8 @@ jobs:
               body: `🗄️ **Neon preview branch created**\n\n` +
                     `- Branch: \`${{ env.NEON_BRANCH_NAME }}\`\n` +
                     `- Branch ID: \`${{ steps.branch.outputs.branch_id }}\`\n` +
-                    `- Vercel preview will use this database automatically.\n\n` +
+                    `- Schema pushed via \`drizzle-kit push\`\n` +
+                    `- Vercel preview will redeploy with this database automatically.\n\n` +
                     `> Branch will be deleted when this PR is closed.`
             });
 
