@@ -1,0 +1,162 @@
+# ──────────────────────────────────────────────────────────────
+# k6 Performance Tests — festival-platform-template
+#
+# Trigger: release publish OR manual workflow_dispatch.
+# NOT on every push — performance tests are expensive.
+#
+# Runs k6 against staging, exports JSON results as artifact.
+# ──────────────────────────────────────────────────────────────
+name: "🚀 k6 Performance"
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "k6 profile (smoke/load/stress)"
+        required: true
+        default: "smoke"
+        type: choice
+        options:
+          - smoke
+          - load
+          - stress
+      target_url:
+        description: "Target URL (leave empty for staging)"
+        required: false
+        default: ""
+        type: string
+
+defaults:
+  run:
+    shell: bash -eo pipefail {0}
+
+env:
+  K6_VERSION: "0.54.0"
+  # Default staging URL — override via workflow_dispatch input
+  STAGING_URL: "https://festival-platform-template-staging.vercel.app"
+
+jobs:
+  run-k6-and-upload:
+    name: "📊 k6 ${{ github.event.inputs.profile || 'smoke' }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "🔧 Install k6"
+        run: |
+          curl -fsSL "https://github.com/grafana/k6/releases/download/v${K6_VERSION}/k6-v${K6_VERSION}-linux-amd64.tar.gz" \
+            | tar xzf - --strip-components=1 -C /usr/local/bin k6-v${K6_VERSION}-linux-amd64/k6
+          k6 version
+
+      - name: "🔒 Mask secrets"
+        run: |
+          set -u
+          if [[ -n "${K6_CLOUD_TOKEN:-}" ]]; then
+            echo "::add-mask::${K6_CLOUD_TOKEN}"
+          fi
+
+      - name: "📐 Resolve target & profile"
+        id: config
+        run: |
+          # Profile: workflow_dispatch input > "smoke" default for release events
+          PROFILE="${{ github.event.inputs.profile || 'smoke' }}"
+          echo "profile=${PROFILE}" >> "$GITHUB_OUTPUT"
+
+          # Target: workflow_dispatch input > STAGING_URL
+          TARGET="${{ github.event.inputs.target_url }}"
+          if [[ -z "${TARGET}" ]]; then
+            TARGET="${STAGING_URL}"
+          fi
+          echo "target=${TARGET}" >> "$GITHUB_OUTPUT"
+
+          echo "▶ Profile: ${PROFILE}"
+          echo "▶ Target:  ${TARGET}"
+
+      - name: "🏃 Run k6 tests"
+        run: |
+          mkdir -p k6/results
+
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          PROFILE="${{ steps.config.outputs.profile }}"
+          TARGET="${{ steps.config.outputs.target }}"
+
+          echo "═══════════════════════════════════════"
+          echo " k6 ${PROFILE} → ${TARGET}"
+          echo "═══════════════════════════════════════"
+
+          TESTS=(
+            "homepage:k6/homepage.js"
+            "api-health:k6/api-health.js"
+            "lead-submission:k6/lead-submission.js"
+          )
+
+          EXITCODE=0
+          for entry in "${TESTS[@]}"; do
+            IFS=':' read -r NAME SCRIPT <<< "${entry}"
+            RESULT_FILE="k6/results/${NAME}-${TIMESTAMP}.json"
+            echo ""
+            echo "── ${NAME} ──"
+
+            k6 run \
+              -e "BASE_URL=${TARGET}" \
+              -e "K6_PROFILE=${PROFILE}" \
+              --summary-export="${RESULT_FILE}" \
+              --out "json=k6/results/${NAME}-${TIMESTAMP}-raw.json.gz" \
+              "${SCRIPT}" || EXITCODE=$?
+
+            echo "  → exported: ${RESULT_FILE}"
+          done
+
+          # Generate combined summary
+          echo "" > k6/results/summary.txt
+          {
+            echo "k6 Performance Report"
+            echo "Profile: ${PROFILE}"
+            echo "Target:  ${TARGET}"
+            echo "Date:    $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "Ref:     ${{ github.ref }}"
+            echo "SHA:     ${{ github.sha }}"
+            echo "═══════════════════════════════════════"
+          } >> k6/results/summary.txt
+
+          for f in k6/results/*-${TIMESTAMP}.json; do
+            [[ -f "$f" ]] || continue
+            NAME=$(basename "$f" | sed "s/-${TIMESTAMP}.json//")
+            echo "" >> k6/results/summary.txt
+            echo "── ${NAME} ──" >> k6/results/summary.txt
+            jq '{
+              p95_ms:        .metrics.http_req_duration.values["p(95)"],
+              p99_ms:        .metrics.http_req_duration.values["p(99)"],
+              avg_ms:        .metrics.http_req_duration.values.avg,
+              requests:      .metrics.http_reqs.values.count,
+              error_rate:    .metrics.http_req_failed.values.rate,
+              iterations:    .metrics.iterations.values.count,
+              data_recv_mb:  (.metrics.data_received.values.count / 1048576 | floor)
+            }' "$f" >> k6/results/summary.txt 2>/dev/null || true
+          done
+
+          cat k6/results/summary.txt
+          exit ${EXITCODE}
+
+      - name: "📦 Upload k6 results"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-results-${{ steps.config.outputs.profile }}-${{ github.run_number }}
+          path: k6/results/
+          retention-days: 30
+
+      - name: "📝 Post summary to job"
+        if: always()
+        run: |
+          {
+            echo "## 📊 k6 Performance Results"
+            echo ""
+            echo '```'
+            cat k6/results/summary.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

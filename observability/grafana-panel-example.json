@@ -1,0 +1,160 @@
+{
+  "__doc": [
+    "Grafana dashboard panel + alert rule example for Festival Platform.",
+    "Import via Grafana UI → Dashboards → Import → paste JSON.",
+    "Requires: Prometheus datasource named 'Prometheus'."
+  ],
+  "dashboard": {
+    "title": "Festival Platform — Performance Overview",
+    "uid": "festival-perf-overview",
+    "tags": ["festival", "performance", "slo"],
+    "timezone": "browser",
+    "refresh": "30s",
+    "panels": [
+      {
+        "title": "HTTP Request Duration (p50 / p95 / p99)",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "green", "value": null },
+                { "color": "yellow", "value": 0.3 },
+                { "color": "red", "value": 0.5 }
+              ]
+            }
+          }
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "p50"
+          },
+          {
+            "refId": "B",
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "p95"
+          },
+          {
+            "refId": "C",
+            "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "p99"
+          }
+        ]
+      },
+      {
+        "title": "Error Rate (5xx / total)",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "green", "value": null },
+                { "color": "yellow", "value": 0.005 },
+                { "color": "red", "value": 0.01 }
+              ]
+            }
+          }
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "sum(rate(http_requests_total{status=~\"5..\"}[5m])) / sum(rate(http_requests_total[5m]))",
+            "legendFormat": "5xx rate"
+          }
+        ]
+      },
+      {
+        "title": "Request Throughput (req/s)",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 0, "y": 8 },
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "sum(rate(http_requests_total[5m]))",
+            "legendFormat": "req/s"
+          }
+        ]
+      },
+      {
+        "title": "p95 Latency (current)",
+        "type": "gauge",
+        "gridPos": { "h": 4, "w": 6, "x": 6, "y": 8 },
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "min": 0,
+            "max": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "green", "value": null },
+                { "color": "yellow", "value": 0.3 },
+                { "color": "red", "value": 0.5 }
+              ]
+            }
+          }
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))"
+          }
+        ]
+      }
+    ]
+  },
+  "alertRule": {
+    "__doc": "Grafana managed alert rule — equivalent to the Prometheus rule but managed in Grafana UI.",
+    "name": "Festival p95 > 500ms",
+    "folder": "Festival Platform",
+    "condition": "B",
+    "data": [
+      {
+        "refId": "A",
+        "datasourceUid": "prometheus",
+        "model": {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+          "intervalMs": 30000,
+          "maxDataPoints": 43200
+        }
+      },
+      {
+        "refId": "B",
+        "datasourceUid": "-100",
+        "model": {
+          "type": "threshold",
+          "conditions": [
+            {
+              "evaluator": { "type": "gt", "params": [0.5] },
+              "operator": { "type": "and" },
+              "reducer": { "type": "last" }
+            }
+          ]
+        }
+      }
+    ],
+    "for": "5m",
+    "labels": {
+      "severity": "warning",
+      "team": "platform"
+    },
+    "annotations": {
+      "summary": "p95 latency > 500ms for 5 minutes",
+      "description": "Current p95: {{ $values.A }}s. Investigate slow endpoints."
+    },
+    "noDataState": "NoData",
+    "execErrState": "Alerting"
+  }
+}
