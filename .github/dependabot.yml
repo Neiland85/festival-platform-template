@@ -1,24 +1,63 @@
+# ──────────────────────────────────────────────────────────────
+# Dependabot — Automated dependency updates
+#
+# - npm: weekly scans for package.json vulnerabilities
+# - github-actions: weekly scans for CI action updates
+# - Groups minor/patch to reduce PR noise
+# - Security updates have no PR limit (always created)
+# ──────────────────────────────────────────────────────────────
 version: 2
+
 updates:
+  # ── npm (package.json) ──────────────────────────────────────
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
+      time: "09:00"
+      timezone: "Europe/Madrid"
     open-pull-requests-limit: 10
-    reviewers: []
+    reviewers:
+      - "Neiland85"
     labels:
       - "dependencies"
+      - "security"
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+    # Group minor+patch into single PRs to reduce noise
     groups:
-      minor-and-patch:
+      production-minor-patch:
+        dependency-type: "production"
         update-types:
           - "minor"
           - "patch"
+      dev-minor-patch:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+    # Always create PRs for security fixes, even if limit reached
+    # (this is default behavior but explicit for clarity)
+    versioning-strategy: increase
 
+  # ── GitHub Actions ──────────────────────────────────────────
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
+      time: "09:00"
+      timezone: "Europe/Madrid"
+    reviewers:
+      - "Neiland85"
     labels:
       - "ci"
+      - "dependencies"
+    commit-message:
+      prefix: "chore(ci)"
+    groups:
+      actions-all:
+        patterns:
+          - "*"
