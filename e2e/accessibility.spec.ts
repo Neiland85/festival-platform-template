@@ -26,8 +26,7 @@ test.describe("accessibility", () => {
   })
 
   test("homepage (ES) has no critical accessibility violations", async ({ page }) => {
-    await page.goto("/es")
-    await page.waitForLoadState("networkidle")
+    await page.goto("/es", { waitUntil: "domcontentloaded" })
 
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
@@ -50,11 +49,10 @@ test.describe("accessibility", () => {
   })
 
   test("homepage (EN) has no critical accessibility violations", async ({ page }) => {
-    await page.goto("/en")
-    await page.waitForLoadState("networkidle")
+    await page.goto("/en", { waitUntil: "domcontentloaded" })
 
     const results = await new AxeBuilder({ page })
-      .withTags(["wcag2a", "wcag2aa"])
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
       .analyze()
 
     const critical = results.violations.filter(
@@ -65,11 +63,10 @@ test.describe("accessibility", () => {
   })
 
   test("privacy page has no critical accessibility violations", async ({ page }) => {
-    await page.goto("/es/privacidad")
-    await page.waitForLoadState("networkidle")
+    await page.goto("/es/privacidad", { waitUntil: "domcontentloaded" })
 
     const results = await new AxeBuilder({ page })
-      .withTags(["wcag2a", "wcag2aa"])
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
       .analyze()
 
     const critical = results.violations.filter(
@@ -102,8 +99,7 @@ test.describe("accessibility", () => {
   })
 
   test("all images have alt text", async ({ page }) => {
-    await page.goto("/es")
-    await page.waitForLoadState("networkidle")
+    await page.goto("/es", { waitUntil: "domcontentloaded" })
 
     const images = page.locator("img")
     const count = await images.count()
@@ -118,8 +114,7 @@ test.describe("accessibility", () => {
   })
 
   test("interactive elements are keyboard-accessible", async ({ page }) => {
-    await page.goto("/es")
-    await page.waitForLoadState("networkidle")
+    await page.goto("/es", { waitUntil: "domcontentloaded" })
 
     // Tab through the page and verify focus is visible
     const focusableSelector =
@@ -139,8 +134,7 @@ test.describe("accessibility", () => {
   })
 
   test("page has proper heading hierarchy", async ({ page }) => {
-    await page.goto("/es")
-    await page.waitForLoadState("networkidle")
+    await page.goto("/es", { waitUntil: "domcontentloaded" })
 
     const headings = await page.locator("h1, h2, h3, h4, h5, h6").all()
 

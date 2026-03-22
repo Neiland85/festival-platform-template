@@ -18,14 +18,14 @@ pnpm exec playwright test e2e/accessibility.spec.ts --reporter=list
 
 ## Automated Tests (axe-core)
 
-The `e2e/accessibility.spec.ts` file runs the following checks on every page:
+The `e2e/accessibility.spec.ts` file currently runs the following checks on these pages and flows:
 
 | Test | WCAG Level | What it catches |
 |------|-----------|-----------------|
 | Homepage (ES/EN) | AA | Color contrast, missing labels, ARIA issues |
 | Privacy page | AA | Heading hierarchy, link text, landmark roles |
 | Cookie banner | AA | Dialog role, button labels, focus management |
-| Image alt text | A | Missing or empty alt attributes |
+| Image alt text | A | Missing alt attributes (empty allowed for decorative) |
 | Keyboard navigation | A | Unreachable interactive elements |
 | Heading hierarchy | A | Skipped heading levels (h1 → h3) |
 

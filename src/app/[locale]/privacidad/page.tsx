@@ -1,9 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { setRequestLocale } from "next-intl/server"
-
-const CONTACT_EMAIL =
-  process.env["NEXT_PUBLIC_CONTACT_EMAIL"] || "privacy@festival-platform.com"
+import { CONTACT_EMAIL } from "@/config/site"
 
 export const metadata: Metadata = {
   title: "Política de Privacidad — Festival Platform",
