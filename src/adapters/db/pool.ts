@@ -54,7 +54,6 @@ export function getPool(): Pool {
     const connStr = serverEnv.DATABASE_URL
     const isLocal =
       connStr.includes("localhost") || connStr.includes("127.0.0.1")
-    const isProd = serverEnv.NODE_ENV === "production"
 
     globalPool.__pgPool = new Pool({
       connectionString: connStr,
