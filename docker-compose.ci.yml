@@ -26,7 +26,7 @@ services:
       POSTGRES_PASSWORD: ci
       POSTGRES_DB: ci_e2e
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C.UTF-8"
-      # Reduce WAL for ephemeral CI — faster writes, no durability needed
+      # Allow passwordless host connections in isolated CI (not for production)
       POSTGRES_HOST_AUTH_METHOD: trust
     tmpfs:
       - /var/lib/postgresql/data:rw,noexec,nosuid,size=256m

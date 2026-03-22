@@ -204,8 +204,9 @@ jobs:
           # If DATABASE_URL ever points to staging/prod, this step fails the job.
           ALLOWED_HOSTS=("localhost" "127.0.0.1" "postgres")
           ALLOWED_DBS=("ci_e2e" "ci_test" "ci")
-          DB_HOST=$(echo "$DATABASE_URL" | sed -E 's|.*@([^:/]+).*|\1|')
-          DB_NAME=$(echo "$DATABASE_URL" | sed -E 's|.*/([^?]+).*|\1|')
+          # Use Node URL parser — handles IPv6, missing userinfo, etc.
+          DB_HOST=$(node -e 'try { const u = new URL(process.env.DATABASE_URL); console.log(u.hostname); } catch (e) { console.error("Invalid DATABASE_URL:", e.message); process.exit(1); }')
+          DB_NAME=$(node -e 'try { const u = new URL(process.env.DATABASE_URL); const db = (u.pathname || "").replace(/^\/+/, "").split(/[/?]/)[0]; console.log(db); } catch (e) { console.error("Invalid DATABASE_URL:", e.message); process.exit(1); }')
 
           HOST_OK=false
           for h in "${ALLOWED_HOSTS[@]}"; do
