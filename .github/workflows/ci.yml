@@ -196,7 +196,37 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Push DB schema to test database
+      - name: "🛡️ Guard: ensure DATABASE_URL is ephemeral CI DB"
+        run: |
+          set -u
+          # SAFETY: drizzle-kit push --force is destructive (drops/recreates tables).
+          # This guard ensures it ONLY runs against the ephemeral CI database.
+          # If DATABASE_URL ever points to staging/prod, this step fails the job.
+          ALLOWED_HOSTS=("localhost" "127.0.0.1" "postgres")
+          ALLOWED_DBS=("ci_e2e" "ci_test" "ci")
+          DB_HOST=$(echo "$DATABASE_URL" | sed -E 's|.*@([^:/]+).*|\1|')
+          DB_NAME=$(echo "$DATABASE_URL" | sed -E 's|.*/([^?]+).*|\1|')
+
+          HOST_OK=false
+          for h in "${ALLOWED_HOSTS[@]}"; do
+            [[ "$DB_HOST" == "$h" ]] && HOST_OK=true
+          done
+
+          DB_OK=false
+          for d in "${ALLOWED_DBS[@]}"; do
+            [[ "$DB_NAME" == "$d" ]] && DB_OK=true
+          done
+
+          if [[ "$HOST_OK" != "true" || "$DB_OK" != "true" ]]; then
+            echo "::error::🚨 DATABASE_URL points to '${DB_HOST}/${DB_NAME}' — NOT an ephemeral CI database."
+            echo "::error::   drizzle-kit push --force is destructive and must only target CI DBs."
+            echo "::error::   Allowed hosts: ${ALLOWED_HOSTS[*]}  |  Allowed DBs: ${ALLOWED_DBS[*]}"
+            exit 1
+          fi
+
+          echo "✅ DATABASE_URL targets ephemeral CI DB: ${DB_HOST}/${DB_NAME}"
+
+      - name: "🗄️ Push DB schema to ephemeral test database"
         run: pnpm exec drizzle-kit push --force
       - name: Cache Playwright browsers
         id: pw-cache
