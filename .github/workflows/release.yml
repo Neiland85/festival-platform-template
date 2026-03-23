@@ -1,0 +1,85 @@
+# ──────────────────────────────────────────────────────────────
+# Release Pipeline — festival-platform-template
+#
+# Triggers on push to main (after PR merge).
+# Runs semantic-release which:
+#   1. Analyzes conventional commits since last tag
+#   2. Determines version bump (major/minor/patch)
+#   3. Updates CHANGELOG.md
+#   4. Commits version bump + changelog
+#   5. Creates git tag (vX.Y.Z)
+#   6. Publishes GitHub Release with notes
+#
+# Required:
+#   - GITHUB_TOKEN (automatic, needs contents:write + issues:write)
+#   - Commits must follow Conventional Commits format
+#
+# Does NOT run on:
+#   - Commits by semantic-release itself (prevents infinite loop)
+#   - Branches other than main
+# ──────────────────────────────────────────────────────────────
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+# Prevent concurrent releases
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash -eo pipefail {0}
+
+jobs:
+  release:
+    name: "🏷️ Semantic Release"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # Skip release commits from semantic-release itself
+    if: "!contains(github.event.head_commit.message, 'chore(release):')"
+
+    permissions:
+      contents: write      # Create tags, releases, push changelog
+      issues: write        # Comment on released issues
+      pull-requests: write # Comment on released PRs
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0       # Full history for commit analysis
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: "10"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install semantic-release plugins
+        run: |
+          pnpm add -D \
+            semantic-release \
+            @semantic-release/changelog \
+            @semantic-release/git \
+            @semantic-release/github \
+            conventional-changelog-conventionalcommits
+
+      - name: Run semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_AUTHOR_NAME: "semantic-release-bot"
+          GIT_AUTHOR_EMAIL: "semantic-release-bot@users.noreply.github.com"
+          GIT_COMMITTER_NAME: "semantic-release-bot"
+          GIT_COMMITTER_EMAIL: "semantic-release-bot@users.noreply.github.com"
+        run: npx semantic-release
