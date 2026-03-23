@@ -1,63 +1,36 @@
 "use client"
 
+import Image from "next/image"
 import { useTranslations } from "next-intl"
 import { useEffect, useRef, useState, useCallback } from "react"
 import { SITE_NAME } from "@/config/site"
 
-// ── CDN / Local asset resolution ────────────────────
-//
-// If NEXT_PUBLIC_CDN_HERO_URL is set (e.g., https://d1abc.cloudfront.net/hero/),
-// videos are served from CDN. Otherwise falls back to /public/hero/ for local dev.
-//
-// The CDN path should end with `/` and contain the same filenames.
-// For responsive delivery, the CDN variant uses WebM with MP4 fallback.
-
-const CDN_BASE = process.env["NEXT_PUBLIC_CDN_HERO_URL"] ?? ""
-
-function heroSrc(filename: string): string {
-  if (CDN_BASE) {
-    const base = CDN_BASE.endsWith("/") ? CDN_BASE : `${CDN_BASE}/`
-    return `${base}${filename}`
-  }
-  return `/hero/${filename}`
-}
-
-// ── Video manifest ──────────────────────────────────
-//
-// Each entry supports optional WebM (preferred) + MP4 fallback.
-// The component picks the first playable source.
-
-interface HeroVideoEntry {
-  webm?: string
-  mp4: string
-}
-
-const VIDEO_MANIFEST: HeroVideoEntry[] = [
-  {
-    webm: heroSrc("aftermovie-corto.webm"),
-    mp4: heroSrc("Tomorrowland-Belgium_2016_Official-Aftermovie_corto.mov"),
-  },
-  {
-    webm: heroSrc("architecture-1080p.webm"),
-    mp4: heroSrc("The Architecture of Experience_1080p_caption.mp4"),
-  },
+// ── Hero images (from /public/carousel/) ────────────────
+const HERO_IMAGES = [
+  { src: "/carousel/hero-01.webp", alt: "Live concert on stage" },
+  { src: "/carousel/hero-04.webp", alt: "Sunset DJ session by the sea" },
+  { src: "/carousel/carousel-03.webp", alt: "Festival night energy" },
+  { src: "/carousel/hero-02.webp", alt: "Festival market vibes" },
+  { src: "/carousel/carousel-05.webp", alt: "Main stage performance" },
+  { src: "/carousel/hero-03.webp", alt: "Handcrafted treasures" },
 ]
 
 /** Ticketmaster URL — replace with real event link */
 const TICKETMASTER_URL = "https://www.ticketmaster.es"
 
-const CROSSFADE_MS = 1200
+const SLIDE_DURATION_MS = 6000
+const CROSSFADE_MS = 1500
 
 // ── Component ────────────────────────────────────────
 
 export default function HeroVideo() {
   const t = useTranslations("hero")
-  const videoARef = useRef<HTMLVideoElement>(null)
-  const videoBRef = useRef<HTMLVideoElement>(null)
   const [activeIndex, setActiveIndex] = useState(0)
-  const [showA, setShowA] = useState(true)
+  const [nextIndex, setNextIndex] = useState(1)
+  const [isFading, setIsFading] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Subtle parallax on mouse move
   const handleMouseMove = useCallback((e: MouseEvent) => {
@@ -78,23 +51,21 @@ export default function HeroVideo() {
     return () => clearTimeout(timer)
   }, [])
 
-  // Crossfade between videos when one ends
-  const handleVideoEnd = useCallback(() => {
-    const nextIndex = (activeIndex + 1) % VIDEO_MANIFEST.length
-    const nextRef = showA ? videoBRef : videoARef
-    const entry = VIDEO_MANIFEST[nextIndex]!
+  // Auto-advance slides
+  useEffect(() => {
+    timerRef.current = setTimeout(() => {
+      setIsFading(true)
+      setTimeout(() => {
+        setActiveIndex(nextIndex)
+        setNextIndex((nextIndex + 1) % HERO_IMAGES.length)
+        setIsFading(false)
+      }, CROSSFADE_MS)
+    }, SLIDE_DURATION_MS)
 
-    // Preload next video — prefer WebM, fallback to MP4
-    if (nextRef.current) {
-      nextRef.current.src = entry.webm ?? entry.mp4
-      nextRef.current.load()
-      nextRef.current.play().catch(() => {})
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current)
     }
-
-    // Crossfade
-    setShowA(!showA)
-    setActiveIndex(nextIndex)
-  }, [activeIndex, showA])
+  }, [activeIndex, nextIndex])
 
   // Parallax offset (very subtle: ±8px)
   const parallaxX = (mousePos.x - 0.5) * 16
@@ -102,46 +73,44 @@ export default function HeroVideo() {
 
   return (
     <section className="relative w-full h-screen overflow-hidden bg-black">
-      {/* ── Video Layer A ── */}
-      <video
-        ref={videoARef}
-        autoPlay
-        muted
-        playsInline
-        onEnded={handleVideoEnd}
-        className="absolute inset-0 w-full h-full object-cover transition-opacity duration-[1200ms] ease-in-out"
+      {/* ── Image Layer A (active) ── */}
+      <div
+        className="absolute inset-0"
         style={{
-          opacity: showA ? 0.35 : 0,
+          opacity: isFading ? 0 : 0.45,
           transform: `scale(1.08) translate(${parallaxX}px, ${parallaxY}px)`,
           transition: `opacity ${CROSSFADE_MS}ms ease-in-out, transform 0.3s ease-out`,
           willChange: "opacity, transform",
         }}
       >
-        {VIDEO_MANIFEST[0]!.webm && (
-          <source src={VIDEO_MANIFEST[0]!.webm} type="video/webm" />
-        )}
-        <source src={VIDEO_MANIFEST[0]!.mp4} type="video/mp4" />
-      </video>
+        <Image
+          src={HERO_IMAGES[activeIndex]!.src}
+          alt={HERO_IMAGES[activeIndex]!.alt}
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority={activeIndex === 0}
+        />
+      </div>
 
-      {/* ── Video Layer B ── */}
-      <video
-        ref={videoBRef}
-        muted
-        playsInline
-        onEnded={handleVideoEnd}
-        className="absolute inset-0 w-full h-full object-cover"
+      {/* ── Image Layer B (next, fades in during transition) ── */}
+      <div
+        className="absolute inset-0"
         style={{
-          opacity: showA ? 0 : 0.35,
+          opacity: isFading ? 0.45 : 0,
           transform: `scale(1.08) translate(${parallaxX}px, ${parallaxY}px)`,
           transition: `opacity ${CROSSFADE_MS}ms ease-in-out, transform 0.3s ease-out`,
           willChange: "opacity, transform",
         }}
       >
-        {VIDEO_MANIFEST[1]!.webm && (
-          <source src={VIDEO_MANIFEST[1]!.webm} type="video/webm" />
-        )}
-        <source src={VIDEO_MANIFEST[1]!.mp4} type="video/mp4" />
-      </video>
+        <Image
+          src={HERO_IMAGES[nextIndex]!.src}
+          alt={HERO_IMAGES[nextIndex]!.alt}
+          fill
+          className="object-cover"
+          sizes="100vw"
+        />
+      </div>
 
       {/* ── Grain / noise overlay (subtle texture) ── */}
       <div
@@ -172,6 +141,21 @@ export default function HeroVideo() {
           backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.05) 2px, rgba(255,255,255,0.05) 4px)",
         }}
       />
+
+      {/* ── Slide indicators ── */}
+      <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+        {HERO_IMAGES.map((_, i) => (
+          <span
+            key={i}
+            className="block rounded-full transition-all duration-500"
+            style={{
+              width: i === activeIndex ? 24 : 6,
+              height: 6,
+              background: i === activeIndex ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.3)",
+            }}
+          />
+        ))}
+      </div>
 
       {/* ── Content ── */}
       <div
