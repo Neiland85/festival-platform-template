@@ -91,7 +91,7 @@ export default function Footer() {
         <p className="editorial-label">
           {t("tagline")}
         </p>
-        <p className="text-xs opacity-50 tracking-wide">
+        <p className="text-xs opacity-70 tracking-wide">
           &copy; {t("copyright")}
         </p>
       </div>
