@@ -17,7 +17,8 @@ function hasConsent(): boolean {
 
 function setConsent(value: "accepted" | "rejected") {
   const maxAge = 180 * 24 * 60 * 60
-  document.cookie = `${COOKIE_KEY}=${value}; path=/; max-age=${maxAge}; SameSite=Lax; Secure`
+  const secure = window.location.protocol === "https:" ? "; Secure" : ""
+  document.cookie = `${COOKIE_KEY}=${value}; path=/; max-age=${maxAge}; SameSite=Lax${secure}`
 }
 
 export function CookieBanner() {
