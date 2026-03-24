@@ -5,14 +5,21 @@
     "source.fixAll.eslint": "explicit"
   },
   "cSpell.words": [
+    "BRPOPLPUSH",
+    "esac",
+    "festival",
     "geist",
+    "neonctl",
     "ossp",
     "Programacion",
     "rgpd",
     "RGPD",
     "sidonie",
-    "festival",
     "Tropicalia",
-    "TROPICALIA"
+    "TROPICALIA",
+    "Vercel",
+    "VERCEL",
+    "wcag",
+    "webp"
   ]
 }

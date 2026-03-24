@@ -23,30 +23,30 @@ on:
       force:
         description: "Force re-upload all assets (ignore cache)"
         required: false
-        default: "false"
+        default: false
         type: boolean
 
 concurrency:
   group: assets-upload
-  cancel-in-progress: false   # never cancel mid-upload
+  cancel-in-progress: false # never cancel mid-upload
 
 permissions:
   contents: read
 
 env:
-  S3_BUCKET: ${{ vars.S3_BUCKET }}
-  AWS_REGION: ${{ vars.AWS_REGION || 'eu-west-1' }}
-  CDN_DOMAIN: ${{ vars.CDN_DOMAIN || '' }}
+  S3_BUCKET: festival-hero-assets
+  AWS_REGION: eu-west-1
+  CDN_DOMAIN: ""
 
 jobs:
   upload:
-    name: "📦 Upload to S3"
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2   # need parent commit for diff
+          fetch-depth: 2 # need parent commit for diff
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -148,3 +148,17 @@ jobs:
           done
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "**Env var:** \`NEXT_PUBLIC_CDN_HERO_URL=${BASE}\`" >> "$GITHUB_STEP_SUMMARY"
+
+  test-secret:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check secret presence (no imprime valor)
+        env:
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY || '' }}
+        run: |
+          if [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
+            echo "Secret missing"
+            exit 1
+          else
+            echo "Secret available"
+          fi
