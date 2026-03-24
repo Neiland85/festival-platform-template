@@ -69,8 +69,13 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
+<<<<<<< dependabot/npm_and_yarn/types/node-25.5.0
+    "@types/node": "^25",
+    "@types/pg": "^8.16.0",
+=======
     "@types/node": "^20",
     "@types/pg": "^8.20.0",
+>>>>>>> main
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "drizzle-kit": "^0.31.10",
