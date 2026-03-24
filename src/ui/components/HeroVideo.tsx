@@ -2,18 +2,31 @@
 
 import Image from "next/image"
 import { useTranslations } from "next-intl"
-import { useEffect, useRef, useState, useCallback } from "react"
+import { useEffect, useRef, useState, useCallback, useMemo } from "react"
 import { SITE_NAME } from "@/config/site"
 
-// ── Hero images (from /public/carousel/) ────────────────
-const HERO_IMAGES = [
-  { src: "/carousel/hero-01.webp", alt: "Live concert on stage" },
-  { src: "/carousel/hero-04.webp", alt: "Sunset DJ session by the sea" },
-  { src: "/carousel/carousel-03.webp", alt: "Festival night energy" },
-  { src: "/carousel/hero-02.webp", alt: "Festival market vibes" },
-  { src: "/carousel/carousel-05.webp", alt: "Main stage performance" },
-  { src: "/carousel/hero-03.webp", alt: "Handcrafted treasures" },
+// ── CDN-aware hero images ────────────────────────────────
+// If NEXT_PUBLIC_CDN_HERO_URL is set (e.g., "https://d1abc.cloudfront.net/hero/"),
+// images are loaded from CDN. Otherwise, falls back to local /carousel/.
+const CDN_BASE = process.env["NEXT_PUBLIC_CDN_HERO_URL"] ?? ""
+
+const LOCAL_HERO_IMAGES = [
+  { file: "hero-01.webp", alt: "Live concert on stage" },
+  { file: "hero-04.webp", alt: "Sunset DJ session by the sea" },
+  { file: "carousel-03.webp", alt: "Festival night energy" },
+  { file: "hero-02.webp", alt: "Festival market vibes" },
+  { file: "carousel-05.webp", alt: "Main stage performance" },
+  { file: "hero-03.webp", alt: "Handcrafted treasures" },
 ]
+
+/** Resolve image src: CDN if configured, otherwise local /carousel/ */
+function resolveHeroSrc(file: string): string {
+  if (CDN_BASE) {
+    // CDN_BASE already ends with "/" (enforced by env validation)
+    return `${CDN_BASE.replace(/\/+$/, "/")}${file}`
+  }
+  return `/carousel/${file}`
+}
 
 /** Ticketmaster URL — replace with real event link */
 const TICKETMASTER_URL = "https://www.ticketmaster.es"
@@ -31,6 +44,15 @@ export default function HeroVideo() {
   const [isLoaded, setIsLoaded] = useState(false)
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Memoize resolved image sources (CDN or local)
+  const HERO_IMAGES = useMemo(
+    () => LOCAL_HERO_IMAGES.map((img) => ({
+      src: resolveHeroSrc(img.file),
+      alt: img.alt,
+    })),
+    [],
+  )
 
   // Subtle parallax on mouse move
   const handleMouseMove = useCallback((e: MouseEvent) => {

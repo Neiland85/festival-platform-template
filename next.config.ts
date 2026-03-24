@@ -31,7 +31,23 @@ const securityHeaders = [
   },
 ]
 
+// ── CDN image domains (CloudFront / S3) ──────────────────
+// Parses NEXT_PUBLIC_CDN_HERO_URL to allow next/image optimization.
+const cdnHeroUrl = process.env["NEXT_PUBLIC_CDN_HERO_URL"]
+const cdnRemotePatterns: NextConfig["images"] = cdnHeroUrl
+  ? {
+      remotePatterns: [
+        {
+          protocol: "https",
+          hostname: new URL(cdnHeroUrl).hostname,
+          pathname: "/hero/**",
+        },
+      ],
+    }
+  : undefined
+
 const nextConfig: NextConfig = {
+  ...(cdnRemotePatterns ? { images: cdnRemotePatterns } : {}),
   experimental: {
     optimizePackageImports: ["react"],
   },
