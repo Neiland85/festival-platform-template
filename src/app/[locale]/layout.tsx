@@ -15,20 +15,26 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params;
 
-  if (!locales.includes(locale as (typeof locales)[number])) {
+  if (!locales.includes(locale as any)) {
     notFound();
   }
 
   let messages;
+
   try {
-    messages = (await import(`../../../messages/${locale}.json`)).default;
-  } catch {
+    messages = (await import(`@/messages/${locale}.json`)).default;
+  } catch (e) {
+    console.error('Missing messages for locale:', locale);
     notFound();
   }
 
   return (
-    <IntlProvider locale={locale} messages={messages}>
-      {children}
-    </IntlProvider>
+    <html lang={locale}>
+      <body>
+        <IntlProvider locale={locale} messages={messages}>
+          {children}
+        </IntlProvider>
+      </body>
+    </html>
   );
 }
