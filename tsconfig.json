@@ -1,44 +1,43 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
+
     "allowJs": false,
     "skipLibCheck": true,
+
     "strict": true,
     "strictNullChecks": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
+
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
+
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
+    "esModuleInterop": true,
     "isolatedModules": true,
+
     "jsx": "react-jsx",
     "incremental": true,
+
+    "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     },
-    "esModuleInterop": true,
-    "types": [
-      "node",
-      "pg",
-      "react",
-      "react-dom"
-    ],
+
+    "types": ["node", "vitest/globals"],
+
     "plugins": [
       {
         "name": "next"
       }
     ]
   },
+
   "include": [
     "next-env.d.ts",
     "sanity.config.ts",
@@ -46,8 +45,11 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts",
+    "vitest.setup.ts",
+    "vitest.config.ts"
   ],
+
   "exclude": [
     "node_modules",
     ".next",

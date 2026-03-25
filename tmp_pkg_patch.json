@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "i18n:check": "node scripts/i18n-check.js"
+  }
+}

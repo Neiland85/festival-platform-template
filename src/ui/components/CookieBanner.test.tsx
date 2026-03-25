@@ -3,8 +3,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { CookieBanner } from "./CookieBanner"
-import { IntlWrapper } from "@/test/i18n-wrapper"
-
+import { I18nWrapper } from "@/test/i18n-wrapper" 
 // Mock i18n navigation Link to render a plain <a>
 vi.mock("@/i18n/navigation", () => ({
   Link: ({ href, children, ...props }: { href: string; children: React.ReactNode }) => (
@@ -19,25 +18,25 @@ describe("CookieBanner", () => {
   })
 
   it("renders banner when no consent cookie exists", () => {
-    render(<IntlWrapper><CookieBanner /></IntlWrapper>)
+    render(<I18nWrapper><CookieBanner /></I18nWrapper>)
     expect(screen.getByRole("dialog")).toBeInTheDocument()
     expect(screen.getByText(/usamos cookies/i)).toBeInTheDocument()
   })
 
   it("shows accept and reject buttons", () => {
-    render(<IntlWrapper><CookieBanner /></IntlWrapper>)
+    render(<I18nWrapper><CookieBanner /></I18nWrapper>)
     expect(screen.getByRole("button", { name: /aceptar/i })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: /rechazar/i })).toBeInTheDocument()
   })
 
   it("includes link to privacy policy", () => {
-    render(<IntlWrapper><CookieBanner /></IntlWrapper>)
+    render(<I18nWrapper><CookieBanner /></I18nWrapper>)
     const link = screen.getByRole("link", { name: /privacidad/i })
     expect(link).toHaveAttribute("href", "/privacidad")
   })
 
   it("dismisses banner on accept", async () => {
-    render(<IntlWrapper><CookieBanner /></IntlWrapper>)
+    render(<I18nWrapper><CookieBanner /></I18nWrapper>)
     const user = userEvent.setup()
 
     await user.click(screen.getByRole("button", { name: /aceptar/i }))
@@ -47,7 +46,7 @@ describe("CookieBanner", () => {
   })
 
   it("dismisses banner on reject", async () => {
-    render(<IntlWrapper><CookieBanner /></IntlWrapper>)
+    render(<I18nWrapper><CookieBanner /></I18nWrapper>)
     const user = userEvent.setup()
 
     await user.click(screen.getByRole("button", { name: /rechazar/i }))
@@ -58,18 +57,18 @@ describe("CookieBanner", () => {
 
   it("does not render when consent already given", () => {
     document.cookie = "sn_cookie_consent=accepted; path=/"
-    render(<IntlWrapper><CookieBanner /></IntlWrapper>)
+    render(<I18nWrapper><CookieBanner /></I18nWrapper>)
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
   })
 
   it("does not render when consent already rejected", () => {
     document.cookie = "sn_cookie_consent=rejected; path=/"
-    render(<IntlWrapper><CookieBanner /></IntlWrapper>)
+    render(<I18nWrapper><CookieBanner /></I18nWrapper>)
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
   })
 
   it("has correct aria-label for accessibility", () => {
-    render(<IntlWrapper><CookieBanner /></IntlWrapper>)
+    render(<I18nWrapper><CookieBanner /></I18nWrapper>)
     expect(screen.getByRole("dialog")).toHaveAttribute(
       "aria-label",
       "Consentimiento de cookies"

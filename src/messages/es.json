@@ -1,5 +1,56 @@
 {
-  "home": {
-    "title": "Bienvenido al festival"
+  "cookie": {
+    "ariaLabel": "Consentimiento de cookies",
+    "message": "Usamos cookies para mejorar tu experiencia.",
+    "privacyPolicy": "Política de privacidad",
+    "accept": "Aceptar",
+    "reject": "Rechazar"
+  },
+  "promo": {
+    "label": "Exclusivo",
+    "ctaButton": "Promociones limitadas",
+    "ctaDescription": "Accede antes que nadie a ofertas especiales.",
+
+    "back": "Volver",
+    "rgpdTitle": "Protección de tus datos",
+    "rgpdIntro": "Antes de continuar, queremos que sepas cómo tratamos tu información.",
+    "rgpdDescription": "Solo recogeremos los datos que nos proporciones voluntariamente en este formulario. Los usaremos exclusivamente para enviarte información sobre promociones y ofertas del festival.",
+    "rgpdNoSell": "No vendemos tus datos",
+    "rgpdNoSellDesc": "Nunca compartimos ni vendemos tu información a terceros.",
+    "rgpdCookies": "Cookies mínimas",
+    "rgpdCookiesDesc": "Solo usamos cookies técnicas y de consentimiento.",
+    "rgpdSecure": "Datos seguros",
+    "rgpdSecureDesc": "Tu información se almacena de forma segura y cifrada.",
+    "rgpdEmail": "Solo email relevante",
+    "rgpdEmailDesc": "Recibirás únicamente comunicaciones sobre las ofertas que solicitaste.",
+    "rgpdRights": "tus derechos ARCO",
+    "rgpdRightsPrefix": "Puedes ejercer",
+    "rgpdRightsSuffix": "en cualquier momento escribiéndonos.",
+    "rgpdLegal": "Consulta nuestra política completa de privacidad:",
+    "rgpdPrivacyLink": "Política de privacidad",
+
+    "formTitle": "Reserva tu acceso",
+    "formSubtitle": "Completa tus datos para recibir las ofertas.",
+    "labelName": "Nombre",
+    "labelSurname": "Apellidos",
+    "labelEmail": "Email",
+    "labelPhone": "Teléfono",
+    "labelProfession": "Profesión",
+    "placeholderName": "Tu nombre",
+    "placeholderSurname": "Tus apellidos",
+    "placeholderEmail": "tu@email.com",
+    "placeholderPhone": "+34 600 000 000",
+    "placeholderProfession": "Tu profesión",
+    "optional": "opcional",
+    "submitConsent": "Al enviar, aceptas nuestra",
+    "privacyPolicy": "Política de privacidad",
+    "sending": "Enviando...",
+
+    "successTitle": "¡Estás dentro!",
+    "successDescription": "Te notificaremos con las mejores ofertas antes que a nadie.",
+
+    "errorTitle": "Ha ocurrido un error",
+    "errorDescription": "No hemos podido procesar tu solicitud. Inténtalo de nuevo.",
+    "retry": "Reintentar"
   }
 }

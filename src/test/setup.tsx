@@ -1,4 +1,5 @@
 import { vi } from 'vitest'
+import React from 'react'
 
 const messages = {
   promo: {}
@@ -17,12 +18,6 @@ vi.mock('next-intl', async () => {
         return messages[ns][key]
       }
     },
-    NextIntlClientProvider: ({ children }: any) => children
+    NextIntlClientProvider: ({ children }: any) => <>{children}</>
   }
 })
-
-import { TextEncoder, TextDecoder } from 'util'
-
-global.TextEncoder = TextEncoder as any
-global.TextDecoder = TextDecoder as any
-

@@ -1,9 +1,9 @@
+import { render, screen } from "@testing-library/react"
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import PromoFormSection from "./PromoFormSection"
-import { IntlWrapper } from "@/test/i18n-wrapper"
 
 // Mock i18n navigation Link
 vi.mock("@/i18n/navigation", () => ({
@@ -23,12 +23,12 @@ describe("PromoFormSection", () => {
   })
 
   it("renders CTA state by default", () => {
-    render(<IntlWrapper><PromoFormSection /></IntlWrapper>)
+    render(<PromoFormSection />)
     expect(screen.getByRole("button", { name: /promociones limitadas/i })).toBeInTheDocument()
   })
 
   it("transitions from CTA to RGPD on button click", async () => {
-    render(<IntlWrapper><PromoFormSection /></IntlWrapper>)
+    render(<PromoFormSection />)
     const user = userEvent.setup()
 
     await user.click(screen.getByRole("button", { name: /promociones limitadas/i }))
@@ -39,7 +39,7 @@ describe("PromoFormSection", () => {
   })
 
   it("transitions from RGPD to form on accept", async () => {
-    render(<IntlWrapper><PromoFormSection /></IntlWrapper>)
+    render(<PromoFormSection />)
     const user = userEvent.setup()
 
     // CTA → RGPD
@@ -53,7 +53,7 @@ describe("PromoFormSection", () => {
   })
 
   it("returns from RGPD to CTA on Volver click", async () => {
-    render(<IntlWrapper><PromoFormSection /></IntlWrapper>)
+    render(<PromoFormSection />)
     const user = userEvent.setup()
 
     await user.click(screen.getByRole("button", { name: /promociones limitadas/i }))
@@ -64,7 +64,7 @@ describe("PromoFormSection", () => {
 
   it("shows success state after successful submission", async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({ ok: true })
-    render(<IntlWrapper><PromoFormSection /></IntlWrapper>)
+    render(<PromoFormSection />)
     const user = userEvent.setup()
 
     // Navigate to form
@@ -87,7 +87,7 @@ describe("PromoFormSection", () => {
 
   it("shows error state on failed submission", async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({ ok: false })
-    render(<IntlWrapper><PromoFormSection /></IntlWrapper>)
+    render(<PromoFormSection />)
     const user = userEvent.setup()
 
     // Navigate to form
@@ -110,7 +110,7 @@ describe("PromoFormSection", () => {
 
   it("shows retry button on error state", async () => {
     globalThis.fetch = vi.fn().mockRejectedValue(new Error("network"))
-    render(<IntlWrapper><PromoFormSection /></IntlWrapper>)
+    render(<PromoFormSection />)
     const user = userEvent.setup()
 
     await user.click(screen.getByRole("button", { name: /promociones limitadas/i }))
@@ -131,7 +131,7 @@ describe("PromoFormSection", () => {
   it("disables submit button while sending", async () => {
     // Never resolve to keep sending state
     globalThis.fetch = vi.fn().mockImplementation(() => new Promise(() => {}))
-    render(<IntlWrapper><PromoFormSection /></IntlWrapper>)
+    render(<PromoFormSection />)
     const user = userEvent.setup()
 
     await user.click(screen.getByRole("button", { name: /promociones limitadas/i }))

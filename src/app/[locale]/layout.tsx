@@ -1,31 +1,36 @@
-import { notFound } from 'next/navigation';
-import IntlProvider from '@/i18n/provider';
-import { locales } from '@/i18n/config';
+import { notFound } from "next/navigation"
+import { IntlProvider } from "@/i18n/provider"
+import { locales, type Locale } from "@/i18n/config"
+
+import en from "@/messages/en.json"
+import es from "@/messages/es.json"
+
+const messagesMap = {
+  en,
+  es,
+} as const
 
 export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
+  return locales.map((locale) => ({ locale }))
 }
 
 export default async function LocaleLayout({
   children,
-  params
+  params,
 }: {
-  children: React.ReactNode;
-  params: Promise<{ locale: string }>;
+  children: React.ReactNode
+  params: { locale: Locale }
 }) {
-  const { locale } = await params;
+  const { locale } = params
 
-  if (!locales.includes(locale as any)) {
-    notFound();
+  if (!locales.includes(locale)) {
+    notFound()
   }
 
-  let messages;
+  const messages = messagesMap[locale]
 
-  try {
-    messages = (await import(`@/messages/${locale}.json`)).default;
-  } catch (e) {
-    console.error('Missing messages for locale:', locale);
-    notFound();
+  if (!messages) {
+    notFound()
   }
 
   return (
@@ -36,5 +41,5 @@ export default async function LocaleLayout({
         </IntlProvider>
       </body>
     </html>
-  );
+  )
 }
