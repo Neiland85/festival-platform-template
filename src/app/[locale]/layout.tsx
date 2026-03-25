@@ -23,8 +23,12 @@ export default async function LocaleLayout({
   }
 
   return (
-    <IntlProvider locale={locale} messages={messages}>
-      {children}
-    </IntlProvider>
+    <html lang={locale}>
+      <body>
+        <IntlProvider locale={locale} messages={messages}>
+          {children}
+        </IntlProvider>
+      </body>
+    </html>
   );
 }
