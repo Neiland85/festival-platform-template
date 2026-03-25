@@ -127,7 +127,8 @@ export class RedisChaosProxy {
     // ── Client → Redis ────────────────────────────────
 
     clientSocket.on("data", (data) => {
-      commandBuffer = Buffer.concat([commandBuffer, data])
+      const chunk = typeof data === "string" ? Buffer.from(data) : data
+  commandBuffer = Buffer.concat([commandBuffer, chunk])
 
       // Check if we have a complete Redis command
       const commands = this.parseRedisCommands(commandBuffer)
