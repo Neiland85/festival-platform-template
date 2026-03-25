@@ -11,11 +11,11 @@ export default async function LocaleLayout({
   params
 }: {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  const { locale } = params;
+  const { locale } = await params;
 
-  if (!locales.includes(locale as any)) {
+  if (!locales.includes(locale as (typeof locales)[number])) {
     notFound();
   }
 
@@ -27,12 +27,8 @@ export default async function LocaleLayout({
   }
 
   return (
-    <html lang={locale}>
-      <body>
-        <IntlProvider locale={locale} messages={messages}>
-          {children}
-        </IntlProvider>
-      </body>
-    </html>
+    <IntlProvider locale={locale} messages={messages}>
+      {children}
+    </IntlProvider>
   );
 }

@@ -2,12 +2,12 @@
 
 import { useTranslations } from 'next-intl';
 
-export default function Page() {
+export default function LocalePage() {
   const t = useTranslations('home');
 
   return (
-    <div style={{ padding: 40 }}>
+    <main style={{ padding: 40 }}>
       <h1>{t('title')}</h1>
-    </div>
+    </main>
   );
 }
