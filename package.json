@@ -80,6 +80,7 @@
     "jsdom": "^29.0.1",
     "prettier": "^3.8.1",
     "sanity": "^5.18.0",
-    "tailwindcss": "^4"
+    "tailwindcss": "^4",
+    "typescript": "^5.9.3"
   }
 }
