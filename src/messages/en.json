@@ -1,4 +1,15 @@
 {
+  "home": {
+    "title": "Welcome to the Festival"
+  },
+  "hero": {
+    "title": "{siteName}",
+    "subtitle": "Music, Culture & Experiences",
+    "cta": "Get Tickets"
+  },
+  "nav": {},
+  "footer": {},
+  "location": {},
   "cookie": {
     "ariaLabel": "Cookie consent",
     "message": "We use cookies to improve your experience.",

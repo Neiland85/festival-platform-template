@@ -1,4 +1,15 @@
 {
+  "home": {
+    "title": "Bienvenido al Festival"
+  },
+  "hero": {
+    "title": "{siteName}",
+    "subtitle": "Música, Cultura y Experiencias",
+    "cta": "Comprar Entradas"
+  },
+  "nav": {},
+  "footer": {},
+  "location": {},
   "cookie": {
     "ariaLabel": "Consentimiento de cookies",
     "message": "Usamos cookies para mejorar tu experiencia.",
