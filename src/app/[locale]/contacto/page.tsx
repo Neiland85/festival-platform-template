@@ -1,4 +1,5 @@
 import { setRequestLocale } from "next-intl/server"
+import { clientEnv } from "@/lib/env"
 
 export const metadata = {
   title: "Contact Sales | Festival Platform",
@@ -52,7 +53,7 @@ export default async function ContactPage({ params }: Props) {
         {/* ── Right: Contact form ── */}
         <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-8 md:p-10">
           <form
-            action={`mailto:${process.env["NEXT_PUBLIC_CONTACT_EMAIL"] ?? "admin@claritystructures.com"}`}
+            action={`mailto:${clientEnv.NEXT_PUBLIC_CONTACT_EMAIL}`}
             method="POST"
             encType="text/plain"
             className="space-y-5"
