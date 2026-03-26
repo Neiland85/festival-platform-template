@@ -2,8 +2,9 @@
 
 import Script from "next/script"
 import { useEffect, useSyncExternalStore } from "react"
+import { clientEnv } from "@/lib/env"
 
-const PIXEL_ID = process.env["NEXT_PUBLIC_FB_PIXEL_ID"] ?? ""
+const PIXEL_ID = clientEnv.NEXT_PUBLIC_FB_PIXEL_ID
 
 const CONSENT_COOKIE = "sn_cookie_consent"
 

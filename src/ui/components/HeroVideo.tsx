@@ -4,11 +4,12 @@ import Image from "next/image"
 import { useTranslations } from "next-intl"
 import { useEffect, useRef, useState, useCallback, useMemo } from "react"
 import { SITE_NAME } from "@/config/site"
+import { clientEnv } from "@/lib/env"
 
 // ── CDN-aware hero images ────────────────────────────────
 // If NEXT_PUBLIC_CDN_HERO_URL is set (e.g., "https://d1abc.cloudfront.net/hero/"),
 // images are loaded from CDN. Otherwise, falls back to local /carousel/.
-const CDN_BASE = process.env["NEXT_PUBLIC_CDN_HERO_URL"] ?? ""
+const CDN_BASE = clientEnv.NEXT_PUBLIC_CDN_HERO_URL ?? ""
 
 const LOCAL_HERO_IMAGES = [
   { file: "hero-01.webp", alt: "Live concert on stage" },
