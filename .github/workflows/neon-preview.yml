@@ -30,7 +30,7 @@ jobs:
       # ─────────────────────────────
       # 1. Checkout repo
       # ─────────────────────────────
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       # ─────────────────────────────
       # 2. Setup pnpm
@@ -42,7 +42,7 @@ jobs:
       # ─────────────────────────────
       # 3. Setup Node
       # ─────────────────────────────
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: pnpm

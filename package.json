@@ -1,12 +1,43 @@
 {
+  "name": "festival-platform-template",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
     "test": "vitest",
     "test:unit": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "ci": "vitest run"
+  },
+  "dependencies": {
+    "@sentry/nextjs": "^8.53.0",
+    "@upstash/ratelimit": "^2.0.5",
+    "@upstash/redis": "^1.34.3",
+    "next": "^15.1.7",
+    "next-intl": "^3.26.5",
+    "next-sanity": "^9.8.22",
+    "pg": "^8.13.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "stripe": "^17.7.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^22.14.0",
+    "@types/pg": "^8.11.11",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "drizzle-kit": "^0.30.6",
+    "drizzle-orm": "^0.44.0",
     "eslint": "^10.1.0",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.8.3",
     "vitest": "^4.1.1"
   }
 }
