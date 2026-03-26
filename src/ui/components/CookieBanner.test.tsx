@@ -5,11 +5,13 @@ import userEvent from "@testing-library/user-event"
 import { CookieBanner } from "./CookieBanner"
 import { I18nWrapper } from "@/test/i18n-wrapper" 
 // Mock i18n navigation Link to render a plain <a>
-vi.mock("@/i18n/navigation", () => ({
-  Link: ({ href, children, ...props }: { href: string; children: React.ReactNode }) => (
-    <a href={href} {...props}>{children}</a>
-  ),
-}))
+vi.mock("@/i18n/navigation", async () => {
+  const React = await import("react")
+  return {
+    Link: (props: { href: string; children: React.ReactNode }) =>
+      React.createElement("a", { href: props.href }, props.children),
+  }
+})
 
 describe("CookieBanner", () => {
   beforeEach(() => {

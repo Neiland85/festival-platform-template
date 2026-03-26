@@ -1,28 +1,4 @@
-import { vi } from 'vitest'
-
-const messages = {
-  promo: {}
-}
-
-vi.mock('next-intl', async () => {
-  const actual = await vi.importActual<any>('next-intl')
-
-  return {
-    ...actual,
-    useTranslations: (ns: string) => {
-      return (key: string) => {
-        if (!messages[ns]?.[key]) {
-          throw new Error(`Missing translation: ${ns}.${key}`)
-        }
-        return messages[ns][key]
-      }
-    },
-    NextIntlClientProvider: ({ children }: any) => children
-  }
-})
-
 import { TextEncoder, TextDecoder } from 'util'
 
 global.TextEncoder = TextEncoder as any
 global.TextDecoder = TextDecoder as any
-

@@ -23,6 +23,13 @@ try {
 }
 
 export default defineConfig({
+  oxc: {
+    tsconfig: {
+      compilerOptions: {
+        jsx: "react-jsx",
+      },
+    },
+  },
   resolve: {
     alias: {
       "@": resolve(__dirname, "./src"),
@@ -31,7 +38,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    setupFiles: ["./src/test/setup.ts"],
+    setupFiles: ["./vitest.setup.ts", "./src/test/setup.ts"],
     env: {
       NODE_ENV: "test",
       DATABASE_URL: "postgres://test:test@localhost:5432/test",
