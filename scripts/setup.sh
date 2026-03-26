@@ -54,6 +54,18 @@ echo "✅  Schema pushed"
 # ── 5. Seed sample data ─────────────────────────────────────────
 echo "🌱  Seeding database..."
 pnpm db:seed
+
+# ── 6. Install git hooks ──────────────────────────────────────
+echo "🪝  Installing git hooks..."
+GIT_DIR=$(git rev-parse --git-dir 2>/dev/null || echo ".git")
+mkdir -p "$GIT_DIR/hooks"
+cat > "$GIT_DIR/hooks/commit-msg" <<'HOOK'
+#!/usr/bin/env bash
+exec bash scripts/commit-msg.sh "$1"
+HOOK
+chmod +x "$GIT_DIR/hooks/commit-msg"
+echo "✅  commit-msg hook installed"
+
 echo ""
 echo "══════════════════════════════════════════════"
 echo "  🎉  Setup complete!"

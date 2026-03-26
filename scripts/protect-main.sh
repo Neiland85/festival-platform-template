@@ -126,11 +126,7 @@ PAYLOAD=$(cat <<'ENDJSON'
   "required_status_checks": {
     "strict": true,
     "contexts": [
-      "🔍 Lint",
-      "🔠 Typecheck",
-      "🧪 Tests",
-      "🛡️ Audit",
-      "🏗️ Build"
+      "verify"
     ]
   },
   "enforce_admins": true,
