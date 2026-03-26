@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { getPool } from "@/adapters/db/pool"
+import { serverEnv } from "@/lib/env"
 import { problem } from "@/lib/problem"
 import { captureException } from "@sentry/nextjs"
 
@@ -15,7 +16,7 @@ export async function GET() {
       db: "connected",
     })
   } catch (error) {
-    const isDev = process.env.NODE_ENV === "development"
+    const isDev = serverEnv.NODE_ENV === "development"
     const message = error instanceof Error ? error.message : String(error)
     const name = error instanceof Error ? error.name : "UnknownError"
 

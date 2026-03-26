@@ -22,7 +22,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: "10"
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -41,6 +41,10 @@ jobs:
 
       - name: Unit tests
         run: pnpm test:unit
+        env:
+          DATABASE_URL: postgres://test:test@localhost:5432/test
+          SESSION_SECRET: ci-test-secret-minimum-32-characters-long
+          ADMIN_PASSWORD: ci-test-admin
 
       - name: Build
         run: pnpm build

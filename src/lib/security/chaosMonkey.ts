@@ -12,6 +12,7 @@
  * Configure with env vars: CHAOS_ERROR_RATE, CHAOS_LATENCY_RATE, CHAOS_KILL_RATE
  */
 
+import { serverEnv } from "@/lib/env"
 import { log } from "@/lib/logger"
 
 export interface ChaosConfig {
@@ -24,12 +25,12 @@ export interface ChaosConfig {
 }
 
 const DEFAULT_CONFIG: ChaosConfig = {
-  enabled: process.env["CHAOS"] === "true",
-  errorRate: parseFloat(process.env["CHAOS_ERROR_RATE"] || "0.05"),
-  latencyRate: parseFloat(process.env["CHAOS_LATENCY_RATE"] || "0.1"),
-  maxLatencyMs: parseInt(process.env["CHAOS_MAX_LATENCY_MS"] || "3000", 10),
-  killRate: parseFloat(process.env["CHAOS_KILL_RATE"] || "0.01"),
-  logVerbose: process.env["CHAOS_VERBOSE"] === "true",
+  enabled: serverEnv.CHAOS,
+  errorRate: serverEnv.CHAOS_ERROR_RATE,
+  latencyRate: serverEnv.CHAOS_LATENCY_RATE,
+  maxLatencyMs: serverEnv.CHAOS_MAX_LATENCY_MS,
+  killRate: serverEnv.CHAOS_KILL_RATE,
+  logVerbose: serverEnv.CHAOS_VERBOSE,
 }
 
 // ── Metrics for observability ──────────────────────────────

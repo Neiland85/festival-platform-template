@@ -40,17 +40,13 @@ function fromBase64Url(str: string): Uint8Array {
 }
 
 async function getSigningKey(): Promise<CryptoKey> {
+  // SESSION_SECRET is validated at boot by src/lib/env.ts (Zod, min 32 chars).
+  // This guard is defense-in-depth for edge cases where env.ts hasn't loaded yet.
   const secret = process.env["SESSION_SECRET"]
-  if (!secret) {
+  if (!secret || secret.length < 32) {
     throw new Error(
-      "SESSION_SECRET env var is REQUIRED. " +
-      "Unsigned sessions are not permitted in any environment."
-    )
-  }
-  if (secret.length < 32) {
-    throw new Error(
-      "SESSION_SECRET must be at least 32 characters. " +
-      "Use: openssl rand -base64 48"
+      "SESSION_SECRET is missing or too short (min 32 chars). " +
+      "Generate with: openssl rand -base64 48",
     )
   }
 
