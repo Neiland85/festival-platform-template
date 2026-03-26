@@ -12,7 +12,7 @@
  */
 
 import { getRedis } from "@/lib/redis/client"
-import { db } from "@/lib/db"
+import { db } from "@/adapters/db/query"
 import { log } from "@/lib/logger"
 
 export interface DriftIssue {

@@ -189,37 +189,6 @@ ${this.metrics.firstKillAt ? `First Kill At:      ${new Date(this.metrics.firstK
 
 export const chaos = new ChaosMonkey()
 
-// ── Helper: Chaos-aware setTimeout ────────────────────────
-
-export async function chaosDelay(ms: number): Promise<void> {
-  await chaos.inject("delay", { killRate: 0.01 }) // Inject chaos but with lower kill rate
-  await new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-// ── Helper: Chaos-aware database calls ────────────────────
-
-export async function chaosDbQuery<T>(
-  queryFn: () => Promise<T>,
-  point: string
-): Promise<T> {
-  await chaos.inject(`${point}_before`)
-  const result = await queryFn()
-  await chaos.inject(`${point}_after`)
-  return result
-}
-
-// ── Helper: Chaos-aware Redis calls ─────────────────────
-
-export async function chaosRedisOp<T>(
-  opFn: () => Promise<T>,
-  point: string
-): Promise<T> {
-  await chaos.inject(`${point}_before`)
-  const result = await opFn()
-  await chaos.inject(`${point}_after`)
-  return result
-}
-
 // ── Expose metrics for monitoring ──────────────────────────
 
 export function getChaosMetrics(): ChaosMetrics {

@@ -23,7 +23,7 @@
  */
 
 import { getRedis } from "@/lib/redis/client"
-import { db } from "@/lib/db"
+import { db } from "@/adapters/db/query"
 import { log } from "@/lib/logger"
 import { randomUUID } from "crypto"
 import { chaos } from "@/lib/security/chaosMonkey" // Chaos testing injection

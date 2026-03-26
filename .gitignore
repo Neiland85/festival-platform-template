@@ -27,6 +27,9 @@ yarn-error.log*
 .vercel
 .env*.local
 
+# Archive artifacts (should not be in source)
+*.zip
+
 # Previews / temp artifacts
 vinyl-preview.html
 *.tmp

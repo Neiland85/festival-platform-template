@@ -1,5 +1,5 @@
 import Link from "next/link"
-import LogoutButton from "./LogoutButton"
+import LogoutButton from "@/ui/components/LogoutButton"
 
 export const metadata = {
   title: "Festival Admin",

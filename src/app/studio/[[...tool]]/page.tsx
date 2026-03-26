@@ -8,7 +8,7 @@
  * Access is protected by admin auth in middleware.ts.
  */
 import { NextStudio } from "next-sanity/studio"
-import config from "../../../../sanity.config"
+import config from "@root/sanity.config"
 
 export default function StudioPage() {
   return <NextStudio config={config} />

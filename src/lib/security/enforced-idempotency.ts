@@ -19,7 +19,7 @@
  * - No way to accidentally duplicate effects
  */
 
-import { db } from "@/lib/db"
+import { db } from "@/adapters/db/query"
 import { log } from "@/lib/logger"
 import { chaos } from "@/lib/security/chaosMonkey"
 

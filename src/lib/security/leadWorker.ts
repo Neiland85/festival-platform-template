@@ -61,10 +61,7 @@ async function processJob(payload: Record<string, unknown>): Promise<unknown> {
   // TODO: Replace with actual domain logic
   // This is a placeholder that succeeds immediately
 
-  console.log("[processJob] Processing:", payload)
-
-  // Simulate processing (remove in production)
-  await new Promise((resolve) => setTimeout(resolve, 100))
+  log("info", "process_job_start", { payload })
 
   return {
     status: "success",
