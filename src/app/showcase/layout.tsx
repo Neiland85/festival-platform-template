@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { ShowcaseCookieBanner } from "./cookie-banner"
 
 export const metadata: Metadata = {
   title: "Clarity Structures — Production-Grade Code Templates",
@@ -13,7 +14,10 @@ export default function ShowcaseLayout({
 }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, padding: 0 }}>{children}</body>
+      <body style={{ margin: 0, padding: 0 }}>
+        {children}
+        <ShowcaseCookieBanner />
+      </body>
     </html>
   )
 }

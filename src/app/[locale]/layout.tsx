@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import { IntlProvider } from "@/i18n/provider"
 import { locales, type Locale } from "@/i18n/config"
+import { CookieBanner } from "@/ui/components/CookieBanner"
 
 import en from "@/messages/en.json"
 import es from "@/messages/es.json"
@@ -38,6 +39,7 @@ export default async function LocaleLayout({
       <body>
         <IntlProvider locale={locale} messages={messages}>
           {children}
+          <CookieBanner />
         </IntlProvider>
       </body>
     </html>
