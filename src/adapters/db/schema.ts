@@ -94,6 +94,40 @@ export const orders = pgTable("orders", {
   index("idx_orders_created_at").on(table.createdAt),
 ])
 
+/* ─── Webhook Dead Letters (005: DLQ for failed webhooks) ─── */
+
+export const webhookDeadLetters = pgTable("webhook_dead_letters", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  provider: varchar("provider", { length: 50 }).notNull().default("stripe"),
+  eventType: varchar("event_type", { length: 100 }).notNull(),
+  eventId: varchar("event_id", { length: 255 }).notNull(),
+  payload: text("payload").notNull(),
+  error: text("error").notNull(),
+  attempts: integer("attempts").notNull().default(1),
+  resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index("idx_dlq_provider").on(table.provider),
+  index("idx_dlq_event_type").on(table.eventType),
+  index("idx_dlq_resolved").on(table.resolvedAt),
+])
+
+/* ─── Tenants (006: Multi-tenancy) ─── */
+
+export const tenants = pgTable("tenants", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: varchar("name", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 100 }).notNull().unique(),
+  schemaName: varchar("schema_name", { length: 63 }).notNull().unique(),
+  domain: varchar("domain", { length: 255 }),
+  config: text("config").notNull().default("{}"),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index("idx_tenants_slug").on(table.slug),
+  index("idx_tenants_domain").on(table.domain),
+])
+
 /* ─── Audit Events (007: Persistent Audit Log) ─── */
 
 export const auditEvents = pgTable("audit_events", {
