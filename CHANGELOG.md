@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.10.3](https://github.com/Neiland85/festival-platform-template/compare/v1.10.2...v1.10.3) (2026-03-27)
+
+### Fixed
+
+* **critical:** prevent serverEnv from crashing browser hydration ([f42c001](https://github.com/Neiland85/festival-platform-template/commit/f42c001208fa2e0336121a497666354595267f70))
+
 ## [1.10.2](https://github.com/Neiland85/festival-platform-template/compare/v1.10.1...v1.10.2) (2026-03-27)
 
 ### Fixed
