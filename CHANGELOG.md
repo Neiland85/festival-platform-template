@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.0](https://github.com/Neiland85/festival-platform-template/compare/v1.1.0...v1.2.0) (2026-03-27)
+
+### Added
+
+* **audit:** implement persistent audit log with PostgreSQL ([#39](https://github.com/Neiland85/festival-platform-template/issues/39)) ([76224ab](https://github.com/Neiland85/festival-platform-template/commit/76224ab116908fbc8744b915d4e78327cadf31c3))
+
 ## [1.1.0](https://github.com/Neiland85/festival-platform-template/compare/v1.0.1...v1.1.0) (2026-03-27)
 
 ### Added
