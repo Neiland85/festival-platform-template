@@ -32,20 +32,20 @@
     "moreInfo": "More info"
   },
   "eventDescriptions": {
-    "mainstage": "The main stage with top headlining artists.",
-    "techno-bunker": "Underground techno in a unique industrial space.",
-    "sunset-session": "Sunset sessions with spectacular views.",
-    "chill-garden": "Chill zone with ambient music and gardens.",
-    "bass-arena": "Bass music and dubstep in an immersive space.",
-    "afterhours": "The party goes on until sunrise."
+    "chambao": "Flamenco fusion with electronic music under the stars.",
+    "bresh": "Latin America's most viral party arrives with unstoppable energy.",
+    "ohsee": "Cutting-edge electronic sessions with emerging artists.",
+    "goa": "Psytrance and progressive in an immersive nighttime experience.",
+    "tropicalia": "Tropical rhythms, reggaeton and latin beats outdoors.",
+    "tecnoflamenco": "When flamenco rhythm meets electronic beats."
   },
   "eventHighlights": {
-    "mainstage": "International artists · Visual production · Funktion-One sound",
-    "techno-bunker": "Industrial vibes · Local residents · Extended sets",
-    "sunset-session": "Panoramic views · Premium cocktails · Curated DJ sets",
-    "chill-garden": "Nature · Local cuisine · Art installations",
-    "bass-arena": "Deep sub-bass · Visual mapping · MC hosts",
-    "afterhours": "Intimate sessions · Surprise artists · Until sunrise"
+    "chambao": "Flamenco-chill · Visual production · Surround sound",
+    "bresh": "Viral party · Global hits · Immersive experience",
+    "ohsee": "Experimental electronic · Emerging artists · Visual art",
+    "goa": "Psytrance · Progressive · UV decor · Night session",
+    "tropicalia": "Latin beats · Reggaeton · Tropical house · Outdoors",
+    "tecnoflamenco": "Unique fusion · Electronic cajón · Rhythm and beats"
   },
   "showcase": {
     "hostLabel": "Presented by",

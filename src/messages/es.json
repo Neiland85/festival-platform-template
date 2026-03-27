@@ -32,20 +32,20 @@
     "moreInfo": "Más información"
   },
   "eventDescriptions": {
-    "mainstage": "El escenario principal con los artistas más destacados.",
-    "techno-bunker": "Techno underground en un espacio industrial único.",
-    "sunset-session": "Sesiones al atardecer con vistas espectaculares.",
-    "chill-garden": "Zona chill con música ambient y jardines.",
-    "bass-arena": "Bass music y dubstep en un espacio envolvente.",
-    "afterhours": "La fiesta continúa hasta el amanecer."
+    "chambao": "Fusión flamenca con electrónica en una noche mágica bajo las estrellas.",
+    "bresh": "La fiesta más viral de Latinoamérica llega con su energía arrolladora.",
+    "ohsee": "Sesiones electrónicas de vanguardia con artistas emergentes.",
+    "goa": "Psytrance y progressive en una experiencia inmersiva nocturna.",
+    "tropicalia": "Ritmos tropicales, reggaeton y latin beats al aire libre.",
+    "tecnoflamenco": "Cuando el compás flamenco se encuentra con los beats electrónicos."
   },
   "eventHighlights": {
-    "mainstage": "Artistas internacionales · Producción visual · Sonido Funktion-One",
-    "techno-bunker": "Ambiente industrial · Residentes locales · Sesiones extendidas",
-    "sunset-session": "Vistas panorámicas · Cocktails premium · DJ sets selectos",
-    "chill-garden": "Naturaleza · Gastronomía local · Instalaciones artísticas",
-    "bass-arena": "Subgraves potentes · Visual mapping · MC hosts",
-    "afterhours": "Sesiones íntimas · Artistas sorpresa · Hasta el amanecer"
+    "chambao": "Flamenco-chill · Producción visual · Sonido envolvente",
+    "bresh": "Fiesta viral · Hits globales · Experiencia inmersiva",
+    "ohsee": "Electrónica experimental · Artistas emergentes · Visual art",
+    "goa": "Psytrance · Progressive · Decoración UV · Sesión nocturna",
+    "tropicalia": "Latin beats · Reggaeton · Tropical house · Al aire libre",
+    "tecnoflamenco": "Fusión única · Cajón electrónico · Compás y beats"
   },
   "showcase": {
     "hostLabel": "Presentado por",
