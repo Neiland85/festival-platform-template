@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.10.5](https://github.com/Neiland85/festival-platform-template/compare/v1.10.4...v1.10.5) (2026-03-27)
+
+### Fixed
+
+* use correct event IDs in translations (chambao, bresh, ohsee, goa, tropicalia, tecnoflamenco) ([4e69a75](https://github.com/Neiland85/festival-platform-template/commit/4e69a7568f0d31d65a7626e084e5dfd345804673)), closes [#418](https://github.com/Neiland85/festival-platform-template/issues/418)
+
 ## [1.10.4](https://github.com/Neiland85/festival-platform-template/compare/v1.10.3...v1.10.4) (2026-03-27)
 
 ### Fixed
