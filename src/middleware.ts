@@ -1,28 +1,28 @@
 /**
- * Next.js Middleware — DDoS Shield + Privacy Shield + Auth enforcement.
+ * Next.js Middleware — 4-Layer Security Stack.
  *
  * Runs in Edge Runtime on EVERY request before route handlers.
- * Three layers:
- *   1. DDoS Shield — global rate limiting, IP auto-ban, header validation,
- *      body size enforcement (all routes)
- *   2. Privacy Shield — response header sanitization, info leak prevention,
- *      server fingerprint removal (VPN-equivalent protections)
- *   3. Admin Auth — session cookie validation (/api/admin/* only)
  *
- * VPN-EQUIVALENT PROTECTIONS:
- *   - IP masking: hashIp() in all logging (never stores raw IPs)
- *   - Encryption: TLS enforced via HSTS (63072000s + preload)
- *   - DNS privacy: X-DNS-Prefetch-Control: off
- *   - Anti-fingerprint: 17 browser APIs disabled via Permissions-Policy
- *   - Anti-tracking: FLoC/Topics API disabled
- *   - Cross-origin isolation: COOP + CORP headers
- *   - Server info stripped: X-Powered-By, Server headers removed
- *   - API responses: no-store cache headers on sensitive endpoints
+ * ┌─────────────────────────────────────────────────────────┐
+ * │  Layer 1: WAF (Web Application Firewall)                │
+ * │  → SQL injection, XSS, path traversal, RCE, SSRF,     │
+ * │    Log4Shell, scanner detection, protocol smuggling     │
+ * ├─────────────────────────────────────────────────────────┤
+ * │  Layer 2: DDoS Shield                                   │
+ * │  → Rate limiting (60/min), IP auto-ban, header/body    │
+ * ├─────────────────────────────────────────────────────────┤
+ * │  Layer 3: Admin Authentication                          │
+ * │  → HMAC-SHA256 session cookies for /api/admin/*        │
+ * ├─────────────────────────────────────────────────────────┤
+ * │  Layer 4: Privacy Shield                                │
+ * │  → Strip server info, no-cache APIs, COOP/CORP         │
+ * └─────────────────────────────────────────────────────────┘
  */
 
 import { NextRequest, NextResponse } from "next/server"
 import { validateSession } from "@/lib/auth/sessionStore"
 import { shieldCheck } from "@/lib/security/ddos-shield"
+import { inspectRequest } from "@/lib/security/waf"
 import { sanitizeResponseHeaders } from "@/lib/security/privacy-shield"
 
 export function middleware(req: NextRequest) {
@@ -31,9 +31,37 @@ export function middleware(req: NextRequest) {
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     "unknown"
 
+  // ── Layer 1: WAF — Deep Packet Inspection ──────────
+  const wafResult = inspectRequest(
+    req.method,
+    req.nextUrl.pathname,
+    req.nextUrl.search.slice(1), // Remove leading "?"
+    req.headers,
+  )
+
+  if (wafResult.blocked) {
+    console.log(
+      JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: "warn",
+        event: "waf_block",
+        ip: ip.slice(0, 8) + "***",
+        rule: wafResult.rule,
+        category: wafResult.category,
+        path: req.nextUrl.pathname,
+        method: req.method,
+      }),
+    )
+
+    return NextResponse.json(
+      { error: "blocked" },
+      { status: 403 },
+    )
+  }
+
+  // ── Layer 2: DDoS Shield ───────────────────────────
   const contentLength = Number(req.headers.get("content-length") ?? "0") || undefined
 
-  // ── Layer 1: DDoS Shield (all routes) ──────────────
   const shield = shieldCheck(
     ip,
     req.method,
@@ -55,7 +83,7 @@ export function middleware(req: NextRequest) {
     )
   }
 
-  // ── Layer 2: Admin auth (/api/admin/* only) ────────
+  // ── Layer 3: Admin Auth (/api/admin/* only) ────────
   if (req.nextUrl.pathname.startsWith("/api/admin")) {
     const token = req.cookies.get("admin_session")?.value
     if (!validateSession(token)) {
@@ -63,20 +91,20 @@ export function middleware(req: NextRequest) {
     }
   }
 
-  // ── Layer 3: Privacy Shield (all responses) ────────
+  // ── Layer 4: Privacy Shield (all responses) ────────
   const response = NextResponse.next()
 
-  // Add rate limit headers
+  // Rate limit headers
   if (shield.headers) {
     for (const [k, v] of Object.entries(shield.headers)) {
       response.headers.set(k, v)
     }
   }
 
-  // Strip server fingerprint headers
+  // Strip server fingerprint
   sanitizeResponseHeaders(response)
 
-  // Prevent sensitive API data from being cached by proxies
+  // Prevent API data caching
   if (req.nextUrl.pathname.startsWith("/api/")) {
     response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, private")
     response.headers.set("Pragma", "no-cache")
@@ -87,7 +115,6 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  // Run on ALL API routes + pages (not static assets)
   matcher: [
     "/api/:path*",
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|mp4|webm)).*)",
