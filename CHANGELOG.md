@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.11.0](https://github.com/Neiland85/festival-platform-template/compare/v1.10.6...v1.11.0) (2026-03-27)
+
+### Added
+
+* GDPR cookie banner on all public pages ([54d532b](https://github.com/Neiland85/festival-platform-template/commit/54d532b3b6323382baa1b235fe7ee558360543a6))
+
 ## [1.10.6](https://github.com/Neiland85/festival-platform-template/compare/v1.10.5...v1.10.6) (2026-03-27)
 
 ### Fixed
