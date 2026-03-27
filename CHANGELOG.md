@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.0](https://github.com/Neiland85/festival-platform-template/compare/v1.2.0...v1.3.0) (2026-03-27)
+
+### Added
+
+* **audit:** DLQ, OpenAPI, OpenTelemetry, Codecov, E2E tests, multi-tenancy ([#40](https://github.com/Neiland85/festival-platform-template/issues/40)) ([a7d7b03](https://github.com/Neiland85/festival-platform-template/commit/a7d7b037f842028199b7b5bd081eee39d358eb47))
+
 ## [1.2.0](https://github.com/Neiland85/festival-platform-template/compare/v1.1.0...v1.2.0) (2026-03-27)
 
 ### Added
