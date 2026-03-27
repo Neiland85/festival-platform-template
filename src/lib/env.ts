@@ -277,7 +277,11 @@ let _serverEnv: ReturnType<typeof serverSchema.parse> | null = null
 
 function getServerEnv() {
   if (typeof window !== "undefined") {
-    throw new Error("getServerEnv() cannot be called in the browser")
+    // Silently return empty object in the browser.
+    // This happens because webpack bundles env.ts into client JS
+    // (via HeroVideo → clientEnv import). The Proxy must not throw
+    // or it crashes React hydration.
+    return {} as ReturnType<typeof serverSchema.parse>
   }
   if (!_serverEnv) {
     _serverEnv = parseEnv(serverSchema, "SERVER ENV")
