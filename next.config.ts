@@ -65,6 +65,16 @@ const nextConfig: NextConfig = {
         { key: "X-Content-Type-Options", value: "nosniff" },
       ],
     },
+    {
+      // Explicit CORS policy for API routes — restrict to same origin
+      source: "/api/:path*",
+      headers: [
+        { key: "Access-Control-Allow-Origin", value: process.env["NEXT_PUBLIC_SITE_URL"] || "https://www.your-platform.com" },
+        { key: "Access-Control-Allow-Methods", value: "GET, POST, OPTIONS" },
+        { key: "Access-Control-Allow-Headers", value: "Content-Type, x-csrf-token, idempotency-key" },
+        { key: "Access-Control-Max-Age", value: "86400" },
+      ],
+    },
   ],
 }
 
