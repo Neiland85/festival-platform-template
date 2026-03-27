@@ -1,6 +1,6 @@
-MIT License
+Custom MIT License
 
-Copyright (c) 2026 Clarity Structures Digital S.L
+Copyright (c) 2026 Clarity Structures Digital S.L (admin@claritystructures.com)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -9,13 +9,75 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. PERMITTED USE
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+   The Software may be used for legitimate business purposes, including but
+   not limited to: event management, ticket sales, lead capture, content
+   management, and related commercial operations.
+
+2. RESTRICTIONS
+
+   The Software SHALL NOT be used:
+
+   (a) In systems designed to cause harm to individuals or organizations,
+       including but not limited to unauthorized surveillance, harassment
+       platforms, or tools facilitating illegal activities.
+
+   (b) In violation of applicable privacy regulations, including but not
+       limited to the General Data Protection Regulation (EU 2016/679),
+       the Spanish Organic Law on Data Protection (LOPDGDD 3/2018), or
+       equivalent data protection frameworks in the jurisdiction of use.
+
+   (c) To process, store, or transmit personally identifiable information
+       (PII) without implementing appropriate technical and organizational
+       measures as required by applicable law.
+
+   (d) In any manner that circumvents, disables, or interferes with the
+       security features included in the Software.
+
+3. SECURITY FEATURES
+
+   The security modules included in the Software (Web Application Firewall,
+   rate limiting, CSRF protection, encryption, audit logging, and related
+   components) are provided as-is. Users are responsible for:
+
+   (a) Configuring security features appropriately for their deployment
+       environment and threat model.
+
+   (b) Conducting their own security assessments and penetration testing.
+
+   (c) Maintaining up-to-date dependencies and applying security patches.
+
+4. LEGAL CONTEXT
+
+   This Software includes compliance tooling (GDPR consent flows, audit
+   trails, data portability features) that facilitates regulatory compliance
+   but does not constitute legal advice. Users must:
+
+   (a) Consult qualified legal counsel regarding their specific regulatory
+       obligations.
+
+   (b) Conduct Data Protection Impact Assessments (DPIA) where required.
+
+   (c) Designate a Data Protection Officer (DPO) if applicable under
+       Articles 37-39 of the GDPR.
+
+5. DISCLAIMER
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+   The security features included in this Software reduce but do not
+   eliminate risk. No software can guarantee absolute security. The authors
+   accept no liability for security breaches, data loss, or regulatory
+   penalties arising from the use of this Software.
+
+6. ATTRIBUTION
+
+   The above copyright notice and this permission notice shall be included
+   in all copies or substantial portions of the Software.
