@@ -54,7 +54,10 @@
   },
   "cookie": {
     "ariaLabel": "Cookie consent",
-    "message": "We use cookies to improve your experience.",
+    "title": "Privacy",
+    "message": "This site uses essential technical cookies only. We do not use tracking, advertising, or third-party analytics cookies.",
+    "legal": "You may exercise your data rights by contacting admin@claritystructures.com",
+    "controller": "Data controller: Clarity Structures Digital S.L., Madrid, Spain.",
     "privacyPolicy": "Privacy policy",
     "accept": "Accept",
     "reject": "Reject"

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { Link } from "@/i18n/navigation"
 import { useTranslations } from "next-intl"
 
@@ -24,6 +24,15 @@ function setConsent(value: "accepted" | "rejected") {
 export function CookieBanner() {
   const t = useTranslations("cookie")
   const [dismissed, setDismissed] = useState(hasConsent)
+  const [visible, setVisible] = useState(false)
+
+  // Slide-up animation after mount
+  useEffect(() => {
+    if (!dismissed) {
+      const timer = setTimeout(() => setVisible(true), 300)
+      return () => clearTimeout(timer)
+    }
+  }, [dismissed])
 
   const handleAccept = useCallback(() => {
     setConsent("accepted")
@@ -41,40 +50,123 @@ export function CookieBanner() {
     <div
       role="dialog"
       aria-label={t("ariaLabel")}
-      className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6"
+      style={{
+        position: "fixed",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 9999,
+        padding: "1rem",
+        transform: visible ? "translateY(0)" : "translateY(100%)",
+        opacity: visible ? 1 : 0,
+        transition: "transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease",
+        pointerEvents: visible ? "auto" : "none",
+      }}
     >
-      <div className="max-w-3xl mx-auto border border-[var(--sn-border-2)]
-        bg-white p-5 md:p-6 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center gap-4">
-          <div className="flex-1">
-            <p className="text-xs text-[var(--sn-muted)] leading-relaxed">
-              {t("message")}{" "}
-              <Link
-                href="/privacidad"
-                className="underline hover:text-[var(--sn-text)] transition-colors"
-              >
-                {t("privacyPolicy")}
-              </Link>
-            </p>
-          </div>
-          <div className="flex gap-3 shrink-0">
-            <button
-              onClick={handleReject}
-              className="px-5 py-2 text-xs font-medium tracking-wide uppercase
-                border border-[var(--sn-border-2)] text-[var(--sn-muted)]
-                hover:text-[var(--sn-text)] hover:border-[var(--sn-text)] transition-colors"
-            >
-              {t("reject")}
-            </button>
-            <button
-              onClick={handleAccept}
-              className="px-5 py-2 text-xs font-medium tracking-wide uppercase
-                bg-[var(--sn-text)] text-white
-                hover:bg-[var(--sn-muted)] transition-colors"
-            >
-              {t("accept")}
-            </button>
-          </div>
+      <div
+        style={{
+          maxWidth: "680px",
+          margin: "0 auto",
+          background: "rgba(10, 10, 10, 0.85)",
+          backdropFilter: "blur(20px) saturate(1.2)",
+          WebkitBackdropFilter: "blur(20px) saturate(1.2)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+          borderRadius: "16px",
+          padding: "1.5rem 2rem",
+          boxShadow: "0 -4px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.03) inset",
+        }}
+      >
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem" }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4141C6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+          <span style={{
+            fontSize: "0.6875rem",
+            fontWeight: 600,
+            letterSpacing: "0.15em",
+            textTransform: "uppercase" as const,
+            color: "#4141C6",
+          }}>
+            {t("title")}
+          </span>
+        </div>
+
+        {/* Body */}
+        <p style={{
+          fontSize: "0.8125rem",
+          lineHeight: 1.7,
+          color: "rgba(255, 255, 255, 0.65)",
+          margin: "0 0 0.5rem",
+        }}>
+          {t("message")}{" "}
+          <Link
+            href="/privacidad"
+            style={{
+              color: "#4141C6",
+              textDecoration: "underline",
+              textUnderlineOffset: "2px",
+            }}
+          >
+            {t("privacyPolicy")}
+          </Link>
+        </p>
+
+        <p style={{
+          fontSize: "0.6875rem",
+          lineHeight: 1.6,
+          color: "rgba(255, 255, 255, 0.35)",
+          margin: "0 0 1.25rem",
+        }}>
+          {t("legal")} — {t("controller")}
+        </p>
+
+        {/* Actions */}
+        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+          <button
+            onClick={handleAccept}
+            style={{
+              padding: "0.625rem 1.5rem",
+              background: "#4141C6",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              fontSize: "0.75rem",
+              fontWeight: 600,
+              letterSpacing: "0.05em",
+              cursor: "pointer",
+              transition: "background 0.2s, transform 0.15s",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "#5252D4" }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "#4141C6" }}
+          >
+            {t("accept")}
+          </button>
+          <button
+            onClick={handleReject}
+            style={{
+              padding: "0.625rem 1.5rem",
+              background: "transparent",
+              color: "rgba(255, 255, 255, 0.5)",
+              border: "1px solid rgba(255, 255, 255, 0.12)",
+              borderRadius: "8px",
+              fontSize: "0.75rem",
+              fontWeight: 500,
+              letterSpacing: "0.05em",
+              cursor: "pointer",
+              transition: "border-color 0.2s, color 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"
+              e.currentTarget.style.color = "rgba(255,255,255,0.8)"
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"
+              e.currentTarget.style.color = "rgba(255,255,255,0.5)"
+            }}
+          >
+            {t("reject")}
+          </button>
         </div>
       </div>
     </div>

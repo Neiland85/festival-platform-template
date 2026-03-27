@@ -1,24 +1,46 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 
-/**
- * Standalone cookie banner for /showcase (no IntlProvider needed).
- * GDPR-compliant: explicit accept/reject, 180-day cookie, no tracking until consent.
- */
+const COOKIE_KEY = "sn_cookie_consent"
+
+function hasConsent(): boolean {
+  if (typeof document === "undefined") return true
+  const v = document.cookie
+    .split("; ")
+    .find((c) => c.startsWith(`${COOKIE_KEY}=`))
+    ?.split("=")[1]
+  return v === "accepted" || v === "rejected"
+}
+
+function setConsent(value: "accepted" | "rejected") {
+  const maxAge = 180 * 24 * 60 * 60
+  const secure = globalThis.location?.protocol === "https:" ? "; Secure" : ""
+  document.cookie = `${COOKIE_KEY}=${value}; path=/; max-age=${maxAge}; SameSite=Lax${secure}`
+}
+
 export function ShowcaseCookieBanner() {
-  const [visible, setVisible] = useState(() => {
-    if (typeof document === "undefined") return false
-    return !document.cookie.includes("sn_cookie_consent=")
-  })
+  const [dismissed, setDismissed] = useState(hasConsent)
+  const [visible, setVisible] = useState(false)
 
-  const setCookie = useCallback((value: "accepted" | "rejected") => {
-    const maxAge = 180 * 24 * 60 * 60
-    document.cookie = `sn_cookie_consent=${value}; path=/; max-age=${maxAge}; SameSite=Lax`
+  useEffect(() => {
+    if (!dismissed) {
+      const timer = setTimeout(() => setVisible(true), 300)
+      return () => clearTimeout(timer)
+    }
+  }, [dismissed])
+
+  const handleAccept = useCallback(() => {
     setVisible(false)
+    setTimeout(() => { setConsent("accepted"); setDismissed(true) }, 400)
   }, [])
 
-  if (!visible) return null
+  const handleReject = useCallback(() => {
+    setVisible(false)
+    setTimeout(() => { setConsent("rejected"); setDismissed(true) }, 400)
+  }, [])
+
+  if (dismissed) return null
 
   return (
     <div
@@ -30,59 +52,59 @@ export function ShowcaseCookieBanner() {
         left: 0,
         right: 0,
         zIndex: 9999,
-        background: "#111",
-        borderTop: "1px solid #222",
-        padding: "1.25rem 2rem",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "1.5rem",
-        flexWrap: "wrap",
-        fontFamily: "'Space Mono', monospace",
-        fontSize: "0.8125rem",
-        color: "#999",
+        padding: "1rem",
+        transform: visible ? "translateY(0)" : "translateY(100%)",
+        opacity: visible ? 1 : 0,
+        transition: "transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease",
+        pointerEvents: visible ? "auto" : "none",
       }}
     >
-      <p style={{ margin: 0, maxWidth: "600px" }}>
-        We use essential cookies only. No tracking, no ads.{" "}
-        <a
-          href="/en/privacidad"
-          style={{ color: "#4141C6", textDecoration: "underline" }}
-        >
-          Privacy policy
-        </a>
-      </p>
+      <div
+        style={{
+          maxWidth: "680px",
+          margin: "0 auto",
+          background: "rgba(10, 10, 10, 0.85)",
+          backdropFilter: "blur(20px) saturate(1.2)",
+          WebkitBackdropFilter: "blur(20px) saturate(1.2)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+          borderRadius: "16px",
+          padding: "1.5rem 2rem",
+          boxShadow: "0 -4px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.03) inset",
+          fontFamily: "'Space Mono', 'SF Mono', monospace",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem" }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4141C6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+          <span style={{ fontSize: "0.6875rem", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase" as const, color: "#4141C6" }}>
+            Privacy
+          </span>
+        </div>
 
-      <div style={{ display: "flex", gap: "0.75rem" }}>
-        <button
-          onClick={() => setCookie("accepted")}
-          style={{
-            padding: "0.5rem 1.25rem",
-            background: "#4141C6",
-            color: "#fff",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontSize: "0.8125rem",
-            fontWeight: 600,
-          }}
-        >
-          Accept
-        </button>
-        <button
-          onClick={() => setCookie("rejected")}
-          style={{
-            padding: "0.5rem 1.25rem",
-            background: "transparent",
-            color: "#888",
-            border: "1px solid #333",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontSize: "0.8125rem",
-          }}
-        >
-          Reject
-        </button>
+        <p style={{ fontSize: "0.8125rem", lineHeight: 1.7, color: "rgba(255,255,255,0.65)", margin: "0 0 0.5rem" }}>
+          This site uses essential technical cookies only. We do not use tracking, advertising, or third-party analytics cookies.{" "}
+          <a href="/en/privacidad" style={{ color: "#4141C6", textDecoration: "underline", textUnderlineOffset: "2px" }}>Privacy policy</a>
+        </p>
+
+        <p style={{ fontSize: "0.6875rem", lineHeight: 1.6, color: "rgba(255,255,255,0.35)", margin: "0 0 1.25rem" }}>
+          You may exercise your data rights by contacting admin@claritystructures.com — Data controller: Clarity Structures Digital S.L., Madrid, Spain.
+        </p>
+
+        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+          <button
+            onClick={handleAccept}
+            style={{ padding: "0.625rem 1.5rem", background: "#4141C6", color: "#fff", border: "none", borderRadius: "8px", fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.05em", cursor: "pointer" }}
+          >
+            Accept
+          </button>
+          <button
+            onClick={handleReject}
+            style={{ padding: "0.625rem 1.5rem", background: "transparent", color: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", fontSize: "0.75rem", fontWeight: 500, letterSpacing: "0.05em", cursor: "pointer" }}
+          >
+            Reject
+          </button>
+        </div>
       </div>
     </div>
   )

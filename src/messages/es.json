@@ -54,8 +54,11 @@
   },
   "cookie": {
     "ariaLabel": "Consentimiento de cookies",
-    "message": "Usamos cookies para mejorar tu experiencia.",
-    "privacyPolicy": "Política de privacidad",
+    "title": "Privacidad",
+    "message": "Este sitio utiliza cookies t\u00e9cnicas esenciales para su funcionamiento. No utilizamos cookies de seguimiento, publicidad ni anal\u00edtica de terceros.",
+    "legal": "Puedes ejercer tus derechos ARCO contact\u00e1ndonos en admin@claritystructures.com",
+    "controller": "Responsable: Clarity Structures Digital S.L., Madrid, Espa\u00f1a.",
+    "privacyPolicy": "Pol\u00edtica de privacidad",
     "accept": "Aceptar",
     "reject": "Rechazar"
   },
