@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.10.2](https://github.com/Neiland85/festival-platform-template/compare/v1.10.1...v1.10.2) (2026-03-27)
+
+### Fixed
+
+* add missing i18n translations (runtime crash fix) ([#52](https://github.com/Neiland85/festival-platform-template/issues/52)) ([8d22dd4](https://github.com/Neiland85/festival-platform-template/commit/8d22dd4fd7c688f1de9aad137ec2bf279330fb31))
+
 ## [1.10.1](https://github.com/Neiland85/festival-platform-template/compare/v1.10.0...v1.10.1) (2026-03-27)
 
 ### Fixed
