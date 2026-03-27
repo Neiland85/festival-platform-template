@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.16.0](https://github.com/Neiland85/festival-platform-template/compare/v1.15.2...v1.16.0) (2026-03-27)
+
+### Added
+
+* **ux:** Clarity logo as spinning cursor + shockwave click effect ([660d3e1](https://github.com/Neiland85/festival-platform-template/commit/660d3e161b8cb469d234db26db78ab81bbcea040)), closes [#2563eb](https://github.com/Neiland85/festival-platform-template/issues/2563eb)
+
 ## [1.15.2](https://github.com/Neiland85/festival-platform-template/compare/v1.15.1...v1.15.2) (2026-03-27)
 
 ### Fixed
