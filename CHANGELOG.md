@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.15.2](https://github.com/Neiland85/festival-platform-template/compare/v1.15.1...v1.15.2) (2026-03-27)
+
+### Fixed
+
+* **orders:** atomic capacity reservation — eliminates overselling race condition ([2d78660](https://github.com/Neiland85/festival-platform-template/commit/2d786608fce5c484390e682167f38b97a03a6971))
+
 ## [1.15.1](https://github.com/Neiland85/festival-platform-template/compare/v1.15.0...v1.15.1) (2026-03-27)
 
 ### Fixed
