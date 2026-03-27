@@ -26,10 +26,9 @@ export function CookieBanner() {
   const [dismissed, setDismissed] = useState(hasConsent)
   const [visible, setVisible] = useState(false)
 
-  // Slide-up animation after mount
   useEffect(() => {
     if (!dismissed) {
-      const timer = setTimeout(() => setVisible(true), 300)
+      const timer = setTimeout(() => setVisible(true), 500)
       return () => clearTimeout(timer)
     }
   }, [dismissed])
@@ -47,128 +46,158 @@ export function CookieBanner() {
   if (dismissed) return null
 
   return (
-    <div
-      role="dialog"
-      aria-label={t("ariaLabel")}
-      style={{
-        position: "fixed",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: 9999,
-        padding: "1rem",
-        transform: visible ? "translateY(0)" : "translateY(100%)",
-        opacity: visible ? 1 : 0,
-        transition: "transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease",
-        pointerEvents: visible ? "auto" : "none",
-      }}
-    >
+    <>
+      <style>{`
+        @keyframes cookie-slide-up {
+          from { transform: translateY(120%); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes cookie-gradient {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .cookie-accept-btn {
+          background: linear-gradient(135deg, #6C3AFF, #3A86FF, #6C3AFF);
+          background-size: 200% 200%;
+          animation: cookie-gradient 3s ease infinite;
+        }
+        .cookie-accept-btn:hover {
+          transform: translate(-2px, -2px);
+          box-shadow: 4px 4px 0px #000 !important;
+        }
+        .cookie-accept-btn:active {
+          transform: translate(0, 0);
+          box-shadow: 0px 0px 0px #000 !important;
+        }
+        .cookie-reject-btn:hover {
+          background: #1a1a1a !important;
+          color: #fff !important;
+          transform: translate(-1px, -1px);
+          box-shadow: 3px 3px 0px #000 !important;
+        }
+        .cookie-reject-btn:active {
+          transform: translate(0, 0);
+          box-shadow: 0px 0px 0px #000 !important;
+        }
+      `}</style>
       <div
+        role="dialog"
+        aria-label={t("ariaLabel")}
         style={{
-          maxWidth: "680px",
-          margin: "0 auto",
-          background: "rgba(10, 10, 10, 0.85)",
-          backdropFilter: "blur(20px) saturate(1.2)",
-          WebkitBackdropFilter: "blur(20px) saturate(1.2)",
-          border: "1px solid rgba(255, 255, 255, 0.08)",
-          borderRadius: "16px",
-          padding: "1.5rem 2rem",
-          boxShadow: "0 -4px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.03) inset",
+          position: "fixed",
+          bottom: "1.5rem",
+          left: "1.5rem",
+          right: "1.5rem",
+          zIndex: 9999,
+          display: "flex",
+          justifyContent: "center",
+          animation: visible ? "cookie-slide-up 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards" : "none",
+          opacity: visible ? undefined : 0,
+          pointerEvents: visible ? "auto" : "none",
         }}
       >
-        {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem" }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4141C6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          </svg>
-          <span style={{
-            fontSize: "0.6875rem",
-            fontWeight: 600,
-            letterSpacing: "0.15em",
-            textTransform: "uppercase" as const,
-            color: "#4141C6",
+        <div
+          style={{
+            maxWidth: "520px",
+            width: "100%",
+            background: "#FFFDF7",
+            border: "2.5px solid #000",
+            borderRadius: "20px",
+            padding: "1.75rem 2rem",
+            boxShadow: "6px 6px 0px #000",
+            fontFamily: "system-ui, -apple-system, 'Segoe UI', sans-serif",
+          }}
+        >
+          {/* Header */}
+          <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginBottom: "1rem" }}>
+            <span style={{ fontSize: "1.5rem" }}>🍪</span>
+            <span style={{
+              fontSize: "1.125rem",
+              fontWeight: 800,
+              color: "#000",
+              letterSpacing: "-0.02em",
+            }}>
+              {t("title")}
+            </span>
+          </div>
+
+          {/* Message */}
+          <p style={{
+            fontSize: "0.9375rem",
+            lineHeight: 1.6,
+            color: "#333",
+            margin: "0 0 0.625rem",
+            fontWeight: 500,
           }}>
-            {t("title")}
-          </span>
-        </div>
+            {t("message")}
+          </p>
 
-        {/* Body */}
-        <p style={{
-          fontSize: "0.8125rem",
-          lineHeight: 1.7,
-          color: "rgba(255, 255, 255, 0.65)",
-          margin: "0 0 0.5rem",
-        }}>
-          {t("message")}{" "}
-          <Link
-            href="/privacidad"
-            style={{
-              color: "#4141C6",
-              textDecoration: "underline",
-              textUnderlineOffset: "2px",
-            }}
-          >
-            {t("privacyPolicy")}
-          </Link>
-        </p>
+          {/* Legal + Privacy link */}
+          <p style={{
+            fontSize: "0.75rem",
+            lineHeight: 1.5,
+            color: "#888",
+            margin: "0 0 1.5rem",
+          }}>
+            {t("controller")}{" "}
+            <Link
+              href="/privacidad"
+              style={{
+                color: "#6C3AFF",
+                fontWeight: 600,
+                textDecoration: "underline",
+                textUnderlineOffset: "2px",
+                textDecorationThickness: "2px",
+              }}
+            >
+              {t("privacyPolicy")}
+            </Link>
+          </p>
 
-        <p style={{
-          fontSize: "0.6875rem",
-          lineHeight: 1.6,
-          color: "rgba(255, 255, 255, 0.35)",
-          margin: "0 0 1.25rem",
-        }}>
-          {t("legal")} — {t("controller")}
-        </p>
-
-        {/* Actions */}
-        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-          <button
-            onClick={handleAccept}
-            style={{
-              padding: "0.625rem 1.5rem",
-              background: "#4141C6",
-              color: "#fff",
-              border: "none",
-              borderRadius: "8px",
-              fontSize: "0.75rem",
-              fontWeight: 600,
-              letterSpacing: "0.05em",
-              cursor: "pointer",
-              transition: "background 0.2s, transform 0.15s",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "#5252D4" }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "#4141C6" }}
-          >
-            {t("accept")}
-          </button>
-          <button
-            onClick={handleReject}
-            style={{
-              padding: "0.625rem 1.5rem",
-              background: "transparent",
-              color: "rgba(255, 255, 255, 0.5)",
-              border: "1px solid rgba(255, 255, 255, 0.12)",
-              borderRadius: "8px",
-              fontSize: "0.75rem",
-              fontWeight: 500,
-              letterSpacing: "0.05em",
-              cursor: "pointer",
-              transition: "border-color 0.2s, color 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"
-              e.currentTarget.style.color = "rgba(255,255,255,0.8)"
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"
-              e.currentTarget.style.color = "rgba(255,255,255,0.5)"
-            }}
-          >
-            {t("reject")}
-          </button>
+          {/* Buttons */}
+          <div style={{ display: "flex", gap: "0.75rem" }}>
+            <button
+              className="cookie-accept-btn"
+              onClick={handleAccept}
+              style={{
+                flex: 1,
+                padding: "0.875rem 1.5rem",
+                color: "#fff",
+                border: "2.5px solid #000",
+                borderRadius: "12px",
+                fontSize: "0.875rem",
+                fontWeight: 800,
+                letterSpacing: "0.03em",
+                textTransform: "uppercase" as const,
+                cursor: "pointer",
+                boxShadow: "2px 2px 0px #000",
+                transition: "transform 0.15s, box-shadow 0.15s",
+              }}
+            >
+              ✓ {t("accept")}
+            </button>
+            <button
+              className="cookie-reject-btn"
+              onClick={handleReject}
+              style={{
+                padding: "0.875rem 1.25rem",
+                background: "#f5f5f0",
+                color: "#666",
+                border: "2.5px solid #000",
+                borderRadius: "12px",
+                fontSize: "0.8125rem",
+                fontWeight: 700,
+                cursor: "pointer",
+                boxShadow: "2px 2px 0px #000",
+                transition: "all 0.15s",
+              }}
+            >
+              {t("reject")}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
