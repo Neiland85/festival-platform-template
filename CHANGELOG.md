@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.10.6](https://github.com/Neiland85/festival-platform-template/compare/v1.10.5...v1.10.6) (2026-03-27)
+
+### Fixed
+
+* homepage is the product landing page, not a festival demo ([7254ae2](https://github.com/Neiland85/festival-platform-template/commit/7254ae21905de6c337c31dc931863b393bd2ed45))
+
 ## [1.10.5](https://github.com/Neiland85/festival-platform-template/compare/v1.10.4...v1.10.5) (2026-03-27)
 
 ### Fixed
