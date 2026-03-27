@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.13.0](https://github.com/Neiland85/festival-platform-template/compare/v1.12.0...v1.13.0) (2026-03-27)
+
+### Added
+
+* neobrutalism cookie banner — bold UX, animated gradient, modern design ([25e8a0d](https://github.com/Neiland85/festival-platform-template/commit/25e8a0dae36f2b4d7413f016139eb4a52f455a8d)), closes [#FFFDF7](https://github.com/Neiland85/festival-platform-template/issues/FFFDF7)
+
 ## [1.12.0](https://github.com/Neiland85/festival-platform-template/compare/v1.11.0...v1.12.0) (2026-03-27)
 
 ### Added
