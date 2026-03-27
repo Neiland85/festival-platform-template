@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.0](https://github.com/Neiland85/festival-platform-template/compare/v1.3.1...v1.4.0) (2026-03-27)
+
+### Added
+
+* **security:** DDoS Shield — multi-layer defense against volumetric & application-layer attacks ([#42](https://github.com/Neiland85/festival-platform-template/issues/42)) ([77a4701](https://github.com/Neiland85/festival-platform-template/commit/77a4701fcb1e955d4922d5bae90070adbf82fad1))
+
 ## [1.3.1](https://github.com/Neiland85/festival-platform-template/compare/v1.3.0...v1.3.1) (2026-03-27)
 
 ### Fixed
