@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.1](https://github.com/Neiland85/festival-platform-template/compare/v1.3.0...v1.3.1) (2026-03-27)
+
+### Fixed
+
+* **security:** remediate 9 vulnerabilities from ethical hacking assessment ([#41](https://github.com/Neiland85/festival-platform-template/issues/41)) ([a788687](https://github.com/Neiland85/festival-platform-template/commit/a7886872b94ef41a0ac8337ed4df0b65e2069fb9))
+
 ## [1.3.0](https://github.com/Neiland85/festival-platform-template/compare/v1.2.0...v1.3.0) (2026-03-27)
 
 ### Added
