@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { compare as bcryptCompare } from "bcryptjs"
 import { timingSafeEqual } from "node:crypto"
 import { _getClientIp } from "@/lib/ip"
 import { createSessionAsync } from "@/lib/auth/sessionStore"
@@ -6,6 +7,11 @@ import { audit } from "@/lib/observability/auditLog"
 import { isLoginBlocked, recordFailedAttempt, clearAttempts } from "@/lib/auth/loginRateLimit"
 import { loginSchema } from "@/contracts/schemas/login.schema"
 import { serverEnv } from "@/lib/env"
+
+/** Detect bcrypt hash format ($2a$ or $2b$ prefix) */
+function isBcryptHash(value: string): boolean {
+  return /^\$2[ab]\$\d{2}\$/.test(value)
+}
 
 export async function POST(req: NextRequest) {
   const ip = _getClientIp(req)
@@ -32,9 +38,11 @@ export async function POST(req: NextRequest) {
   const password = parsed.data.password
   const adminPassword = serverEnv.ADMIN_PASSWORD
 
-  const passwordMatch =
-    password.length === adminPassword.length &&
-    timingSafeEqual(Buffer.from(password), Buffer.from(adminPassword))
+  // Support both bcrypt hashed and plaintext passwords (migration path)
+  const passwordMatch = isBcryptHash(adminPassword)
+    ? await bcryptCompare(password, adminPassword)
+    : password.length === adminPassword.length &&
+      timingSafeEqual(Buffer.from(password), Buffer.from(adminPassword))
 
   if (!passwordMatch) {
     await recordFailedAttempt(ip)
