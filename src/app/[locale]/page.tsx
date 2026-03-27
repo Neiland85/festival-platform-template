@@ -83,13 +83,26 @@ export default function LocalePage() {
         {/* Gradient blob */}
         <div style={{ position: "absolute", top: "-20%", right: "-10%", width: "600px", height: "600px", background: "linear-gradient(135deg, #6C3AFF33, #3A86FF22, #FF336622)", backgroundSize: "200% 200%", animation: "hero-gradient 8s ease infinite", borderRadius: "50%", filter: "blur(80px)", pointerEvents: "none" }} />
 
-        <div style={{ position: "relative", zIndex: 1, maxWidth: "800px", animation: "slide-in 0.8s ease-out" }}>
-          {/* Spinning logo */}
-          <div style={{ marginBottom: "2rem" }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/clarity-logo-dark.png" alt="Clarity Structures" width={80} height={80} className="spinning-logo" style={{ display: "inline-block" }} />
-          </div>
+        {/* Spinning logo — top right corner */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/clarity-logo-dark.png"
+          alt="Clarity Structures"
+          className="spinning-logo"
+          style={{
+            position: "absolute",
+            top: "2rem",
+            right: "2rem",
+            width: "120px",
+            height: "120px",
+            opacity: 0.15,
+            mixBlendMode: "multiply",
+            pointerEvents: "none",
+            zIndex: 2,
+          }}
+        />
 
+        <div style={{ position: "relative", zIndex: 1, maxWidth: "800px", animation: "slide-in 0.8s ease-out" }}>
           {/* Badge */}
           <div style={{ display: "inline-block", padding: "0.5rem 1.25rem", marginBottom: "2rem", background: "#000", color: "#FFFDF7", borderRadius: "999px", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.1em" }}>
             CLARITY STRUCTURES DIGITAL S.L.
