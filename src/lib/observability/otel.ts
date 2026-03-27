@@ -1,36 +1,39 @@
 /**
  * OpenTelemetry SDK initialization — opt-in via OTEL_EXPORTER_OTLP_ENDPOINT.
  *
- * Configures distributed tracing with OTLP HTTP exporter.
+ * Uses only HTTP exporter (no gRPC) to avoid `net` module dependency
+ * which is unavailable in Vercel/Next.js edge runtime.
+ *
  * When not configured, the custom observability modules continue to work.
  *
  * Usage: Called from src/instrumentation.ts at app startup.
  */
 
-import { NodeSDK } from "@opentelemetry/sdk-node"
+import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node"
+import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base"
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http"
-import { Resource } from "@opentelemetry/resources"
+import { resourceFromAttributes } from "@opentelemetry/resources"
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from "@opentelemetry/semantic-conventions"
 
-let sdk: NodeSDK | null = null
+let provider: NodeTracerProvider | null = null
 
 export function initOtel(): void {
-  if (sdk) return // Already initialized
+  if (provider) return // Already initialized
 
   const endpoint = process.env["OTEL_EXPORTER_OTLP_ENDPOINT"]
   if (!endpoint) return
 
   const exporter = new OTLPTraceExporter({ url: `${endpoint}/v1/traces` })
 
-  sdk = new NodeSDK({
-    resource: new Resource({
+  provider = new NodeTracerProvider({
+    resource: resourceFromAttributes({
       [ATTR_SERVICE_NAME]: "festival-platform",
       [ATTR_SERVICE_VERSION]: process.env["npm_package_version"] ?? "0.0.0",
     }),
-    traceExporter: exporter,
+    spanProcessors: [new BatchSpanProcessor(exporter)],
   })
 
-  sdk.start()
+  provider.register()
 
   console.log(
     JSON.stringify({
@@ -43,6 +46,6 @@ export function initOtel(): void {
 
   // Graceful shutdown
   process.on("SIGTERM", () => {
-    sdk?.shutdown().catch(console.error)
+    provider?.shutdown().catch(console.error)
   })
 }

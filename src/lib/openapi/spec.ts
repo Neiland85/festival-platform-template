@@ -6,32 +6,27 @@
  */
 
 import { z } from "zod"
-import "zod-openapi/extend"
 
 // ── Shared Response Schemas ─────────────────────────
 
 const ErrorResponse = z.object({
   error: z.string(),
-}).openapi({ ref: "ErrorResponse" })
-
+})
 const SuccessResponse = z.object({
   success: z.literal(true),
-}).openapi({ ref: "SuccessResponse" })
-
+})
 // ── Auth Schemas ────────────────────────────────────
 
 const LoginRequest = z.object({
   password: z.string().min(1).max(256),
-}).openapi({ ref: "LoginRequest" })
-
+})
 // ── Health Schemas ──────────────────────────────────
 
 const HealthResponse = z.object({
   status: z.enum(["ok", "degraded"]),
   timestamp: z.string(),
   uptime: z.number(),
-}).openapi({ ref: "HealthResponse" })
-
+})
 // ── Lead Schemas ────────────────────────────────────
 
 const LeadResponse = z.object({
@@ -43,20 +38,17 @@ const LeadResponse = z.object({
   phone: z.string().nullable(),
   source: z.string(),
   createdAt: z.string(),
-}).openapi({ ref: "LeadResponse" })
-
+})
 // ── Checkout Schemas ────────────────────────────────
 
 const CheckoutRequest = z.object({
   eventId: z.string().min(1),
   quantity: z.number().int().min(1).max(10).optional(),
-}).openapi({ ref: "CheckoutRequest" })
-
+})
 const CheckoutResponse = z.object({
   url: z.string().url(),
   sessionId: z.string(),
-}).openapi({ ref: "CheckoutResponse" })
-
+})
 // ── OpenAPI Document ────────────────────────────────
 
 export function generateOpenApiSpec() {
