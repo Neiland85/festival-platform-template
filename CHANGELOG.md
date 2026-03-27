@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.10.0](https://github.com/Neiland85/festival-platform-template/compare/v1.9.0...v1.10.0) (2026-03-27)
+
+### Added
+
+* Clarity Structures showcase landing page at /showcase ([#50](https://github.com/Neiland85/festival-platform-template/issues/50)) ([4d5f2fe](https://github.com/Neiland85/festival-platform-template/commit/4d5f2fea8a0a0e8a05eebaf31f16d1cedcf3c50b))
+
 ## [1.9.0](https://github.com/Neiland85/festival-platform-template/compare/v1.8.0...v1.9.0) (2026-03-27)
 
 ### Added
