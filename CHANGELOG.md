@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.16.1](https://github.com/Neiland85/festival-platform-template/compare/v1.16.0...v1.16.1) (2026-03-27)
+
+### Fixed
+
+* **orders:** 3 critical safety fixes — transactions + status guards ([0b1488c](https://github.com/Neiland85/festival-platform-template/commit/0b1488c3708d04c0d927957ad21dd17f7a4c5889))
+
 ## [1.16.0](https://github.com/Neiland85/festival-platform-template/compare/v1.15.2...v1.16.0) (2026-03-27)
 
 ### Added
