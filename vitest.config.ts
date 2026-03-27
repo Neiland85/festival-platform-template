@@ -1,6 +1,7 @@
 import { resolve } from "path"
 import { readFileSync } from "fs"
 import { defineConfig } from "vitest/config"
+import react from "@vitejs/plugin-react"
 
 // Load .env.test into process.env BEFORE any test code runs.
 // This ensures env.ts Zod validation succeeds in test workers.
@@ -23,6 +24,7 @@ try {
 }
 
 export default defineConfig({
+  plugins: [react()],
   resolve: {
     alias: {
       "@": resolve(__dirname, "./src"),
