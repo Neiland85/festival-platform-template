@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.15.1](https://github.com/Neiland85/festival-platform-template/compare/v1.15.0...v1.15.1) (2026-03-27)
+
+### Fixed
+
+* move spinning logo to top-right corner, larger, with blend mode ([c413699](https://github.com/Neiland85/festival-platform-template/commit/c4136992cbe89e14e361796e9761f26d46a98167))
+
 ## [1.15.0](https://github.com/Neiland85/festival-platform-template/compare/v1.14.0...v1.15.0) (2026-03-27)
 
 ### Added
