@@ -18,16 +18,18 @@ export async function createOrder(params: {
   amountCents: number
   currency: string
   quantity: number
+  status?: OrderStatus
 }): Promise<Order> {
   const pool = getPool()
   const id = randomUUID()
   const now = new Date()
+  const status = params.status ?? "reserved"
 
   const result = await pool.query(
     `INSERT INTO orders (id, event_id, customer_email, amount_cents, currency, status, quantity, created_at, updated_at)
-     VALUES ($1, $2, $3, $4, $5, 'pending', $6, $7, $7)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8)
      RETURNING *`,
-    [id, params.eventId, params.customerEmail, params.amountCents, params.currency, params.quantity, now],
+    [id, params.eventId, params.customerEmail, params.amountCents, params.currency, status, params.quantity, now],
   )
 
   return mapRow(result.rows[0])
@@ -46,6 +48,20 @@ export async function setStripeSessionId(
     `UPDATE orders SET stripe_session_id = $1, updated_at = NOW() WHERE id = $2`,
     [stripeSessionId, orderId],
   )
+}
+
+/**
+ * Find an order by ID.
+ */
+export async function findById(
+  orderId: string,
+): Promise<Order | null> {
+  const pool = getPool()
+  const result = await pool.query(
+    `SELECT * FROM orders WHERE id = $1 LIMIT 1`,
+    [orderId],
+  )
+  return result.rows[0] ? mapRow(result.rows[0]) : null
 }
 
 /**
