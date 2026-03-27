@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.1](https://github.com/Neiland85/festival-platform-template/compare/v1.0.0...v1.0.1) (2026-03-27)
+
+### Fixed
+
+* update pnpm-lock.yaml after semantic-release v1.0.0 ([fa1bdc9](https://github.com/Neiland85/festival-platform-template/commit/fa1bdc9c689e81881857cb6a1399963ff8d18fba))
+
 ## 1.0.0 (2026-03-27)
 
 ### ⚠ BREAKING CHANGES
