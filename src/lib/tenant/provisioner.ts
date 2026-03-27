@@ -23,29 +23,41 @@ export async function provisionTenant(input: {
   const pool = getPool()
   const db = getDb()
 
-  // Sanitize schema name (only lowercase alphanumeric + underscores)
-  const schemaName = `tenant_${input.slug.replace(/[^a-z0-9]/g, "_")}`
+  // Sanitize schema name: only lowercase alphanumeric + underscores
+  const sanitizedSlug = input.slug.toLowerCase().replace(/[^a-z0-9]/g, "_")
+  const schemaName = `tenant_${sanitizedSlug}`
+
+  // SECURITY: Strict whitelist validation — prevent SQL injection in DDL
+  if (!/^tenant_[a-z0-9_]+$/.test(schemaName)) {
+    throw new Error(`Invalid schema name: ${schemaName}`)
+  }
 
   // Validate schema name length (PostgreSQL limit: 63 chars)
   if (schemaName.length > 63) {
     throw new Error(`Schema name too long: ${schemaName} (max 63 chars)`)
   }
 
+  // Validate slug is not empty after sanitization
+  if (sanitizedSlug.length === 0) {
+    throw new Error("Tenant slug cannot be empty after sanitization")
+  }
+
+  // SECURITY: Use pg's identifier quoting to prevent SQL injection.
+  // Although schemaName is whitelist-validated above, quoting provides
+  // defense-in-depth for DDL operations that cannot use $1 parameters.
+  const quotedSchema = `"${schemaName}"`
+
   // Create the schema (DDL — must use raw pg, not Drizzle)
-  await pool.query(`CREATE SCHEMA IF NOT EXISTS ${schemaName}`)
+  await pool.query(`CREATE SCHEMA IF NOT EXISTS ${quotedSchema}`)
 
   // Create tables in the new schema by cloning public schema structure
-  await pool.query(`
-    SET search_path TO ${schemaName};
-
-    CREATE TABLE IF NOT EXISTS events (LIKE public.events INCLUDING ALL);
-    CREATE TABLE IF NOT EXISTS leads (LIKE public.leads INCLUDING ALL);
-    CREATE TABLE IF NOT EXISTS orders (LIKE public.orders INCLUDING ALL);
-    CREATE TABLE IF NOT EXISTS users (LIKE public.users INCLUDING ALL);
-    CREATE TABLE IF NOT EXISTS audit_events (LIKE public.audit_events INCLUDING ALL);
-
-    SET search_path TO public;
-  `)
+  // Each statement uses the quoted schema name for safety
+  const tables = ["events", "leads", "orders", "users", "audit_events"]
+  for (const table of tables) {
+    await pool.query(
+      `CREATE TABLE IF NOT EXISTS ${quotedSchema}."${table}" (LIKE public."${table}" INCLUDING ALL)`,
+    )
+  }
 
   // Register tenant in the public.tenants table
   const result = await db

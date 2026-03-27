@@ -260,7 +260,8 @@ export default function ShowcaseFooter() {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <style dangerouslySetInnerHTML={{ __html: STYLES }} />
+      {/* eslint-disable-next-line react/no-unknown-property */}
+      <style>{STYLES}</style>
 
       {/* ── Video background (subtle) ── */}
       <video

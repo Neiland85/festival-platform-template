@@ -59,10 +59,25 @@ export async function rateLimit(ip: string): Promise<RateLimitResult> {
 
 /**
  * Stricter rate limiter for sensitive endpoints (login, auth, checkout).
+ * Uses Redis when available for distributed enforcement across instances.
  */
 export async function rateLimitStrict(ip: string): Promise<RateLimitResult> {
-  // For Redis path we'd ideally use a separate prefix/config —
-  // for now we only differentiate on the local fallback
+  if (serverEnv.UPSTASH_REDIS_REST_URL) {
+    try {
+      // Use Redis with stricter limits via a prefixed key
+      const result = await rateLimitRedis(`strict:${ip}`)
+      return {
+        allowed: result.allowed,
+        remaining: Math.min(result.remaining, API_MAX_REQUESTS),
+        retryAfterMs: result.retryAfterMs,
+        current: API_MAX_REQUESTS - Math.min(result.remaining, API_MAX_REQUESTS),
+        limit: API_MAX_REQUESTS,
+      }
+    } catch {
+      // Redis unreachable → degrade gracefully to local
+    }
+  }
+
   return rateLimitLocal(ip, WINDOW_MS, API_MAX_REQUESTS)
 }
 
