@@ -255,50 +255,62 @@ function parseEnv<T extends z.ZodTypeAny>(
       "",
     ].join("\n")
 
-    // In test mode, throw instead of killing process (vitest catches it)
-    if (process.env["NODE_ENV"] === "test") {
-      throw new Error(msg)
-    }
-
-    console.error(msg)
-    process.exit(1)
+    // Always throw instead of process.exit() — env.ts is bundled into
+    // client-side code (via clientEnv imports from HeroVideo/MetaPixel),
+    // and process.exit doesn't exist in the browser.
+    throw new Error(msg)
   }
 
   return result.data
 }
 
 /**
- * Server-side environment — typed, validated, non-null for required vars.
- * Importing this on the client will not leak secrets (Next.js tree-shakes
- * server-only imports), but prefer clientEnv for client components.
+ * Server-side environment — lazy-initialized behind Proxy.
+ *
+ * CRITICAL: This must NOT execute parseEnv() at module load time because
+ * client components (HeroVideo, MetaPixel) import clientEnv from this file,
+ * causing webpack to bundle the entire module. If serverEnv parses eagerly,
+ * it crashes the browser with "c.exit is not a function" because
+ * DATABASE_URL etc. don't exist on the client.
  */
-export const serverEnv = parseEnv(serverSchema, "SERVER ENV")
+let _serverEnv: ReturnType<typeof serverSchema.parse> | null = null
 
-// ── Production safety checks (post-parse) ────────────────
-// These catch "technically valid but dangerous" configurations
-// that Zod schema alone can't express.
-if (!isBuildPhase && serverEnv.NODE_ENV === "production") {
-  const warnings: string[] = []
+function getServerEnv() {
+  if (typeof window !== "undefined") {
+    throw new Error("getServerEnv() cannot be called in the browser")
+  }
+  if (!_serverEnv) {
+    _serverEnv = parseEnv(serverSchema, "SERVER ENV")
 
-  if (serverEnv.CSRF_SECRET === "dev-csrf-change-me-in-production") {
-    warnings.push("CSRF_SECRET is using the default dev value in production!")
+    // Production safety checks
+    if (!isBuildPhase && _serverEnv.NODE_ENV === "production") {
+      const warnings: string[] = []
+      if (_serverEnv.CSRF_SECRET === "dev-csrf-change-me-in-production") {
+        warnings.push("CSRF_SECRET is using the default dev value in production!")
+      }
+      if (_serverEnv.IP_HASH_SALT === "dev-salt-change-me") {
+        warnings.push("IP_HASH_SALT is using the default dev value in production!")
+      }
+      if (_serverEnv.DATABASE_URL.includes("localhost")) {
+        warnings.push("DATABASE_URL points to localhost in production!")
+      }
+      if (_serverEnv.STRIPE_SECRET_KEY && !_serverEnv.STRIPE_WEBHOOK_SECRET) {
+        warnings.push("STRIPE_SECRET_KEY is set but STRIPE_WEBHOOK_SECRET is missing — webhooks will fail.")
+      }
+      if (warnings.length > 0) {
+        console.warn(`\n⚠️  PRODUCTION CONFIG WARNINGS:\n${warnings.map((w) => `  → ${w}`).join("\n")}\n`)
+      }
+    }
   }
-  if (serverEnv.IP_HASH_SALT === "dev-salt-change-me") {
-    warnings.push("IP_HASH_SALT is using the default dev value in production!")
-  }
-  if (serverEnv.DATABASE_URL.includes("localhost")) {
-    warnings.push("DATABASE_URL points to localhost in production!")
-  }
-  if (serverEnv.STRIPE_SECRET_KEY && !serverEnv.STRIPE_WEBHOOK_SECRET) {
-    warnings.push("STRIPE_SECRET_KEY is set but STRIPE_WEBHOOK_SECRET is missing — webhooks will fail.")
-  }
-
-  if (warnings.length > 0) {
-    console.warn(
-      `\n⚠️  PRODUCTION CONFIG WARNINGS:\n${warnings.map((w) => `  → ${w}`).join("\n")}\n`,
-    )
-  }
+  return _serverEnv
 }
+
+// Proxy preserves backward compat: serverEnv.DATABASE_URL still works
+export const serverEnv = new Proxy({} as ReturnType<typeof serverSchema.parse>, {
+  get(_target, prop: string) {
+    return getServerEnv()[prop as keyof ReturnType<typeof serverSchema.parse>]
+  },
+})
 
 /**
  * Client-safe environment — NEXT_PUBLIC_* only.
