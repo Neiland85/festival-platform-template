@@ -4,9 +4,14 @@ on:
   push:
   pull_request:
 
+# Ransomware defense: minimal permissions prevent supply chain attacks
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout
@@ -23,8 +28,12 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - name: Install deps
+      - name: Install deps (frozen lockfile — supply chain integrity)
         run: pnpm install --frozen-lockfile
+
+      - name: Security audit
+        run: pnpm audit --audit-level=high || true
+        continue-on-error: true
 
       - name: Lint
         run: pnpm exec eslint . --max-warnings 0
