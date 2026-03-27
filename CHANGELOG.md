@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.10.4](https://github.com/Neiland85/festival-platform-template/compare/v1.10.3...v1.10.4) (2026-03-27)
+
+### Fixed
+
+* return empty object instead of throwing in serverEnv browser Proxy ([242d7f3](https://github.com/Neiland85/festival-platform-template/commit/242d7f3cd2f6ebd4f947fd88d7309dcdc44ca331))
+
 ## [1.10.3](https://github.com/Neiland85/festival-platform-template/compare/v1.10.2...v1.10.3) (2026-03-27)
 
 ### Fixed
