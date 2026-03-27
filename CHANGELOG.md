@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.6.0](https://github.com/Neiland85/festival-platform-template/compare/v1.5.0...v1.6.0) (2026-03-27)
+
+### Added
+
+* **security:** ransomware defense — supply chain hardening, integrity monitor, incident response ([#45](https://github.com/Neiland85/festival-platform-template/issues/45)) ([c4698ef](https://github.com/Neiland85/festival-platform-template/commit/c4698ef8a94a37d374a9e80ef6a69cc84745f5e3))
+
 ## [1.5.0](https://github.com/Neiland85/festival-platform-template/compare/v1.4.0...v1.5.0) (2026-03-27)
 
 ### Added
