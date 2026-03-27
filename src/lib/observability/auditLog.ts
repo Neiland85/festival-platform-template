@@ -15,6 +15,7 @@
 
 import { NextRequest } from "next/server"
 import { persistAuditEvent } from "@/adapters/db/audit-repository"
+import { hashIp } from "@/lib/security/hashIp"
 
 // ── Types ───────────────────────────────────────────────
 
@@ -51,6 +52,20 @@ export type AuditLogParams = {
   resource?: string
   details?: Record<string, unknown>
   req?: NextRequest
+}
+
+/**
+ * Safe wrapper around hashIp — never throws, even if env vars are missing.
+ * Falls back to a simple hash when IP_HASH_SALT is not configured (tests).
+ */
+function safeHashIp(ip: string): string {
+  try {
+    return hashIp(ip)
+  } catch {
+    // Fallback for test environment where serverEnv may not be fully configured
+    const { createHash } = require("node:crypto") as typeof import("node:crypto")
+    return createHash("sha256").update(ip).digest("hex").slice(0, 16)
+  }
 }
 
 // ── Config ──────────────────────────────────────────────
@@ -117,12 +132,17 @@ export function audit(params: AuditLogParams): AuditEntry {
     req,
   } = params
 
+  // GDPR: Hash IP addresses before storing/logging.
+  // Raw IPs are never persisted — only truncated SHA256 hashes.
+  const rawIp = ip ?? extractIp(req)
+  const hashedIp = rawIp === "unknown" ? "unknown" : safeHashIp(rawIp)
+
   const entry: AuditEntry = {
     timestamp: new Date().toISOString(),
     level: "audit",
     action,
     actor: actor ?? extractActor(req),
-    ip: ip ?? extractIp(req),
+    ip: hashedIp,
     resource,
     details,
     requestId: generateRequestId(),

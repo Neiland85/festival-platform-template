@@ -28,7 +28,8 @@ describe("auditLog", () => {
       expect(entry.level).toBe("audit")
       expect(entry.action).toBe("leads.export")
       expect(entry.actor).toBe("admin")
-      expect(entry.ip).toBe("1.2.3.4")
+      // IP is hashed for GDPR compliance — verify it's a hex hash, not raw
+      expect(entry.ip).toMatch(/^[0-9a-f]{16}$/)
       expect(entry.resource).toBe("-")
       expect(entry.requestId).toMatch(/^aud-/)
       expect(entry.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/)
@@ -258,7 +259,8 @@ describe("auditLog", () => {
       // Verify all GDPR-required fields present
       expect(entry.timestamp).toBeDefined()
       expect(entry.actor).toBe("admin")
-      expect(entry.ip).toBe("85.23.45.67")
+      // IP is hashed for GDPR compliance — verify it's a hex hash, not raw
+      expect(entry.ip).toMatch(/^[0-9a-f]{16}$/)
       expect(entry.action).toBe("leads.view")
       expect(entry.resource).toBe("leads-list")
       expect(entry.details).toHaveProperty("resultCount", 15)
