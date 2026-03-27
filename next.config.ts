@@ -5,14 +5,52 @@ import createNextIntlPlugin from "next-intl/plugin"
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts")
 
 const securityHeaders = [
+  // ── Standard Security Headers ──────────────────────────
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "X-DNS-Prefetch-Control", value: "off" },
+  { key: "X-Download-Options", value: "noopen" },
+  { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
+
+  // ── Privacy Headers (VPN-grade) ────────────────────────
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+  {
+    key: "Permissions-Policy",
+    value: [
+      // Disable invasive browser APIs — prevents fingerprinting
+      "camera=()",
+      "microphone=()",
+      "geolocation=()",
+      "browsing-topics=()", // Disable Google FLoC/Topics API
+      "interest-cohort=()", // Disable FLoC (legacy)
+      "serial=()",
+      "usb=()",
+      "bluetooth=()",
+      "midi=()",
+      "magnetometer=()",
+      "gyroscope=()",
+      "accelerometer=()",
+      "ambient-light-sensor=()",
+      "display-capture=()",
+      "document-domain=()",
+      "encrypted-media=(self)",
+      "autoplay=(self)",
+      "fullscreen=(self)",
+      "payment=(self)", // Only allow Stripe in same origin
+    ].join(", "),
+  },
+
+  // ── HSTS (HTTP Strict Transport Security) ──────────────
   {
     key: "Strict-Transport-Security",
     value: "max-age=63072000; includeSubDomains; preload",
   },
+
+  // ── Cross-Origin Isolation (prevents Spectre/Meltdown) ─
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+  { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
+
+  // ── Content Security Policy ────────────────────────────
   {
     key: "Content-Security-Policy",
     value: [
@@ -27,6 +65,7 @@ const securityHeaders = [
       "base-uri 'self'",
       "form-action 'self'",
       "upgrade-insecure-requests",
+      "block-all-mixed-content",
     ].join("; "),
   },
 ]
