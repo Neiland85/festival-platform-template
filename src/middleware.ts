@@ -1,24 +1,29 @@
 /**
- * Next.js Middleware — DDoS Shield + Auth enforcement.
+ * Next.js Middleware — DDoS Shield + Privacy Shield + Auth enforcement.
  *
  * Runs in Edge Runtime on EVERY request before route handlers.
- * Two layers:
+ * Three layers:
  *   1. DDoS Shield — global rate limiting, IP auto-ban, header validation,
  *      body size enforcement (all routes)
- *   2. Admin Auth — session cookie validation (/api/admin/* only)
+ *   2. Privacy Shield — response header sanitization, info leak prevention,
+ *      server fingerprint removal (VPN-equivalent protections)
+ *   3. Admin Auth — session cookie validation (/api/admin/* only)
  *
- * ATTACK VECTORS BLOCKED:
- *   - HTTP Flood: 60 req/min per IP globally
- *   - Slowloris: Header validation + body size limits
- *   - Brute Force: Auto-ban after 50 violations (15 min)
- *   - Header Bomb: User-agent length + header count limits
- *   - Cache Bust: Query string / referer length limits
- *   - Payload Bomb: Per-route body size enforcement
+ * VPN-EQUIVALENT PROTECTIONS:
+ *   - IP masking: hashIp() in all logging (never stores raw IPs)
+ *   - Encryption: TLS enforced via HSTS (63072000s + preload)
+ *   - DNS privacy: X-DNS-Prefetch-Control: off
+ *   - Anti-fingerprint: 17 browser APIs disabled via Permissions-Policy
+ *   - Anti-tracking: FLoC/Topics API disabled
+ *   - Cross-origin isolation: COOP + CORP headers
+ *   - Server info stripped: X-Powered-By, Server headers removed
+ *   - API responses: no-store cache headers on sensitive endpoints
  */
 
 import { NextRequest, NextResponse } from "next/server"
 import { validateSession } from "@/lib/auth/sessionStore"
 import { shieldCheck } from "@/lib/security/ddos-shield"
+import { sanitizeResponseHeaders } from "@/lib/security/privacy-shield"
 
 export function middleware(req: NextRequest) {
   const ip =
@@ -58,13 +63,26 @@ export function middleware(req: NextRequest) {
     }
   }
 
-  // ── Pass through with rate limit headers ───────────
+  // ── Layer 3: Privacy Shield (all responses) ────────
   const response = NextResponse.next()
+
+  // Add rate limit headers
   if (shield.headers) {
     for (const [k, v] of Object.entries(shield.headers)) {
       response.headers.set(k, v)
     }
   }
+
+  // Strip server fingerprint headers
+  sanitizeResponseHeaders(response)
+
+  // Prevent sensitive API data from being cached by proxies
+  if (req.nextUrl.pathname.startsWith("/api/")) {
+    response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, private")
+    response.headers.set("Pragma", "no-cache")
+    response.headers.set("Expires", "0")
+  }
+
   return response
 }
 
