@@ -1,19 +1,20 @@
 /**
  * Use case: Cancel/expire order and release reserved capacity.
  *
+ * ATOMIC: capacity release + status update in one transaction.
+ * If either fails, neither takes effect. No double-release possible.
+ *
+ * STATUS GUARD: updateOrderStatus uses WHERE status = 'reserved'
+ * so concurrent cancel+complete on the same order cannot both succeed.
+ *
  * Called from:
  * - Webhook handler when checkout.session.expired fires
  * - Admin manual cancellation
  * - Expiration cron (defense against lost webhooks)
- *
- * Idempotent: if order is already in a terminal state, this is a no-op.
- *
- * IMPORTANT: Releases capacity that was reserved at order creation time.
- * This is the counterpart to reserveCapacity() in create-order.ts.
  */
 
-import { findByStripeSessionId, updateOrderStatus, findById } from "./order-repository"
-import { releaseCapacity } from "./event-repository"
+import { getPool } from "@/adapters/db/pool"
+import { findByStripeSessionId, findById } from "./order-repository"
 import { OrderNotFoundError } from "./types"
 import { log } from "@/lib/logger"
 
@@ -44,7 +45,11 @@ export async function cancelOrderById(orderId: string): Promise<void> {
 }
 
 /**
- * Internal: transition order to terminal state and release capacity.
+ * Internal: atomic transition to terminal state + release capacity.
+ *
+ * Transaction boundary: releaseCapacity + updateOrderStatus are atomic.
+ * Status guard: UPDATE uses WHERE status = 'reserved' — if the row was
+ * already transitioned by a concurrent webhook, 0 rows affected → no-op.
  */
 async function cancelOrderInternal(
   orderId: string,
@@ -53,8 +58,8 @@ async function cancelOrderInternal(
   currentStatus: string,
   targetStatus: "expired" | "cancelled",
 ): Promise<void> {
-  // Idempotent: already in terminal state
-  if (currentStatus === "completed" || currentStatus === "cancelled" || currentStatus === "expired") {
+  // Idempotent: already in terminal state (no DB hit needed)
+  if (currentStatus === "completed" || currentStatus === "cancelled" || currentStatus === "expired" || currentStatus === "refunded") {
     log("info", "order_cancel_noop", {
       orderId,
       currentStatus,
@@ -63,18 +68,55 @@ async function cancelOrderInternal(
     return
   }
 
-  // Release capacity that was reserved at creation time
-  if (currentStatus === "reserved") {
-    await releaseCapacity(eventId, quantity)
+  const pool = getPool()
+  const client = await pool.connect()
+
+  try {
+    await client.query("BEGIN")
+
+    // ── Status guard: only transition if still "reserved" ──
+    // This prevents double-release and the complete-vs-expire race.
+    const updateResult = await client.query(
+      `UPDATE orders
+       SET status = $1, updated_at = NOW()
+       WHERE id = $2 AND status = 'reserved'
+       RETURNING id`,
+      [targetStatus, orderId],
+    )
+
+    if (updateResult.rows.length === 0) {
+      // Another concurrent operation already transitioned this order.
+      // No capacity to release — it was either already released or completed.
+      await client.query("ROLLBACK")
+      log("info", "order_cancel_race_lost", {
+        orderId,
+        targetStatus,
+        note: "concurrent transition already occurred",
+      })
+      return
+    }
+
+    // ── Release capacity (only reached if status guard passed) ──
+    await client.query(
+      `UPDATE events
+       SET tickets_sold = GREATEST(0, tickets_sold - $1)
+       WHERE id = $2`,
+      [quantity, eventId],
+    )
+
+    await client.query("COMMIT")
+
+    log("info", `order_${targetStatus}`, {
+      orderId,
+      eventId,
+      quantity,
+      previousStatus: currentStatus,
+      capacityReleased: true,
+    })
+  } catch (err) {
+    await client.query("ROLLBACK")
+    throw err
+  } finally {
+    client.release()
   }
-
-  await updateOrderStatus(orderId, targetStatus)
-
-  log("info", `order_${targetStatus}`, {
-    orderId,
-    eventId,
-    quantity,
-    previousStatus: currentStatus,
-    capacityReleased: currentStatus === "reserved",
-  })
 }

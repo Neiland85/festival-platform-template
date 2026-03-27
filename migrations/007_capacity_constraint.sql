@@ -10,6 +10,10 @@
 --   cancelled → manual cancel, capacity released
 --   refunded  → post-payment refund, capacity released
 
+-- Backward compat: migrate existing 'pending' orders to 'reserved'
+-- (new code no longer produces 'pending', but old orders may exist)
+UPDATE orders SET status = 'reserved' WHERE status = 'pending';
+
 -- Constraint: tickets_sold can never exceed capacity (when capacity is set)
 ALTER TABLE events
   ADD CONSTRAINT chk_no_oversell
