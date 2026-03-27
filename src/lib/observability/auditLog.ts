@@ -14,6 +14,7 @@
  */
 
 import { NextRequest } from "next/server"
+import { persistAuditEvent } from "@/adapters/db/audit-repository"
 
 // ── Types ───────────────────────────────────────────────
 
@@ -133,7 +134,7 @@ export function audit(params: AuditLogParams): AuditEntry {
     console.log(JSON.stringify(entry))
   }
 
-  // Ring buffer
+  // Ring buffer (in-memory cache for dashboard queries)
   if (buffer.length < MAX_ENTRIES) {
     buffer.push(entry)
   } else {
@@ -141,6 +142,19 @@ export function audit(params: AuditLogParams): AuditEntry {
   }
   writeIndex++
   totalCount++
+
+  // Persist to PostgreSQL (fire-and-forget — never blocks the response)
+  // Skip in test environment where DB is not available
+  if (process.env["NODE_ENV"] !== "test") {
+    persistAuditEvent({
+      action: entry.action,
+      actor: entry.actor,
+      ip: entry.ip,
+      resource: entry.resource,
+      details: entry.details,
+      requestId: entry.requestId,
+    })
+  }
 
   return entry
 }

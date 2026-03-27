@@ -1,4 +1,13 @@
-import { getPool } from "./pool"
+/**
+ * Lead repository — Drizzle ORM query builder.
+ *
+ * Migrated from raw pg queries to type-safe Drizzle operations.
+ * Same function signatures — no breaking changes for consumers.
+ */
+
+import { eq, isNull, desc, sql } from "drizzle-orm"
+import { getDb } from "./drizzle"
+import { leads } from "./schema"
 
 type LeadInput = {
   id: string
@@ -14,49 +23,54 @@ type LeadInput = {
   createdAt: Date
 }
 
-export async function saveLead(lead: LeadInput){
+export async function saveLead(lead: LeadInput) {
+  const db = getDb()
 
-  const pool = getPool()
-
-  await pool.query(
-    `INSERT INTO leads (id, email, event_id, ip_address, consent_given,
-                        name, surname, phone, profession, source, created_at)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
-     ON CONFLICT (email, event_id) DO UPDATE SET
-       name       = COALESCE(EXCLUDED.name, leads.name),
-       surname    = COALESCE(EXCLUDED.surname, leads.surname),
-       phone      = COALESCE(EXCLUDED.phone, leads.phone),
-       profession = COALESCE(EXCLUDED.profession, leads.profession),
-       source     = EXCLUDED.source`,
-    [
-      lead.id,
-      lead.email,
-      lead.eventId,
-      lead.ipAddress,
-      lead.consentGiven,
-      lead.name ?? null,
-      lead.surname ?? null,
-      lead.phone ?? null,
-      lead.profession ?? null,
-      lead.source,
-      lead.createdAt
-    ]
-  )
-
+  await db
+    .insert(leads)
+    .values({
+      id: lead.id,
+      email: lead.email,
+      eventId: lead.eventId,
+      ipAddress: lead.ipAddress,
+      consentGiven: lead.consentGiven,
+      name: lead.name ?? null,
+      surname: lead.surname ?? null,
+      phone: lead.phone ?? null,
+      profession: lead.profession ?? null,
+      source: lead.source,
+      createdAt: lead.createdAt,
+    })
+    .onConflictDoUpdate({
+      target: [leads.email, leads.eventId],
+      set: {
+        name: sql`COALESCE(EXCLUDED.name, ${leads.name})`,
+        surname: sql`COALESCE(EXCLUDED.surname, ${leads.surname})`,
+        phone: sql`COALESCE(EXCLUDED.phone, ${leads.phone})`,
+        profession: sql`COALESCE(EXCLUDED.profession, ${leads.profession})`,
+        source: sql`EXCLUDED.source`,
+      },
+    })
 }
 
-export async function findLeads(limit=100){
+export async function findLeads(limit = 100) {
+  const db = getDb()
 
-  const pool = getPool()
-
-  const result = await pool.query(
-    `SELECT id, email, event_id, ip_address, name, surname, phone, profession, source, created_at
-     FROM leads
-     WHERE deleted_at IS NULL
-     ORDER BY created_at DESC
-     LIMIT $1`,
-    [limit]
-  )
-
-  return result.rows
+  return db
+    .select({
+      id: leads.id,
+      email: leads.email,
+      eventId: leads.eventId,
+      ipAddress: leads.ipAddress,
+      name: leads.name,
+      surname: leads.surname,
+      phone: leads.phone,
+      profession: leads.profession,
+      source: leads.source,
+      createdAt: leads.createdAt,
+    })
+    .from(leads)
+    .where(isNull(leads.deletedAt))
+    .orderBy(desc(leads.createdAt))
+    .limit(limit)
 }

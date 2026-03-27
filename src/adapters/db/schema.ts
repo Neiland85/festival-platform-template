@@ -94,6 +94,23 @@ export const orders = pgTable("orders", {
   index("idx_orders_created_at").on(table.createdAt),
 ])
 
+/* ─── Audit Events (007: Persistent Audit Log) ─── */
+
+export const auditEvents = pgTable("audit_events", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  action: varchar("action", { length: 100 }).notNull(),
+  actor: varchar("actor", { length: 100 }).notNull().default("system"),
+  ip: varchar("ip", { length: 45 }).notNull().default("unknown"),
+  resource: varchar("resource", { length: 255 }).notNull().default("-"),
+  details: text("details").notNull().default("{}"),
+  requestId: varchar("request_id", { length: 100 }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index("idx_audit_events_action").on(table.action),
+  index("idx_audit_events_actor").on(table.actor),
+  index("idx_audit_events_created_at").on(table.createdAt),
+])
+
 /* ─── Users (005: RBAC) ─── */
 
 export const users = pgTable("users", {
