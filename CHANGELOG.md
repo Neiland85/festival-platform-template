@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.9.0](https://github.com/Neiland85/festival-platform-template/compare/v1.8.0...v1.9.0) (2026-03-27)
+
+### Added
+
+* **security:** WAF + 2FA TOTP + AES-256-GCM + Audit Plan ([#48](https://github.com/Neiland85/festival-platform-template/issues/48)) ([81b792b](https://github.com/Neiland85/festival-platform-template/commit/81b792bf006a623d1774a0909486acc5b233862e))
+
 ## [1.8.0](https://github.com/Neiland85/festival-platform-template/compare/v1.7.0...v1.8.0) (2026-03-27)
 
 ### Added
