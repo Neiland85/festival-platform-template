@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.12.0](https://github.com/Neiland85/festival-platform-template/compare/v1.11.0...v1.12.0) (2026-03-27)
+
+### Added
+
+* premium glassmorphism cookie banner with RGPD/LSSI legal text ([6587e2e](https://github.com/Neiland85/festival-platform-template/commit/6587e2e90faca266597368d6890c8d3209510e85))
+
 ## [1.11.0](https://github.com/Neiland85/festival-platform-template/compare/v1.10.6...v1.11.0) (2026-03-27)
 
 ### Added
