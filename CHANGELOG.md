@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.10.1](https://github.com/Neiland85/festival-platform-template/compare/v1.10.0...v1.10.1) (2026-03-27)
+
+### Fixed
+
+* resolve middleware Edge Runtime crash + assemble landing page ([#51](https://github.com/Neiland85/festival-platform-template/issues/51)) ([5584d86](https://github.com/Neiland85/festival-platform-template/commit/5584d863714e65ccd7ef52db1f93da1af91745a3))
+
 ## [1.10.0](https://github.com/Neiland85/festival-platform-template/compare/v1.9.0...v1.10.0) (2026-03-27)
 
 ### Added
