@@ -2,6 +2,7 @@
  * Next.js Middleware — 4-Layer Security Stack.
  *
  * Runs in Edge Runtime on EVERY request before route handlers.
+ * IMPORTANT: All imports must be Edge-compatible (no Node.js APIs).
  *
  * ┌─────────────────────────────────────────────────────────┐
  * │  Layer 1: WAF (Web Application Firewall)                │
@@ -11,8 +12,8 @@
  * │  Layer 2: DDoS Shield                                   │
  * │  → Rate limiting (60/min), IP auto-ban, header/body    │
  * ├─────────────────────────────────────────────────────────┤
- * │  Layer 3: Admin Authentication                          │
- * │  → HMAC-SHA256 session cookies for /api/admin/*        │
+ * │  Layer 3: Admin Authentication (Edge-safe)              │
+ * │  → Cookie presence check for /api/admin/*               │
  * ├─────────────────────────────────────────────────────────┤
  * │  Layer 4: Privacy Shield                                │
  * │  → Strip server info, no-cache APIs, COOP/CORP         │
@@ -20,10 +21,14 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { validateSession } from "@/lib/auth/sessionStore"
 import { shieldCheck } from "@/lib/security/ddos-shield"
 import { inspectRequest } from "@/lib/security/waf"
 import { sanitizeResponseHeaders } from "@/lib/security/privacy-shield"
+
+// NOTE: sessionStore is NOT imported here because it transitively imports
+// redis/client → env.ts, which runs Zod validation at module load time.
+// That crashes on Edge Runtime where process.env may not be ready during
+// module initialization. Instead, we do a lightweight cookie check inline.
 
 export function middleware(req: NextRequest) {
   const ip =
@@ -84,9 +89,11 @@ export function middleware(req: NextRequest) {
   }
 
   // ── Layer 3: Admin Auth (/api/admin/* only) ────────
+  // Lightweight Edge-safe check: verify cookie presence.
+  // Full HMAC validation happens in the route handler (Node runtime).
   if (req.nextUrl.pathname.startsWith("/api/admin")) {
     const token = req.cookies.get("admin_session")?.value
-    if (!validateSession(token)) {
+    if (!token || token.length < 10) {
       return NextResponse.json({ error: "unauthorized" }, { status: 403 })
     }
   }
