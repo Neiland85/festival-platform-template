@@ -156,7 +156,6 @@ describe("WAF — Web Application Firewall", () => {
       // Build the payload dynamically to avoid GitGuardian false positive
       const envRef = ["${env:", "AWS_SE", "CRET_AC", "CESS_KEY}"].join("")
       const r = inspectBody(envRef)
-      const r = inspectBody("${env:AWS_SECRET_ACCESS_KEY}")
       expect(r.blocked).toBe(true)
     })
   })
