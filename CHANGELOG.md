@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.5.0](https://github.com/Neiland85/festival-platform-template/compare/v1.4.0...v1.5.0) (2026-03-27)
+
+### Added
+
+* **security:** VPN-grade privacy protections — anti-fingerprint, COOP/CORP, metadata stripping ([#43](https://github.com/Neiland85/festival-platform-template/issues/43)) ([4eec91d](https://github.com/Neiland85/festival-platform-template/commit/4eec91d81e92024ba550c265cc15a6051b3e285e))
+
 ## [1.4.0](https://github.com/Neiland85/festival-platform-template/compare/v1.3.1...v1.4.0) (2026-03-27)
 
 ### Added
