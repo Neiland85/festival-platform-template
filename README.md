@@ -61,7 +61,7 @@ Not security theater. Every layer is implemented, tested, and enforced in produc
 
 ### Graceful Degradation
 
-Every external service is optional. The platform runs with zero configuration beyond PostgreSQL:
+Core flows run with PostgreSQL only. Optional services such as Redis and OpenTelemetry degrade gracefully when unavailable:
 
 | Service | With it | Without it |
 |---------|---------|------------|
@@ -82,11 +82,11 @@ These modules are built and tested but not yet wired to runtime paths. They're r
 
 | Module | What's Built | What's Needed to Activate |
 |--------|-------------|--------------------------|
-| **Multi-tenancy** | Tenant registry (PostgreSQL), schema provisioner, request-scoped context via AsyncLocalStorage | Runtime query scoping — a `getTenantClient()` function that sets `SET search_path` per connection. Design approved, ~25 lines to implement. |
+| **Multi-tenancy** | Tenant registry (PostgreSQL), schema provisioner, request-scoped context via AsyncLocalStorage | Runtime tenant query scoping pending before isolation is active. |
 | **OpenTelemetry** | SDK initialization with OTLP HTTP exporter, Next.js instrumentation hook | Route and query instrumentation — wrapping handlers with `tracer.startActiveSpan()`. |
 | **2FA (TOTP)** | Secret generation, QR code URI, token verification | User enrollment endpoint, login flow integration, recovery codes, database column for secrets. |
 | **Encryption at rest** | AES-256-GCM encrypt/decrypt with Web Crypto API | Decision on which data to encrypt, repository integration, key rotation strategy. |
-| **Webhook auto-recovery** | Dead-letter queue captures failed Stripe events in PostgreSQL | Admin retry UI, automated refund for paid-but-expired orders (design approved). |
+| **Webhook auto-recovery** | Dead-letter queue captures failed Stripe events in PostgreSQL | Automated retry and reconciliation pending. |
 | **API documentation** | OpenAPI 3.1 spec at `/api/docs` (auth, checkout, health) | Coverage for remaining ~12 endpoints, response schemas, validation middleware. |
 
 ---
@@ -250,8 +250,9 @@ Node 22, pnpm 10, frozen lockfile, minimal CI permissions, GitGuardian scanning,
 | CI/CD + testing | **Production** | 466+ tests, pre-commit hooks, semantic versioning, auto-deploy |
 | i18n | **Production** | ES/EN with locale-aware routing |
 | Multi-tenancy | **Prepared** | Schema provisioning and context propagation built. Query scoping activation pending. |
-| Observability | **Production + Prepared** | Custom metrics, audit log, and request tracing active. OpenTelemetry SDK ready, route instrumentation pending. |
-| Webhook resilience | **Prepared** | Failed events captured in dead-letter queue. Automated retry and reconciliation pending. |
+| Custom observability | **Production** | Per-route metrics, persistent audit log, request tracing, correlation engine, surge prediction |
+| OpenTelemetry tracing | **Prepared** | SDK initialized with OTLP HTTP exporter. Route and query instrumentation pending. |
+| Webhook resilience | **Production + Pending** | Failed events captured in dead-letter queue today. Automated retry and reconciliation still pending. |
 | 2FA (TOTP) | **Prepared** | Verification library integrated. Login flow and user enrollment pending. |
 | Encryption at rest | **Prepared** | AES-256-GCM utilities available. Not yet applied to stored data. |
 | API documentation | **Partial** | OpenAPI 3.1 spec covers core endpoints. Full coverage in progress. |
