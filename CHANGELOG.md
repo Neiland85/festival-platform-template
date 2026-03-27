@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.15.0](https://github.com/Neiland85/festival-platform-template/compare/v1.14.0...v1.15.0) (2026-03-27)
+
+### Added
+
+* landing page for non-developers + spinning logo cursor + shockwave click ([8d76815](https://github.com/Neiland85/festival-platform-template/commit/8d76815c0f3c1b23db291be635518cccd577154c))
+
 ## [1.14.0](https://github.com/Neiland85/festival-platform-template/compare/v1.13.0...v1.14.0) (2026-03-27)
 
 ### Added
