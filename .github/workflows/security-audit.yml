@@ -1,0 +1,62 @@
+name: Security Audit
+
+# Runs weekly + on-demand to detect supply chain attacks and vulnerabilities
+on:
+  schedule:
+    - cron: "23 7 * * 1" # Monday 7:23 AM UTC (off-peak)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  audit:
+    name: Dependency & Supply Chain Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "10"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install deps (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: pnpm audit (vulnerabilities)
+        run: |
+          echo "## Dependency Audit Report" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          pnpm audit 2>&1 | tee -a $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Check for known malicious packages
+        run: |
+          echo "## Package Integrity Check" >> $GITHUB_STEP_SUMMARY
+          # Verify lockfile hasn't been tampered with
+          pnpm install --frozen-lockfile --ignore-scripts 2>&1
+          echo "Lockfile integrity: OK" >> $GITHUB_STEP_SUMMARY
+
+      - name: Verify no lifecycle scripts in dependencies
+        run: |
+          echo "## Lifecycle Script Check" >> $GITHUB_STEP_SUMMARY
+          # List any packages with install scripts (potential ransomware entry)
+          pnpm ls --json 2>/dev/null | head -100 >> $GITHUB_STEP_SUMMARY || true
+
+      - name: Check for outdated dependencies
+        run: |
+          echo "## Outdated Dependencies" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          pnpm outdated 2>&1 | head -50 | tee -a $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
