@@ -7,9 +7,51 @@
     "subtitle": "Música, Cultura y Experiencias",
     "cta": "Comprar Entradas"
   },
-  "nav": {},
-  "footer": {},
-  "location": {},
+  "nav": {
+    "events": "Programación",
+    "market": "Marketplace",
+    "location": "Ubicación"
+  },
+  "footer": {
+    "manifesto": "Plataforma de gestión para festivales de música y eventos en directo. Infraestructura lista para producción.",
+    "navEvents": "Programación",
+    "navMarket": "Marketplace",
+    "navLocation": "Ubicación",
+    "navPrivacy": "Privacidad",
+    "locationCity": "Madrid, España",
+    "season": "Temporada 2026",
+    "tagline": "Hecho con pasión por la música",
+    "copyright": "Festival Platform Template. Todos los derechos reservados."
+  },
+  "location": {
+    "heading": "Ubicación",
+    "mapTitle": "Mapa del evento"
+  },
+  "events": {
+    "heading": "Programación",
+    "moreInfo": "Más información"
+  },
+  "eventDescriptions": {
+    "mainstage": "El escenario principal con los artistas más destacados.",
+    "techno-bunker": "Techno underground en un espacio industrial único.",
+    "sunset-session": "Sesiones al atardecer con vistas espectaculares.",
+    "chill-garden": "Zona chill con música ambient y jardines.",
+    "bass-arena": "Bass music y dubstep en un espacio envolvente.",
+    "afterhours": "La fiesta continúa hasta el amanecer."
+  },
+  "eventHighlights": {
+    "mainstage": "Artistas internacionales · Producción visual · Sonido Funktion-One",
+    "techno-bunker": "Ambiente industrial · Residentes locales · Sesiones extendidas",
+    "sunset-session": "Vistas panorámicas · Cocktails premium · DJ sets selectos",
+    "chill-garden": "Naturaleza · Gastronomía local · Instalaciones artísticas",
+    "bass-arena": "Subgraves potentes · Visual mapping · MC hosts",
+    "afterhours": "Sesiones íntimas · Artistas sorpresa · Hasta el amanecer"
+  },
+  "showcase": {
+    "hostLabel": "Presentado por",
+    "tagline": "Infraestructura digital para eventos",
+    "credit": "Construido con Festival Platform Template"
+  },
   "cookie": {
     "ariaLabel": "Consentimiento de cookies",
     "message": "Usamos cookies para mejorar tu experiencia.",
@@ -21,7 +63,6 @@
     "label": "Exclusivo",
     "ctaButton": "Promociones limitadas",
     "ctaDescription": "Accede antes que nadie a ofertas especiales.",
-
     "back": "Volver",
     "rgpdTitle": "Protección de tus datos",
     "rgpdIntro": "Antes de continuar, queremos que sepas cómo tratamos tu información.",
@@ -39,7 +80,6 @@
     "rgpdRightsSuffix": "en cualquier momento escribiéndonos.",
     "rgpdLegal": "Consulta nuestra política completa de privacidad:",
     "rgpdPrivacyLink": "Política de privacidad",
-
     "formTitle": "Reserva tu acceso",
     "formSubtitle": "Completa tus datos para recibir las ofertas.",
     "labelName": "Nombre",
@@ -56,10 +96,8 @@
     "submitConsent": "Al enviar, aceptas nuestra",
     "privacyPolicy": "Política de privacidad",
     "sending": "Enviando...",
-
     "successTitle": "¡Estás dentro!",
     "successDescription": "Te notificaremos con las mejores ofertas antes que a nadie.",
-
     "errorTitle": "Ha ocurrido un error",
     "errorDescription": "No hemos podido procesar tu solicitud. Inténtalo de nuevo.",
     "retry": "Reintentar"
