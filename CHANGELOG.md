@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.14.0](https://github.com/Neiland85/festival-platform-template/compare/v1.13.0...v1.14.0) (2026-03-27)
+
+### Added
+
+* neobrutalism landing page — bold modern UX for product showcase ([52b1448](https://github.com/Neiland85/festival-platform-template/commit/52b1448054f04478537d8f2bed611a07280ec4c5)), closes [#FFFDF7](https://github.com/Neiland85/festival-platform-template/issues/FFFDF7)
+
 ## [1.13.0](https://github.com/Neiland85/festival-platform-template/compare/v1.12.0...v1.13.0) (2026-03-27)
 
 ### Added
