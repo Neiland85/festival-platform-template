@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.8.0](https://github.com/Neiland85/festival-platform-template/compare/v1.7.0...v1.8.0) (2026-03-27)
+
+### Added
+
+* **security:** 2FA TOTP + AES-256-GCM encryption + official audit plan ([#47](https://github.com/Neiland85/festival-platform-template/issues/47)) ([d0bfcdc](https://github.com/Neiland85/festival-platform-template/commit/d0bfcdcee56eec8fd9e2c733ce234ffbae158d08))
+
+## [1.7.0](https://github.com/Neiland85/festival-platform-template/compare/v1.6.0...v1.7.0) (2026-03-27)
+
+### Added
+
+* **security:** Web Application Firewall (WAF) — deep packet inspection for 8 attack categories ([#46](https://github.com/Neiland85/festival-platform-template/issues/46)) ([d79b753](https://github.com/Neiland85/festival-platform-template/commit/d79b75356e47be7ac0c35ec47f4658c82a9f56b1))
+
 ## [1.6.0](https://github.com/Neiland85/festival-platform-template/compare/v1.5.0...v1.6.0) (2026-03-27)
 
 ### Added
