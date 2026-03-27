@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.10.3](https://github.com/Neiland85/festival-platform-template/compare/v1.10.2...v1.10.3) (2026-03-27)
+
+### Fixed
+
+* **critical:** prevent serverEnv from crashing browser hydration ([f42c001](https://github.com/Neiland85/festival-platform-template/commit/f42c001208fa2e0336121a497666354595267f70))
+
+## [1.10.2](https://github.com/Neiland85/festival-platform-template/compare/v1.10.1...v1.10.2) (2026-03-27)
+
+### Fixed
+
+* add missing i18n translations (runtime crash fix) ([#52](https://github.com/Neiland85/festival-platform-template/issues/52)) ([8d22dd4](https://github.com/Neiland85/festival-platform-template/commit/8d22dd4fd7c688f1de9aad137ec2bf279330fb31))
+
+## [1.10.1](https://github.com/Neiland85/festival-platform-template/compare/v1.10.0...v1.10.1) (2026-03-27)
+
+### Fixed
+
+* resolve middleware Edge Runtime crash + assemble landing page ([#51](https://github.com/Neiland85/festival-platform-template/issues/51)) ([5584d86](https://github.com/Neiland85/festival-platform-template/commit/5584d863714e65ccd7ef52db1f93da1af91745a3))
+
 ## [1.10.0](https://github.com/Neiland85/festival-platform-template/compare/v1.9.0...v1.10.0) (2026-03-27)
 
 ### Added

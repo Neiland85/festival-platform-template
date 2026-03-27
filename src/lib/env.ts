@@ -259,6 +259,9 @@ function parseEnv<T extends z.ZodTypeAny>(
     // client-side code (via clientEnv imports) where process.exit doesn't exist.
     // In test mode, vitest catches it. In the browser, the error boundary catches it.
     // On the server, the unhandled exception stops the process anyway.
+    // Always throw instead of process.exit() — env.ts is bundled into
+    // client-side code (via clientEnv imports from HeroVideo/MetaPixel),
+    // and process.exit doesn't exist in the browser.
     throw new Error(msg)
   }
 
@@ -266,9 +269,13 @@ function parseEnv<T extends z.ZodTypeAny>(
 }
 
 /**
- * Server-side environment — typed, validated, non-null for required vars.
- * Importing this on the client will not leak secrets (Next.js tree-shakes
- * server-only imports), but prefer clientEnv for client components.
+ * Server-side environment — lazy-initialized behind Proxy.
+ *
+ * CRITICAL: This must NOT execute parseEnv() at module load time because
+ * client components (HeroVideo, MetaPixel) import clientEnv from this file,
+ * causing webpack to bundle the entire module. If serverEnv parses eagerly,
+ * it crashes the browser with "c.exit is not a function" because
+ * DATABASE_URL etc. don't exist on the client.
  */
 // IMPORTANT: serverEnv must NOT execute in the browser.
 // Client components (HeroVideo, MetaPixel) import clientEnv from this file,
@@ -280,6 +287,9 @@ function parseEnv<T extends z.ZodTypeAny>(
 let _serverEnv: ReturnType<typeof serverSchema.parse> | null = null
 
 export function getServerEnv() {
+let _serverEnv: ReturnType<typeof serverSchema.parse> | null = null
+
+function getServerEnv() {
   if (typeof window !== "undefined") {
     throw new Error("getServerEnv() cannot be called in the browser")
   }
@@ -311,6 +321,7 @@ export function getServerEnv() {
 
 // Backward compat: serverEnv as a getter proxy so existing code like
 // `serverEnv.DATABASE_URL` keeps working without changing every import.
+// Proxy preserves backward compat: serverEnv.DATABASE_URL still works
 export const serverEnv = new Proxy({} as ReturnType<typeof serverSchema.parse>, {
   get(_target, prop: string) {
     return getServerEnv()[prop as keyof ReturnType<typeof serverSchema.parse>]
