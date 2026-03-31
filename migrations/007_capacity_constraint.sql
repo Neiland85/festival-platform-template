@@ -15,9 +15,15 @@
 UPDATE orders SET status = 'reserved' WHERE status = 'pending';
 
 -- Constraint: tickets_sold can never exceed capacity (when capacity is set)
-ALTER TABLE events
-  ADD CONSTRAINT chk_no_oversell
-  CHECK (capacity IS NULL OR tickets_sold <= capacity);
+DO $$
+BEGIN
+  ALTER TABLE events
+    ADD CONSTRAINT chk_no_oversell
+    CHECK (capacity IS NULL OR tickets_sold <= capacity);
+EXCEPTION WHEN duplicate_object THEN
+  -- Constraint already exists — idempotent
+  NULL;
+END $$;
 
 -- Index for expiration cron: find old reserved orders efficiently
 CREATE INDEX IF NOT EXISTS idx_orders_reserved_created

@@ -18,7 +18,7 @@ import { clientEnv } from "@/lib/env"
 const BASE_URL = clientEnv.NEXT_PUBLIC_SITE_URL
 
 export async function GET(req: NextRequest) {
-  if (!requireAdmin(req)) {
+  if (!(await requireAdmin(req))) {
     return NextResponse.json(
       { error: "unauthorized" },
       { status: 403 }

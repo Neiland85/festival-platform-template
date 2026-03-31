@@ -107,6 +107,12 @@ const serverSchema = z.object({
   TM_API_KEY: z.string().optional(),
   QUEUE_RECONCILE_KEY: z.string().optional(),
 
+  // ── Cron (optional — Vercel sends Authorization: Bearer <CRON_SECRET>) ──
+  CRON_SECRET: z.string().optional().describe(
+    "Shared secret for Vercel Cron Job authentication. " +
+    "Generate: openssl rand -base64 32",
+  ),
+
   // ── Rate Limiting (optional, sensible defaults) ──
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().min(1000).default(60_000).describe(
     "Sliding window duration in ms. Default: 60000 (1 min).",

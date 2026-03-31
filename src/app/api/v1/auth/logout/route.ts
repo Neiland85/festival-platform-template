@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
-import { destroySession } from "@/lib/auth/sessionStore"
+import { destroySessionAsync } from "@/lib/auth/sessionStore"
 import { serverEnv } from "@/lib/env"
 import { audit } from "@/lib/observability/auditLog"
 
 export async function POST(req: NextRequest) {
   const token = req.cookies.get("admin_session")?.value
-  destroySession(token)
+  await destroySessionAsync(token)
   audit({ action: "admin.logout", req })
 
   const response = NextResponse.json({ success: true })

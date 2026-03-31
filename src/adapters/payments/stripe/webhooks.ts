@@ -21,7 +21,9 @@ import type Stripe from "stripe"
 import { requireStripe } from "./client"
 import { completeOrder } from "@/domain/orders/complete-order"
 import { cancelOrder } from "@/domain/orders/cancel-order"
+import { findById } from "@/domain/orders/order-repository"
 import { checkIdempotencyKey } from "@/lib/security/idempotency"
+import { enqueueDeadLetter } from "@/lib/webhooks/dead-letter-queue"
 import { log } from "@/lib/logger"
 import { serverEnv } from "@/lib/env"
 
@@ -125,14 +127,33 @@ export async function verifyAndHandleWebhook(
       const session = event.data.object as Stripe.Checkout.Session
       const orderId = session.metadata?.["orderId"]
       if (orderId) {
-        await completeOrder(session.id)
-        log("info", "stripe_checkout_completed", {
-          ...eventMeta,
-          stripeSessionId: session.id,
-          orderId,
-          amountTotal: session.amount_total,
-          currency: session.currency,
-        })
+        try {
+          await completeOrder(session.id)
+          log("info", "stripe_checkout_completed", {
+            ...eventMeta,
+            stripeSessionId: session.id,
+            orderId,
+            amountTotal: session.amount_total,
+            currency: session.currency,
+          })
+        } catch (err) {
+          // Domain call failed — persist to DLQ for manual reconciliation.
+          // enqueueDeadLetter is fire-and-forget with internal .catch(),
+          // so this cannot produce unhandled rejections.
+          enqueueDeadLetter({
+            provider: "stripe",
+            eventType: event.type,
+            eventId: event.id,
+            payload: event.data.object,
+            error: err instanceof Error ? err.message : String(err),
+          })
+          log("error", "stripe_checkout_complete_failed", {
+            ...eventMeta,
+            stripeSessionId: session.id,
+            orderId,
+            error: err instanceof Error ? err.message : String(err),
+          })
+        }
       } else {
         log("warn", "stripe_checkout_no_order_id", {
           ...eventMeta,
@@ -153,11 +174,69 @@ export async function verifyAndHandleWebhook(
         amount: intent.amount,
         currency: intent.currency,
       })
-      // PaymentIntent succeeded is typically informational when using
-      // Checkout Sessions (checkout.session.completed is the trigger).
-      // If using PaymentIntents directly, wire fulfillment here.
+      // Backup completion path: checkout.session.completed is the primary
+      // trigger, but if that event was lost, this ensures fulfillment.
+      // Resolves orderId → order.stripeSessionId → completeOrder(sessionId)
+      // because completeOrder expects a Stripe session ID, not a PaymentIntent ID.
       if (orderId) {
-        await completeOrder(intent.id)
+        try {
+          const order = await findById(orderId)
+          if (!order) {
+            // Order not found — should not happen if metadata.orderId is correct.
+            // Enqueue to DLQ so an operator can investigate.
+            enqueueDeadLetter({
+              provider: "stripe",
+              eventType: event.type,
+              eventId: event.id,
+              payload: event.data.object,
+              error: `Order not found: ${orderId}`,
+            })
+            log("warn", "stripe_payment_intent_order_not_found", {
+              ...eventMeta,
+              paymentIntentId: intent.id,
+              orderId,
+            })
+          } else if (!order.stripeSessionId) {
+            // Session ID not yet linked — theoretically impossible because
+            // payment requires human interaction (30s+) while linkage takes <50ms.
+            // Enqueue to DLQ as a safety net; retryable via DLQ retry path.
+            enqueueDeadLetter({
+              provider: "stripe",
+              eventType: event.type,
+              eventId: event.id,
+              payload: event.data.object,
+              error: `Order ${orderId} has no linked stripe_session_id`,
+            })
+            log("warn", "stripe_payment_intent_no_session_id", {
+              ...eventMeta,
+              paymentIntentId: intent.id,
+              orderId,
+              note: "Order exists but stripe_session_id is not yet linked — enqueued to DLQ",
+            })
+          } else {
+            await completeOrder(order.stripeSessionId)
+            log("info", "stripe_payment_intent_completed_order", {
+              ...eventMeta,
+              paymentIntentId: intent.id,
+              orderId,
+              stripeSessionId: order.stripeSessionId,
+            })
+          }
+        } catch (err) {
+          enqueueDeadLetter({
+            provider: "stripe",
+            eventType: event.type,
+            eventId: event.id,
+            payload: event.data.object,
+            error: err instanceof Error ? err.message : String(err),
+          })
+          log("error", "stripe_payment_intent_complete_failed", {
+            ...eventMeta,
+            paymentIntentId: intent.id,
+            orderId,
+            error: err instanceof Error ? err.message : String(err),
+          })
+        }
       }
       handled = true
       break
@@ -167,12 +246,28 @@ export async function verifyAndHandleWebhook(
       const session = event.data.object as Stripe.Checkout.Session
       const orderId = session.metadata?.["orderId"]
       if (orderId) {
-        await cancelOrder(session.id)
-        log("info", "stripe_checkout_expired", {
-          ...eventMeta,
-          stripeSessionId: session.id,
-          orderId,
-        })
+        try {
+          await cancelOrder(session.id)
+          log("info", "stripe_checkout_expired", {
+            ...eventMeta,
+            stripeSessionId: session.id,
+            orderId,
+          })
+        } catch (err) {
+          enqueueDeadLetter({
+            provider: "stripe",
+            eventType: event.type,
+            eventId: event.id,
+            payload: event.data.object,
+            error: err instanceof Error ? err.message : String(err),
+          })
+          log("error", "stripe_checkout_expire_failed", {
+            ...eventMeta,
+            stripeSessionId: session.id,
+            orderId,
+            error: err instanceof Error ? err.message : String(err),
+          })
+        }
       }
       handled = true
       break

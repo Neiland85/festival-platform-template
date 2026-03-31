@@ -9,7 +9,7 @@ import { requireAdmin } from "@/lib/auth/requireAdmin"
 import { correlate, getAlerts, getTimeline } from "@/lib/observability/correlationEngine"
 
 export async function GET(req: NextRequest) {
-  if (!requireAdmin(req)) {
+  if (!(await requireAdmin(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 

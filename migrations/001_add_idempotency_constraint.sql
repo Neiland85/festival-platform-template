@@ -16,10 +16,16 @@
 --   2. If second ackJob() is called with token=X → Database violates UNIQUE
 --   3. Application must handle UNIQUE violation (idempotent operation succeeded)
 
-ALTER TABLE platform_outbox
-ADD CONSTRAINT unique_idempotency_token UNIQUE (idempotency_token);
+DO $$
+BEGIN
+  ALTER TABLE platform_outbox
+  ADD CONSTRAINT unique_idempotency_token UNIQUE (idempotency_token);
+EXCEPTION WHEN duplicate_object THEN
+  -- Constraint already exists — idempotent
+  NULL;
+END $$;
 
 -- Create index for faster idempotency lookups
-CREATE INDEX idx_platform_outbox_idempotency_token_status
+CREATE INDEX IF NOT EXISTS idx_platform_outbox_idempotency_token_status
 ON platform_outbox (idempotency_token, status)
 WHERE status = 'completed';

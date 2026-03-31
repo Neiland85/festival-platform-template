@@ -24,7 +24,7 @@ import {
 /* ─── Enums ─── */
 
 export const userRoleEnum = pgEnum("user_role", ["admin", "editor", "viewer"])
-export const orderStatusEnum = pgEnum("order_status", ["pending", "completed", "cancelled", "refunded"])
+export const orderStatusEnum = pgEnum("order_status", ["reserved", "completed", "expired", "cancelled", "refunded"])
 
 /* ─── Events ─── */
 
@@ -34,10 +34,10 @@ export const events = pgTable("events", {
   description: text("description").notNull(),
   highlight: varchar("highlight", { length: 255 }).notNull(),
   ticketUrl: text("ticket_url").notNull(),
-  active: boolean("active").notNull().default(false),
+  active: boolean("active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   // 002: capacity
-  capacity: integer("capacity").default(5000),
+  capacity: integer("capacity"),
   // 003: metadata
   eventDate: date("event_date"),
   logo: text("logo"),
@@ -84,7 +84,7 @@ export const orders = pgTable("orders", {
   customerEmail: text("customer_email").notNull(),
   amountCents: integer("amount_cents").notNull(),
   currency: varchar("currency", { length: 3 }).notNull().default("EUR"),
-  status: orderStatusEnum("status").notNull().default("pending"),
+  status: orderStatusEnum("status").notNull().default("reserved"),
   quantity: integer("quantity").notNull().default(1),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

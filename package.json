@@ -9,7 +9,11 @@
     "test": "vitest",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
-    "prepare": "husky"
+    "typecheck": "tsc --noEmit",
+    "verify": "pnpm lint && pnpm typecheck && pnpm test:unit && pnpm build",
+    "prepare": "husky",
+    "db:migrate": "psql $DATABASE_URL -f sql/schema.sql && for f in migrations/*.sql; do echo \"Running $f...\"; psql $DATABASE_URL -f \"$f\"; done",
+    "db:migrate:check": "psql $DATABASE_URL -c \"SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename;\""
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.1",

@@ -79,7 +79,18 @@ export async function findByStripeSessionId(
 }
 
 /**
- * Update order status.
+ * Update order status — UNGUARDED. No status transition check.
+ *
+ * @deprecated Use domain functions instead:
+ *   - completeOrder() for reserved → completed (with WHERE status = 'reserved')
+ *   - cancelOrderById() for reserved → cancelled (with atomic capacity release)
+ *   - expireOrderById() for reserved → expired (with atomic capacity release)
+ *
+ * This function bypasses all status guards and can transition any order
+ * to any state without validation. Kept only for potential migration scripts.
+ * DO NOT use in request handlers or webhook processing.
+ *
+ * @internal
  */
 export async function updateOrderStatus(
   orderId: string,

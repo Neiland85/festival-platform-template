@@ -4,7 +4,7 @@
  * ATOMIC: capacity release + status update in one transaction.
  * If either fails, neither takes effect. No double-release possible.
  *
- * STATUS GUARD: updateOrderStatus uses WHERE status = 'reserved'
+ * STATUS GUARD: cancelOrderInternal uses WHERE status = 'reserved'
  * so concurrent cancel+complete on the same order cannot both succeed.
  *
  * Called from:
@@ -32,7 +32,7 @@ export async function cancelOrder(stripeSessionId: string): Promise<void> {
 }
 
 /**
- * Cancel order by ID (admin/cron path).
+ * Cancel order by ID (admin path).
  */
 export async function cancelOrderById(orderId: string): Promise<void> {
   const order = await findById(orderId)
@@ -42,6 +42,21 @@ export async function cancelOrderById(orderId: string): Promise<void> {
   }
 
   await cancelOrderInternal(order.id, order.eventId, order.quantity, order.status, "cancelled")
+}
+
+/**
+ * Expire order by ID (cron path).
+ * Same as cancelOrderById but uses "expired" status to distinguish
+ * timeout-based expiration from manual admin cancellation.
+ */
+export async function expireOrderById(orderId: string): Promise<void> {
+  const order = await findById(orderId)
+
+  if (!order) {
+    throw new OrderNotFoundError(orderId)
+  }
+
+  await cancelOrderInternal(order.id, order.eventId, order.quantity, order.status, "expired")
 }
 
 /**

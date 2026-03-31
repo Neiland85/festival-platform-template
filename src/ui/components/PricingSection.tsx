@@ -70,9 +70,15 @@ export default function PricingSection() {
     if (tier === "enterprise") return // handled by Link
     setLoading(tier)
     try {
+      // Fetch CSRF token (sets sn_sid cookie as side-effect)
+      const csrf = await fetch("/api/csrf").then((r) => r.json())
+
       const res = await fetch("/api/checkout", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-csrf-token": csrf.csrfToken,
+        },
         body: JSON.stringify({ tier }),
       })
       const data = await res.json()

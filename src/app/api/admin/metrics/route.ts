@@ -6,7 +6,7 @@ import { _getClientIp } from "@/lib/ip"
 import { safeHandler } from "@/lib/api/safeHandler"
 
 export const GET = safeHandler(async (req: NextRequest) => {
-  if (!requireAdmin(req)) {
+  if (!(await requireAdmin(req))) {
     return NextResponse.json({ error: "unauthorized" }, { status: 403 })
   }
 

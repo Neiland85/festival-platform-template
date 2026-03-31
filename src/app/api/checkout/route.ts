@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireStripe } from "@/adapters/payments/stripe/client"
 import { StripeNotConfiguredError } from "@/adapters/payments/stripe/client"
+import { verifyCsrf } from "@/lib/security/verifyCsrf"
 import { clientEnv } from "@/lib/env"
 import { log } from "@/lib/logger"
 
@@ -18,16 +19,16 @@ type Tier = (typeof VALID_TIERS)[number]
 
 const CHECKOUT_TIERS: Record<
   "indie" | "business",
-  { name: string; priceUsd: number; description: string }
+  { name: string; priceCents: number; description: string }
 > = {
   indie: {
     name: "Festival Platform — Indie License",
-    priceUsd: 2_900,
+    priceCents: 2_900, // $29.00 — matches PricingSection.tsx
     description: "1 developer, 1 project, 12 months updates",
   },
   business: {
     name: "Festival Platform — Business License",
-    priceUsd: 7_900,
+    priceCents: 7_900, // $79.00 — matches PricingSection.tsx
     description: "Up to 5 developers, unlimited projects, client work included",
   },
 }
@@ -37,6 +38,14 @@ function isValidTier(tier: string): tier is Tier {
 }
 
 export async function POST(req: NextRequest) {
+  // ── 0. CSRF ─────────────────────────────────────────────────
+  if (!verifyCsrf(req)) {
+    return NextResponse.json(
+      { error: "Invalid CSRF token" },
+      { status: 403 },
+    )
+  }
+
   // ── 1. Parse body ─────────────────────────────────────────────
   let body: { tier?: string }
   try {
@@ -86,7 +95,7 @@ export async function POST(req: NextRequest) {
         {
           price_data: {
             currency: "usd",
-            unit_amount: config.priceUsd * 100, // Stripe expects cents
+            unit_amount: config.priceCents, // Already in cents ($29.00 = 2900)
             product_data: {
               name: config.name,
               description: config.description,

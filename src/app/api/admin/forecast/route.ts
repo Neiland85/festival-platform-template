@@ -6,7 +6,7 @@ import { safeHandler } from "@/lib/api/safeHandler"
 const DEFAULT_CONVERSION = 0.22
 
 export const GET = safeHandler(async (req: NextRequest) => {
-  if (!requireAdmin(req)) {
+  if (!(await requireAdmin(req))) {
     return NextResponse.json({ error: "unauthorized" }, { status: 403 })
   }
 

@@ -32,15 +32,23 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Security audit
-        run: pnpm audit --audit-level=high || true
-        continue-on-error: true
+        run: pnpm audit --audit-level=high
 
       - name: Lint
         run: pnpm exec eslint . --max-warnings 0
-        continue-on-error: true
+
+      - name: Typecheck
+        run: pnpm exec tsc --noEmit
 
       - name: Test with coverage
         run: pnpm test:unit -- --coverage
+        env:
+          DATABASE_URL: postgres://test:test@localhost:5432/test
+          SESSION_SECRET: ci-test-secret-minimum-32-characters-long
+          ADMIN_PASSWORD: ci-test-admin
+
+      - name: Build
+        run: pnpm build
         env:
           DATABASE_URL: postgres://test:test@localhost:5432/test
           SESSION_SECRET: ci-test-secret-minimum-32-characters-long

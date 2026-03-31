@@ -18,7 +18,7 @@ import { getPoolHealth } from "@/lib/observability/poolMonitor"
 import { getPool } from "@/adapters/db/pool"
 
 export async function GET(req: NextRequest) {
-  if (!requireAdmin(req)) {
+  if (!(await requireAdmin(req))) {
     return NextResponse.json(
       { error: "unauthorized" },
       { status: 403 }
