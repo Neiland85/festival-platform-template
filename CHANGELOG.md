@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.22.0](https://github.com/Neiland85/festival-platform-template/compare/v1.21.0...v1.22.0) (2026-03-31)
+
+### Added
+
+* improve landing with SPUD demo + remove hero watermark ([#61](https://github.com/Neiland85/festival-platform-template/issues/61)) ([2df8e58](https://github.com/Neiland85/festival-platform-template/commit/2df8e587fa75c1de0930d25609dd29fc21308635)), closes [#demo](https://github.com/Neiland85/festival-platform-template/issues/demo)
+
 ## [1.21.0](https://github.com/Neiland85/festival-platform-template/compare/v1.20.1...v1.21.0) (2026-03-31)
 
 ### Added
