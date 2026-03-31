@@ -144,9 +144,9 @@ function getZodType(schema: z.ZodType): string {
     if (name === "ZodObject") return "object"
     if (name === "ZodArray") return "array"
     if (name === "ZodEnum") return "string"
-    if (name === "ZodLiteral") return typeof (def as { value: unknown }).value === "string" ? "string" : "boolean"
-    if (name === "ZodNullable") return getZodType((def as { innerType: z.ZodType }).innerType)
-    if (name === "ZodOptional") return getZodType((def as { innerType: z.ZodType }).innerType)
+    if (name === "ZodLiteral") return typeof (def as unknown as { value: unknown }).value === "string" ? "string" : "boolean"
+    if (name === "ZodNullable") return getZodType((def as unknown as { innerType: z.ZodType }).innerType)
+    if (name === "ZodOptional") return getZodType((def as unknown as { innerType: z.ZodType }).innerType)
   }
   return "string"
 }

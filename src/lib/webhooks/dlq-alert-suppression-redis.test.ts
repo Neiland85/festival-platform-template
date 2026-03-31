@@ -227,7 +227,7 @@ describe("applySuppressionsRedis", () => {
   it("treats Redis read failure as new incident (fail-open)", async () => {
     const failRedis: RedisClient = {
       get: vi.fn(async () => { throw new Error("Redis down") }),
-      set: vi.fn(async () => {}),
+      set: vi.fn(async () => null) as RedisClient["set"],
     }
 
     const result = await applySuppressionsRedis(
@@ -261,7 +261,7 @@ describe("applySuppressionsRedis", () => {
     await applySuppressionsRedis([makeAlert()], redis, { now: NOW })
 
     // First set call should use NX
-    const firstSetCall = (redis.set as ReturnType<typeof vi.fn>).mock.calls[0]
+    const firstSetCall = (redis.set as ReturnType<typeof vi.fn>).mock.calls[0]!
     expect(firstSetCall[2]).toEqual(expect.objectContaining({ NX: true }))
   })
 
