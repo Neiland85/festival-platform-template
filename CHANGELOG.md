@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.18.0](https://github.com/Neiland85/festival-platform-template/compare/v1.17.0...v1.18.0) (2026-03-31)
+
+### Added
+
+* **dashboard:** redesign DLQ admin UX for operator efficiency ([0cb8f12](https://github.com/Neiland85/festival-platform-template/commit/0cb8f12110743a7eaad99ed4724c3ac238fe5588))
+
 ## [1.17.0](https://github.com/Neiland85/festival-platform-template/compare/v1.16.1...v1.17.0) (2026-03-31)
 
 ### Added
