@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.20.1](https://github.com/Neiland85/festival-platform-template/compare/v1.20.0...v1.20.1) (2026-03-31)
+
+### Fixed
+
+* make Redis alert suppression atomic with SET NX ([ec17472](https://github.com/Neiland85/festival-platform-template/commit/ec1747237aaa9d181bb276cd693706a6798ddf72))
+
 ## [1.20.0](https://github.com/Neiland85/festival-platform-template/compare/v1.19.1...v1.20.0) (2026-03-31)
 
 ### Added
