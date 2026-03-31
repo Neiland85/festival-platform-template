@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.19.0](https://github.com/Neiland85/festival-platform-template/compare/v1.18.0...v1.19.0) (2026-03-31)
+
+### Added
+
+* alert suppression with cooldown, escalation, and incident tracking ([ccc2f48](https://github.com/Neiland85/festival-platform-template/commit/ccc2f484702164d6c20f90931d08be1a12ebf913))
+
 ## [1.18.0](https://github.com/Neiland85/festival-platform-template/compare/v1.17.0...v1.18.0) (2026-03-31)
 
 ### Added
