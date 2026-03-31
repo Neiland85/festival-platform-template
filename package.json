@@ -13,7 +13,8 @@
     "verify": "pnpm lint && pnpm typecheck && pnpm test:unit && pnpm build",
     "prepare": "husky",
     "db:migrate": "psql $DATABASE_URL -f sql/schema.sql && for f in migrations/*.sql; do echo \"Running $f...\"; psql $DATABASE_URL -f \"$f\"; done",
-    "db:migrate:check": "psql $DATABASE_URL -c \"SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename;\""
+    "db:migrate:check": "psql $DATABASE_URL -c \"SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename;\"",
+    "seed:spud-demo": "tsx scripts/seed-spud-demo.ts"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.1",
