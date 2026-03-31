@@ -30,6 +30,18 @@ const STACK_SIMPLE = [
   { name: "Tailwind 4", what: "Diseño" },
 ]
 
+const HERO_METRICS = [
+  { value: "+23%", label: "Conversión media", color: "#00CC88" },
+  { value: "-40%", label: "Tiempo manual", color: "#3A86FF" },
+  { value: "3x", label: "ROI en campañas", color: "#6C3AFF" },
+]
+
+const HERO_PREVIEW = [
+  { name: "Marta", role: "Founder", score: 91, action: "Oferta premium", color: "#00CC88" },
+  { name: "Ana", role: "Marketer", score: 82, action: "Email nurturing", color: "#3A86FF" },
+  { name: "Luis", role: "Developer", score: 67, action: "Retargeting", color: "#888" },
+]
+
 const DEMO_STEPS = [
   {
     step: "01",
@@ -77,73 +89,130 @@ export default function LocalePage() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#FFFDF7", fontFamily: "system-ui, -apple-system, 'Segoe UI', sans-serif", cursor: "url(/clarity-logo-dark.png) 16 16, auto" }}>
-      <style>{`
-        @keyframes hero-gradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        @keyframes float { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
-        @keyframes slide-in { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes spin-logo { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes shockwave {
-          0% { width: 0; height: 0; opacity: 1; }
-          100% { width: 400px; height: 400px; opacity: 0; }
-        }
-        @keyframes pulse-border {
-          0%, 100% { box-shadow: 4px 4px 0px #000, 0 0 0 0 rgba(108,58,255,0.4); }
-          50% { box-shadow: 4px 4px 0px #000, 0 0 0 6px rgba(108,58,255,0); }
-        }
-        .nb-card { transition: transform 0.2s, box-shadow 0.2s; }
-        .nb-card:hover { transform: translate(-3px, -3px); box-shadow: 8px 8px 0px #000; }
-        .nb-btn-primary { transition: transform 0.15s, box-shadow 0.15s; }
-        .nb-btn-primary:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px #000; }
-        .nb-btn-primary:active { transform: translate(0, 0); box-shadow: 0 0 0 #000; }
-        .nb-btn-secondary { transition: all 0.15s; }
-        .nb-btn-secondary:hover { background: #000 !important; color: #FFFDF7 !important; transform: translate(-1px, -1px); box-shadow: 4px 4px 0px #000; }
-        .spinning-logo { animation: spin-logo 8s linear infinite; }
-        .spinning-logo:hover { animation-duration: 2s; }
-        .demo-card { transition: transform 0.2s, box-shadow 0.2s; }
-        .demo-card:hover { transform: translate(-3px, -3px); box-shadow: 8px 8px 0px #000; }
-      `}</style>
-
       {/* ═══ HERO ═══ */}
       <header style={{
         minHeight: "100vh", display: "flex", flexDirection: "column",
-        justifyContent: "center", alignItems: "center", textAlign: "center",
-        padding: "2rem", borderBottom: "3px solid #000", position: "relative", overflow: "hidden",
+        justifyContent: "center", padding: "6rem 2rem 3rem", borderBottom: "3px solid #000",
+        position: "relative", overflow: "hidden",
       }}>
         {/* Dot pattern */}
         <div style={{ position: "absolute", inset: 0, opacity: 0.04, backgroundImage: "radial-gradient(#000 1.5px, transparent 1.5px)", backgroundSize: "24px 24px" }} />
         {/* Gradient blob */}
         <div style={{ position: "absolute", top: "-20%", right: "-10%", width: "600px", height: "600px", background: "linear-gradient(135deg, #6C3AFF33, #3A86FF22, #FF336622)", backgroundSize: "200% 200%", animation: "hero-gradient 8s ease infinite", borderRadius: "50%", filter: "blur(80px)", pointerEvents: "none" }} />
 
-        <div style={{ position: "relative", zIndex: 1, maxWidth: "800px", animation: "slide-in 0.8s ease-out" }}>
-          {/* Badge */}
-          <div style={{ display: "inline-block", padding: "0.5rem 1.25rem", marginBottom: "2rem", background: "#000", color: "#FFFDF7", borderRadius: "999px", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.1em" }}>
-            CLARITY STRUCTURES DIGITAL S.L.
+        <div className="hero-grid-2col" style={{ position: "relative", zIndex: 1, maxWidth: "1100px", margin: "0 auto", width: "100%", display: "grid", gap: "2rem", alignItems: "center" }}>
+
+          {/* ── Left column: Copy ── */}
+          <div style={{ animation: "slide-in 0.8s ease-out" }}>
+            {/* Badge */}
+            <div style={{ display: "inline-block", padding: "0.5rem 1.25rem", marginBottom: "1.5rem", background: "#000", color: "#FFFDF7", borderRadius: "999px", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.1em" }}>
+              PLATAFORMA DE CONVERSIÓN PARA EVENTOS
+            </div>
+
+            <h1 style={{ fontSize: "clamp(2.25rem, 5vw, 4rem)", fontWeight: 900, lineHeight: 1.05, margin: "0 0 1.25rem", color: "#000", letterSpacing: "-0.03em" }}>
+              Convierte visitantes en compradores{" "}
+              <span style={{ background: "linear-gradient(135deg, #6C3AFF, #3A86FF, #6C3AFF)", backgroundSize: "200% 200%", animation: "hero-gradient 4s ease infinite", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                automáticamente
+              </span>
+            </h1>
+
+            <p style={{ fontSize: "1.125rem", color: "#555", maxWidth: "540px", margin: "0 0 0.75rem", lineHeight: 1.7, fontWeight: 500 }}>
+              Captura leads, cualifícalos con inteligencia artificial y ejecuta campañas que convierten — sin intervención manual.
+            </p>
+            <p style={{ fontSize: "0.875rem", color: "#999", maxWidth: "480px", margin: "0 0 1.5rem", lineHeight: 1.6 }}>
+              Para festivales, eventos y experiencias que quieren escalar ventas sin aumentar equipo.
+            </p>
+
+            {/* Metrics */}
+            <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1.5rem", flexWrap: "wrap" }}>
+              {HERO_METRICS.map((m) => (
+                <div key={m.label} style={{ display: "flex", alignItems: "baseline", gap: "0.375rem" }}>
+                  <span style={{ fontSize: "1.5rem", fontWeight: 900, color: m.color, letterSpacing: "-0.02em" }}>{m.value}</span>
+                  <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#888", letterSpacing: "0.02em" }}>{m.label}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* CTAs */}
+            <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+              <a href="#demo" className="nb-btn-primary" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "1rem 2.5rem", background: "linear-gradient(135deg, #6C3AFF, #3A86FF)", color: "#fff", textDecoration: "none", borderRadius: "14px", fontSize: "1rem", fontWeight: 800, textTransform: "uppercase" as const, border: "2.5px solid #000", boxShadow: "4px 4px 0px #000", letterSpacing: "0.05em", animation: "pulse-border 2s ease-in-out infinite" }}>
+                Ver demo en acción →
+              </a>
+              <a href="https://github.com/Neiland85/festival-platform-template" target="_blank" rel="noopener noreferrer" className="nb-btn-secondary" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "1rem 2rem", background: "#FFFDF7", color: "#000", textDecoration: "none", borderRadius: "14px", fontSize: "0.9375rem", fontWeight: 700, border: "2.5px solid #000", boxShadow: "3px 3px 0px #000" }}>
+                ⭐ GitHub
+              </a>
+            </div>
           </div>
 
-          <h1 style={{ fontSize: "clamp(2.5rem, 7vw, 5.5rem)", fontWeight: 900, lineHeight: 0.95, margin: "0 0 1.5rem", color: "#000", letterSpacing: "-0.03em" }}>
-            Tu festival,
-            <br />
-            <span style={{ background: "linear-gradient(135deg, #6C3AFF, #3A86FF, #6C3AFF)", backgroundSize: "200% 200%", animation: "hero-gradient 4s ease infinite", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              listo para vender
-            </span>
-          </h1>
+          {/* ── Right column: Mini preview card ── */}
+          <div style={{ animation: "slide-in-right 0.8s ease-out 0.2s both", maxWidth: "420px", justifySelf: "center", width: "100%" }}>
+            <div style={{
+              background: "#111", border: "2.5px solid #000", borderRadius: "16px",
+              boxShadow: "6px 6px 0px #000", padding: "1.5rem", overflow: "hidden",
+            }}>
+              {/* Card header */}
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1rem" }}>
+                <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#00CC88", boxShadow: "0 0 6px #00CC8866" }} />
+                <span style={{ fontSize: "0.6875rem", fontWeight: 700, color: "#888", letterSpacing: "0.08em" }}>SPUD ENGINE — LIVE</span>
+              </div>
 
-          <p style={{ fontSize: "1.25rem", color: "#555", maxWidth: "540px", margin: "0 auto 1rem", lineHeight: 1.7, fontWeight: 500 }}>
-            Captura leads, cualifica con IA y convierte visitantes en compradores.
-            Todo automatizado. Todo medible.
-          </p>
-          <p style={{ fontSize: "1rem", color: "#999", maxWidth: "480px", margin: "0 auto 2.5rem", lineHeight: 1.6 }}>
-            Sin empezar de cero. Sin preocuparte por hackers.
-            Solo personaliza y lanza.
-          </p>
+              {/* Lead rows */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                {HERO_PREVIEW.map((lead) => (
+                  <div key={lead.name} className="hero-preview-row" style={{
+                    display: "flex", alignItems: "center", gap: "0.625rem",
+                    padding: "0.75rem 1rem", background: "#1a1a1a",
+                    border: `1.5px solid ${lead.score >= 85 ? "#00CC8844" : "#2a2a2a"}`,
+                    borderRadius: "10px",
+                  }}>
+                    {/* Avatar */}
+                    <div style={{
+                      width: "32px", height: "32px", borderRadius: "50%",
+                      background: `${lead.color}22`, border: `1.5px solid ${lead.color}44`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: "0.8125rem", fontWeight: 700, color: "#fff", flexShrink: 0,
+                    }}>
+                      {lead.name[0]}
+                    </div>
 
-          <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
-            <a href="#demo" className="nb-btn-primary" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "1rem 2.5rem", background: "linear-gradient(135deg, #6C3AFF, #3A86FF)", color: "#fff", textDecoration: "none", borderRadius: "14px", fontSize: "1rem", fontWeight: 800, textTransform: "uppercase" as const, border: "2.5px solid #000", boxShadow: "4px 4px 0px #000", letterSpacing: "0.05em", animation: "pulse-border 2s ease-in-out infinite" }}>
-              Ver cómo funciona ↓
-            </a>
-            <a href="https://github.com/Neiland85/festival-platform-template" target="_blank" rel="noopener noreferrer" className="nb-btn-secondary" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "1rem 2rem", background: "#FFFDF7", color: "#000", textDecoration: "none", borderRadius: "14px", fontSize: "0.9375rem", fontWeight: 700, border: "2.5px solid #000", boxShadow: "3px 3px 0px #000" }}>
-              ⭐ GitHub
-            </a>
+                    {/* Name + role */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#fff" }}>{lead.name}</div>
+                      <div style={{ fontSize: "0.625rem", color: "#666" }}>{lead.role}</div>
+                    </div>
+
+                    {/* Score */}
+                    <span style={{
+                      fontSize: "0.8125rem", fontWeight: 800, color: lead.color,
+                      minWidth: "24px", textAlign: "right" as const,
+                    }}>
+                      {lead.score}
+                    </span>
+
+                    {/* Action */}
+                    <span style={{
+                      padding: "0.2rem 0.5rem",
+                      background: `${lead.color}18`,
+                      color: lead.color,
+                      borderRadius: "6px",
+                      fontSize: "0.5625rem",
+                      fontWeight: 700,
+                      border: `1px solid ${lead.color}33`,
+                      whiteSpace: "nowrap" as const,
+                      flexShrink: 0,
+                    }}>
+                      {lead.action}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Card footer */}
+              <div style={{ marginTop: "0.75rem", paddingTop: "0.75rem", borderTop: "1px solid #2a2a2a", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: "0.625rem", color: "#666" }}>3 leads procesados</span>
+                <span style={{ fontSize: "0.625rem", color: "#00CC88", fontWeight: 700 }}>Decisiones automáticas ✓</span>
+              </div>
+            </div>
           </div>
         </div>
 
