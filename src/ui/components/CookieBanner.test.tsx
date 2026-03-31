@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import React from "react"
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest"
 import { render, screen, act } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
@@ -6,9 +7,8 @@ import { CookieBanner } from "./CookieBanner"
 import { I18nWrapper } from "@/test/i18n-wrapper"
 
 vi.mock("@/i18n/navigation", () => ({
-  Link: ({ href, children, ...props }: { href: string; children: React.ReactNode }) => (
-    <a href={href} {...props}>{children}</a>
-  ),
+  Link: ({ href, children, ...props }: { href: string; children: React.ReactNode }) =>
+    React.createElement("a", { href, ...props }, children),
 }))
 
 describe("CookieBanner", () => {
