@@ -24,6 +24,10 @@ const DEFAULT_COOLDOWN_MS = 10 * 60 * 1000 // 10 minutes
 /** If current count >= lastCount * SPIKE_MULTIPLIER, suppression is broken. */
 const SPIKE_MULTIPLIER = 2
 
+/** Incidents not updated within this window are pruned from state
+ *  at the start of each applySuppressions() call. Prevents unbounded growth. */
+const INCIDENT_TTL_MS = 24 * 60 * 60 * 1000 // 24 hours
+
 // ── Types ───────────────────────────────────────────────
 
 /** State for a single tracked incident. */
@@ -57,6 +61,8 @@ export type SuppressionOptions = {
   cooldownMs?: number
   /** Override spike multiplier for testing. Default: 2. */
   spikeMultiplier?: number
+  /** Override incident TTL for testing. Default: 24 hours. */
+  ttlMs?: number
   /** Override "now" for testing. Default: Date.now(). */
   now?: number
 }
@@ -104,10 +110,19 @@ export function applySuppressions(
 ): SuppressionResult {
   const cooldown = options?.cooldownMs ?? DEFAULT_COOLDOWN_MS
   const spike = options?.spikeMultiplier ?? SPIKE_MULTIPLIER
+  const ttl = options?.ttlMs ?? INCIDENT_TTL_MS
   const now = options?.now ?? Date.now()
 
   // Clone state so we don't mutate the input
   const updatedState: IncidentState = new Map(currentState)
+
+  // ── Prune stale incidents (TTL-based cleanup) ──
+  // Runs every cycle to prevent unbounded Map growth in long-running processes.
+  for (const [key, record] of updatedState) {
+    if (now - record.lastAlertedAt > ttl) {
+      updatedState.delete(key)
+    }
+  }
 
   const alertsToSend: DlqAlert[] = []
   const alertsSuppressed: DlqAlert[] = []
