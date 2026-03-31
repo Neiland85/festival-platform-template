@@ -14,6 +14,7 @@ import { getPool } from "@/adapters/db/pool"
 import { findByStripeSessionId } from "./order-repository"
 import { OrderNotFoundError } from "./types"
 import { log } from "@/lib/logger"
+import { recordSpudOutcome } from "@/adapters/db/spud-outcome-hook"
 
 export async function completeOrder(stripeSessionId: string): Promise<void> {
   const order = await findByStripeSessionId(stripeSessionId)
@@ -69,4 +70,7 @@ export async function completeOrder(stripeSessionId: string): Promise<void> {
     quantity: order.quantity,
     amountCents: order.amountCents,
   })
+
+  // ── SPUD outcome tracking (fire-and-forget, never blocks) ──
+  recordSpudOutcome(order.customerEmail, order.id, order.eventId)
 }

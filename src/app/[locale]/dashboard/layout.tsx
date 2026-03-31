@@ -40,6 +40,12 @@ export default function DashboardLayout({
             >
               DLQ
             </Link>
+            <Link
+              href="/dashboard/spud"
+              className="text-[var(--sn-muted)] hover:text-[var(--sn-text)] transition"
+            >
+              SPUD
+            </Link>
             <span className="w-px h-4 bg-[var(--sn-border-2)]" />
             <LogoutButton />
           </nav>

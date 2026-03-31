@@ -29,7 +29,7 @@ describe("AES-256-GCM", () => {
   it("detects tampered ciphertext", () => {
     const ciphertext = encrypt("sensitive data")
     const tampered = Buffer.from(ciphertext, "base64")
-    tampered[tampered.length - 1] ^= 0xff // Flip last byte
+    tampered[tampered.length - 1]! ^= 0xff // Flip last byte
     expect(() => decrypt(tampered.toString("base64"))).toThrow()
   })
 
