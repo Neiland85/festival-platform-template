@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.19.1](https://github.com/Neiland85/festival-platform-template/compare/v1.19.0...v1.19.1) (2026-03-31)
+
+### Fixed
+
+* add TTL-based cleanup to alert suppression to prevent memory leak ([e594f53](https://github.com/Neiland85/festival-platform-template/commit/e594f535c5fa21cb20db486036565e5df3d9d2ba))
+
 ## [1.19.0](https://github.com/Neiland85/festival-platform-template/compare/v1.18.0...v1.19.0) (2026-03-31)
 
 ### Added
