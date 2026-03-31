@@ -21,13 +21,17 @@ function makeAlert(overrides: Partial<DlqAlert> = {}): DlqAlert {
 const NOW = 1_000_000_000_000
 const COOLDOWN = 10 * 60 * 1000
 
-/** In-memory Redis mock — stores strings, supports get/set/EX. */
+/** In-memory Redis mock — supports get/set with NX and EX flags. */
 function createMockRedis(): RedisClient & { store: Map<string, string> } {
   const store = new Map<string, string>()
   return {
     store,
     get: vi.fn(async (key: string) => store.get(key) ?? null),
-    set: vi.fn(async (key: string, value: string) => { store.set(key, value) }),
+    set: vi.fn(async (key: string, value: string, options?: { NX?: boolean }) => {
+      if (options?.NX && store.has(key)) return null // NX: don't overwrite
+      store.set(key, value)
+      return "OK"
+    }),
   }
 }
 
@@ -69,11 +73,11 @@ describe("applySuppressionsRedis", () => {
   it("sets TTL on Redis write", async () => {
     await applySuppressionsRedis([makeAlert()], redis, { now: NOW })
 
-    // Verify set was called with EX option
+    // Verify set was called with EX + NX (atomic claim for new incidents)
     expect(redis.set).toHaveBeenCalledWith(
       expect.any(String),
       expect.any(String),
-      { EX: 86400 }, // 24 hours in seconds
+      expect.objectContaining({ EX: 86400 }), // 24 hours in seconds
     )
   })
 
@@ -249,6 +253,36 @@ describe("applySuppressionsRedis", () => {
 
     // Should still return the alert as sent
     expect(result.alertsToSend).toHaveLength(1)
+  })
+
+  // ── Atomicity ────────────────────────────────────────
+
+  it("uses SET NX for new incidents (atomic claim)", async () => {
+    await applySuppressionsRedis([makeAlert()], redis, { now: NOW })
+
+    // First set call should use NX
+    const firstSetCall = (redis.set as ReturnType<typeof vi.fn>).mock.calls[0]
+    expect(firstSetCall[2]).toEqual(expect.objectContaining({ NX: true }))
+  })
+
+  it("second instance suppresses when first claims via NX", async () => {
+    // Simulate: instance A already claimed the key via SET NX
+    const key = "dlq:incident:checkout.session.completed::connection refused"
+    redis.store.set(key, JSON.stringify({
+      lastAlertedAt: NOW - 1000, // just now
+      lastSeverity: "P2",
+      lastCount: 5,
+    }))
+
+    // Instance B tries the same alert — SET NX fails, GET finds it, suppresses
+    const result = await applySuppressionsRedis(
+      [makeAlert({ severity: "P2", count: 5 })],
+      redis,
+      { now: NOW },
+    )
+
+    expect(result.alertsSuppressed).toHaveLength(1)
+    expect(result.alertsToSend).toHaveLength(0)
   })
 
   // ── Empty input ─────────────────────────────────────

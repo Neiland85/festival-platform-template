@@ -28,10 +28,11 @@ const REDIS_PREFIX = "dlq:incident:"
 
 // ── Types ───────────────────────────────────────────────
 
-/** Minimal Redis interface — matches @upstash/redis and ioredis subsets. */
+/** Minimal Redis interface — matches @upstash/redis and ioredis subsets.
+ *  set() returns "OK" on success, null when NX prevents the write. */
 export type RedisClient = {
   get(key: string): Promise<string | null>
-  set(key: string, value: string, options?: { EX?: number }): Promise<unknown>
+  set(key: string, value: string, options?: { EX?: number; NX?: boolean }): Promise<string | null>
 }
 
 type StoredRecord = {
@@ -66,14 +67,19 @@ function severityRank(s: "P1" | "P2"): number {
  * Apply suppression logic with Redis-backed state.
  *
  * Same decision logic as the in-memory variant:
- *   1. New incident (no Redis key) → send
- *   2. Cooldown expired → send
- *   3. Inside cooldown + severity upgrade → escalate
- *   4. Inside cooldown + count spike (>= 2×) → escalate
- *   5. Inside cooldown, no escalation → suppress
+ * Atomicity strategy (no Lua scripts):
+ *   1. SET key value NX EX ttl  — atomic claim for new incidents.
+ *      If returns "OK": this instance wins → send.
+ *      If returns null: key already exists → another instance claimed it, or
+ *      it's an existing incident. Fall through to GET for escalation check.
+ *   2. GET key — read existing state for cooldown / escalation logic.
+ *   3. SET key value EX ttl (no NX) — unconditional overwrite on escalation
+ *      or cooldown expiry. Last-writer-wins is acceptable here because
+ *      escalations are rare and idempotent at the delivery layer
+ *      (PagerDuty dedup_key, Slack in-run dedup).
  *
- * Each sent/escalated alert writes back to Redis with TTL refresh.
- * Suppressed alerts do NOT refresh TTL (cooldown continues from original).
+ * This eliminates the GET-then-SET race where two instances both read null
+ * and both send the same new-incident alert.
  */
 export async function applySuppressionsRedis(
   alerts: DlqAlert[],
@@ -95,8 +101,26 @@ export async function applySuppressionsRedis(
   for (const alert of alerts) {
     const key = incidentKey(alert)
     const rKey = redisKey(key)
+    const record: StoredRecord = { lastAlertedAt: now, lastSeverity: alert.severity, lastCount: alert.count }
 
-    // ── Fetch previous record from Redis
+    // ── Step 1: Atomic claim for new incidents (SET NX)
+    // If the key doesn't exist, this SET creates it atomically.
+    // Only one instance wins — the rest see null and fall through to GET.
+    let claimed = false
+    try {
+      const result = await redis.set(rKey, JSON.stringify(record), { EX: INCIDENT_TTL_SECONDS, NX: true })
+      claimed = result === "OK"
+    } catch {
+      // Redis failure → fall through to GET path (fail-open)
+    }
+
+    if (claimed) {
+      // This instance won the race — send as new incident
+      alertsToSend.push(alert)
+      continue
+    }
+
+    // ── Step 2: Key exists — read current state for escalation check
     let previous: StoredRecord | null = null
     try {
       const raw = await redis.get(rKey)
@@ -108,34 +132,33 @@ export async function applySuppressionsRedis(
       previous = null
     }
 
-    // ── Decision logic (identical to in-memory variant)
-
     if (!previous) {
-      // New incident
+      // Key existed for SET NX but GET returned null (TTL race or parse error).
+      // Fail-open: send the alert.
       alertsToSend.push(alert)
-      await safeWrite(redis, rKey, { lastAlertedAt: now, lastSeverity: alert.severity, lastCount: alert.count })
+      await safeWrite(redis, rKey, record)
       continue
     }
 
+    // ── Step 3: Cooldown expired → send (unconditional overwrite)
     const elapsed = now - previous.lastAlertedAt
     if (elapsed >= cooldown) {
-      // Cooldown expired
       alertsToSend.push(alert)
-      await safeWrite(redis, rKey, { lastAlertedAt: now, lastSeverity: alert.severity, lastCount: alert.count })
+      await safeWrite(redis, rKey, record)
       continue
     }
 
-    // Inside cooldown — check escalation
+    // ── Step 4: Inside cooldown — check escalation
     const sevUpgrade = severityRank(alert.severity) < severityRank(previous.lastSeverity)
     const countSpike = alert.count >= previous.lastCount * spike
 
     if (sevUpgrade || countSpike) {
       alertsEscalated.push(alert)
-      await safeWrite(redis, rKey, { lastAlertedAt: now, lastSeverity: alert.severity, lastCount: alert.count })
+      await safeWrite(redis, rKey, record)
       continue
     }
 
-    // No escalation → suppress (do NOT write back — cooldown continues)
+    // ── Step 5: No escalation → suppress
     alertsSuppressed.push(alert)
   }
 
