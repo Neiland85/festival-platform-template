@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.21.0](https://github.com/Neiland85/festival-platform-template/compare/v1.20.1...v1.21.0) (2026-03-31)
+
+### Added
+
+* **spud:** implement SPUD phases 1-3 — scoring, orchestration, campa… ([#57](https://github.com/Neiland85/festival-platform-template/issues/57)) ([7e9b67d](https://github.com/Neiland85/festival-platform-template/commit/7e9b67d9811c1d7e0c8edfec56f0f80d4088c1b7))
+
 ## [1.20.1](https://github.com/Neiland85/festival-platform-template/compare/v1.20.0...v1.20.1) (2026-03-31)
 
 ### Fixed
