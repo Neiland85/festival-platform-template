@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.17.0](https://github.com/Neiland85/festival-platform-template/compare/v1.16.1...v1.17.0) (2026-03-31)
+
+### Added
+
+* DLQ reliability system — auto-retry, alerting, operator tooling ([53a4b10](https://github.com/Neiland85/festival-platform-template/commit/53a4b10147c84bfd8f55e3b280660ca86ed24636))
+
 ## [1.16.1](https://github.com/Neiland85/festival-platform-template/compare/v1.16.0...v1.16.1) (2026-03-27)
 
 ### Fixed
