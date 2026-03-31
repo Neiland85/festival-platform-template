@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useCallback } from "react"
+import { SpudMiniDemo } from "@/ui/components/demo/SpudMiniDemo"
 
 const FEATURES = [
   { icon: "🛡️", title: "Tu web blindada", desc: "Protección automática contra hackers, bots y ataques. Más de 70 tipos de amenazas bloqueadas sin que tengas que hacer nada." },
@@ -27,6 +28,30 @@ const STACK_SIMPLE = [
   { name: "PostgreSQL", what: "Base de datos" },
   { name: "Stripe", what: "Pagos" },
   { name: "Tailwind 4", what: "Diseño" },
+]
+
+const DEMO_STEPS = [
+  {
+    step: "01",
+    icon: "🎯",
+    title: "Captas leads",
+    desc: "Formularios integrados capturan visitantes interesados. Cada lead se almacena con contexto: origen, intención y datos de contacto.",
+    color: "#6C3AFF",
+  },
+  {
+    step: "02",
+    icon: "🧠",
+    title: "SPUD decide",
+    desc: "El motor de scoring analiza cada lead automáticamente. Segmenta por valor, prioriza los más calientes y descarta bots.",
+    color: "#3A86FF",
+  },
+  {
+    step: "03",
+    icon: "🚀",
+    title: "Ejecutas campañas",
+    desc: "Emails personalizados generados con IA. Cada segmento recibe el mensaje correcto, en el momento correcto. Tú solo apruebas.",
+    color: "#00CC88",
+  },
 ]
 
 export default function LocalePage() {
@@ -61,6 +86,10 @@ export default function LocalePage() {
           0% { width: 0; height: 0; opacity: 1; }
           100% { width: 400px; height: 400px; opacity: 0; }
         }
+        @keyframes pulse-border {
+          0%, 100% { box-shadow: 4px 4px 0px #000, 0 0 0 0 rgba(108,58,255,0.4); }
+          50% { box-shadow: 4px 4px 0px #000, 0 0 0 6px rgba(108,58,255,0); }
+        }
         .nb-card { transition: transform 0.2s, box-shadow 0.2s; }
         .nb-card:hover { transform: translate(-3px, -3px); box-shadow: 8px 8px 0px #000; }
         .nb-btn-primary { transition: transform 0.15s, box-shadow 0.15s; }
@@ -70,6 +99,8 @@ export default function LocalePage() {
         .nb-btn-secondary:hover { background: #000 !important; color: #FFFDF7 !important; transform: translate(-1px, -1px); box-shadow: 4px 4px 0px #000; }
         .spinning-logo { animation: spin-logo 8s linear infinite; }
         .spinning-logo:hover { animation-duration: 2s; }
+        .demo-card { transition: transform 0.2s, box-shadow 0.2s; }
+        .demo-card:hover { transform: translate(-3px, -3px); box-shadow: 8px 8px 0px #000; }
       `}</style>
 
       {/* ═══ HERO ═══ */}
@@ -82,25 +113,6 @@ export default function LocalePage() {
         <div style={{ position: "absolute", inset: 0, opacity: 0.04, backgroundImage: "radial-gradient(#000 1.5px, transparent 1.5px)", backgroundSize: "24px 24px" }} />
         {/* Gradient blob */}
         <div style={{ position: "absolute", top: "-20%", right: "-10%", width: "600px", height: "600px", background: "linear-gradient(135deg, #6C3AFF33, #3A86FF22, #FF336622)", backgroundSize: "200% 200%", animation: "hero-gradient 8s ease infinite", borderRadius: "50%", filter: "blur(80px)", pointerEvents: "none" }} />
-
-        {/* Spinning logo — top right corner */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/clarity-logo-dark.png"
-          alt="Clarity Structures"
-          className="spinning-logo"
-          style={{
-            position: "absolute",
-            top: "2rem",
-            right: "2rem",
-            width: "120px",
-            height: "120px",
-            opacity: 0.15,
-            mixBlendMode: "multiply",
-            pointerEvents: "none",
-            zIndex: 2,
-          }}
-        />
 
         <div style={{ position: "relative", zIndex: 1, maxWidth: "800px", animation: "slide-in 0.8s ease-out" }}>
           {/* Badge */}
@@ -117,8 +129,8 @@ export default function LocalePage() {
           </h1>
 
           <p style={{ fontSize: "1.25rem", color: "#555", maxWidth: "540px", margin: "0 auto 1rem", lineHeight: 1.7, fontWeight: 500 }}>
-            La plataforma completa para gestionar tu festival de música.
-            Venta de entradas, seguridad, diseño y cumplimiento legal.
+            Captura leads, cualifica con IA y convierte visitantes en compradores.
+            Todo automatizado. Todo medible.
           </p>
           <p style={{ fontSize: "1rem", color: "#999", maxWidth: "480px", margin: "0 auto 2.5rem", lineHeight: 1.6 }}>
             Sin empezar de cero. Sin preocuparte por hackers.
@@ -126,8 +138,8 @@ export default function LocalePage() {
           </p>
 
           <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
-            <a href="#producto" className="nb-btn-primary" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "1rem 2.5rem", background: "linear-gradient(135deg, #6C3AFF, #3A86FF)", color: "#fff", textDecoration: "none", borderRadius: "14px", fontSize: "1rem", fontWeight: 800, textTransform: "uppercase" as const, border: "2.5px solid #000", boxShadow: "4px 4px 0px #000", letterSpacing: "0.05em" }}>
-              Ver producto ↓
+            <a href="#demo" className="nb-btn-primary" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "1rem 2.5rem", background: "linear-gradient(135deg, #6C3AFF, #3A86FF)", color: "#fff", textDecoration: "none", borderRadius: "14px", fontSize: "1rem", fontWeight: 800, textTransform: "uppercase" as const, border: "2.5px solid #000", boxShadow: "4px 4px 0px #000", letterSpacing: "0.05em", animation: "pulse-border 2s ease-in-out infinite" }}>
+              Ver cómo funciona ↓
             </a>
             <a href="https://github.com/Neiland85/festival-platform-template" target="_blank" rel="noopener noreferrer" className="nb-btn-secondary" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "1rem 2rem", background: "#FFFDF7", color: "#000", textDecoration: "none", borderRadius: "14px", fontSize: "0.9375rem", fontWeight: 700, border: "2.5px solid #000", boxShadow: "3px 3px 0px #000" }}>
               ⭐ GitHub
@@ -142,6 +154,58 @@ export default function LocalePage() {
           </div>
         </div>
       </header>
+
+      {/* ═══ DEMO — Cómo funciona ═══ */}
+      <section id="demo" style={{ padding: "6rem 2rem", borderBottom: "3px solid #000", background: "#FAFAFE" }}>
+        <div style={{ maxWidth: "900px", margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "3rem" }}>
+            <span style={{ display: "inline-block", padding: "0.375rem 1rem", marginBottom: "1rem", background: "#3A86FF", color: "#fff", border: "2px solid #000", borderRadius: "999px", fontSize: "0.75rem", fontWeight: 800, letterSpacing: "0.1em" }}>
+              CÓMO FUNCIONA
+            </span>
+            <h2 style={{ fontSize: "clamp(2rem, 5vw, 3rem)", fontWeight: 900, color: "#000", margin: "0 0 0.75rem", letterSpacing: "-0.02em" }}>
+              De visitante a comprador
+              <br />
+              <span style={{ color: "#6C3AFF" }}>en 3 pasos</span>
+            </h2>
+            <p style={{ fontSize: "1rem", color: "#888", maxWidth: "480px", margin: "0 auto" }}>
+              Sin intervención manual. El sistema captura, cualifica y convierte por ti.
+            </p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "1.5rem" }}>
+            {DEMO_STEPS.map((step) => (
+              <div key={step.step} className="demo-card" style={{ padding: "2rem", background: "#fff", border: "2.5px solid #000", borderRadius: "16px", boxShadow: "5px 5px 0px #000", position: "relative" }}>
+                <div style={{ position: "absolute", top: "1rem", right: "1.25rem", fontSize: "3rem", fontWeight: 900, color: step.color, opacity: 0.12, lineHeight: 1 }}>
+                  {step.step}
+                </div>
+                <div style={{ fontSize: "2.25rem", marginBottom: "1rem" }}>{step.icon}</div>
+                <h3 style={{ fontSize: "1.125rem", fontWeight: 800, color: "#000", margin: "0 0 0.625rem" }}>{step.title}</h3>
+                <p style={{ fontSize: "0.875rem", color: "#666", margin: 0, lineHeight: 1.65 }}>{step.desc}</p>
+                <div style={{ marginTop: "1.25rem", width: "40px", height: "4px", borderRadius: "2px", background: step.color }} />
+              </div>
+            ))}
+          </div>
+
+          {/* Interactive SPUD demo */}
+          <SpudMiniDemo />
+
+          {/* CTA after demo */}
+          <div style={{ textAlign: "center", marginTop: "2rem" }}>
+            <p style={{ fontSize: "0.9375rem", color: "#888", marginBottom: "1rem", fontWeight: 600 }}>
+              Esto ocurre automáticamente con SPUD
+            </p>
+            <a href="/es/contacto" className="nb-btn-primary" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "0.875rem 2rem", background: "linear-gradient(135deg, #6C3AFF, #3A86FF)", color: "#fff", textDecoration: "none", borderRadius: "14px", fontSize: "0.875rem", fontWeight: 800, border: "2.5px solid #000", boxShadow: "4px 4px 0px #000" }}>
+              Solicitar demo personalizada →
+            </a>
+          </div>
+
+          <div style={{ textAlign: "center", marginTop: "2rem" }}>
+            <a href="#producto" style={{ fontSize: "0.9375rem", color: "#6C3AFF", fontWeight: 700, textDecoration: "none", borderBottom: "2px solid #6C3AFF", paddingBottom: "2px" }}>
+              Ver todas las funcionalidades ↓
+            </a>
+          </div>
+        </div>
+      </section>
 
       {/* ═══ STATS ═══ */}
       <section style={{ borderBottom: "3px solid #000", padding: "3rem 2rem", background: "#000" }}>
@@ -257,19 +321,22 @@ export default function LocalePage() {
         </div>
       </section>
 
-      {/* ═══ CTA ═══ */}
+      {/* ═══ CONVERSIÓN — CTA final ═══ */}
       <section style={{ padding: "6rem 2rem", borderBottom: "3px solid #000", background: "#000", color: "#FFFDF7" }}>
         <div style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center" }}>
           <h2 style={{ fontSize: "clamp(2rem, 5vw, 3rem)", fontWeight: 900, margin: "0 0 1rem", letterSpacing: "-0.02em" }}>
-            ¿Empezamos? 🚀
+            ¿Quieres implementar esto en tu festival?
           </h2>
-          <p style={{ fontSize: "1.125rem", color: "#999", margin: "0 0 2.5rem", lineHeight: 1.7 }}>
-            Licencias enterprise, integraciones a medida o consultoría técnica. Escríbenos.
+          <p style={{ fontSize: "1.125rem", color: "#999", margin: "0 0 1rem", lineHeight: 1.7 }}>
+            Automatiza la captación de leads, cualifica con IA y lanza campañas que convierten.
+          </p>
+          <p style={{ fontSize: "0.9375rem", color: "#666", margin: "0 0 2.5rem", lineHeight: 1.6 }}>
+            Te ayudamos con la implementación, personalización y puesta en marcha. Respuesta en menos de 24h.
           </p>
 
           <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
-            <a href="mailto:admin@claritystructures.com" className="nb-btn-primary" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "1rem 2rem", background: "linear-gradient(135deg, #6C3AFF, #3A86FF)", color: "#fff", textDecoration: "none", borderRadius: "14px", fontSize: "0.9375rem", fontWeight: 800, border: "2.5px solid #FFFDF7", boxShadow: "4px 4px 0px #FFFDF7" }}>
-              ✉ Contactar
+            <a href="/es/contacto" className="nb-btn-primary" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "1rem 2rem", background: "linear-gradient(135deg, #6C3AFF, #3A86FF)", color: "#fff", textDecoration: "none", borderRadius: "14px", fontSize: "0.9375rem", fontWeight: 800, border: "2.5px solid #FFFDF7", boxShadow: "4px 4px 0px #FFFDF7" }}>
+              Solicitar demo personalizada →
             </a>
             <a href="https://github.com/Neiland85/festival-platform-template" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "1rem 2rem", background: "transparent", color: "#FFFDF7", textDecoration: "none", borderRadius: "14px", fontSize: "0.9375rem", fontWeight: 700, border: "2.5px solid #333", transition: "border-color 0.2s" }}>
               Ver código ↗
