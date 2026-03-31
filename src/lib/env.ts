@@ -95,6 +95,14 @@ const serverSchema = z.object({
     "Upstash Redis bearer token.",
   ),
 
+  // ── OpenAI (optional — SPUD campaign generation) ──
+  OPENAI_API_KEY: z.string().optional().describe(
+    "OpenAI API key. Without it, campaign generation is disabled.",
+  ),
+  OPENAI_MODEL: z.string().optional().default("gpt-4o-mini").describe(
+    "OpenAI model for SPUD campaign drafts.",
+  ),
+
   // ── Sanity CMS (optional) ────────────────────────
   SANITY_API_TOKEN: z.string().optional(),
   SANITY_REVALIDATE_SECRET: z.string().optional(),
@@ -354,6 +362,9 @@ export const features = {
 
   /** Is the chaos Redis proxy enabled? */
   chaosRedisProxy: serverEnv.CHAOS_REDIS_PROXY,
+
+  /** Is OpenAI configured for SPUD campaign generation? */
+  openai: Boolean(serverEnv.OPENAI_API_KEY),
 } as const
 
 // ═══════════════════════════════════════════════════════
