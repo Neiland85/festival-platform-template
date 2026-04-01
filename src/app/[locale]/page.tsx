@@ -144,8 +144,36 @@ export default function LocalePage() {
             </div>
           </div>
 
-          {/* ── Right column: Mini preview card ── */}
-          <div style={{ animation: "slide-in-right 0.8s ease-out 0.2s both", maxWidth: "420px", justifySelf: "center", width: "100%" }}>
+          {/* ── Right column: Brand video + Mini preview card ── */}
+          <div style={{ animation: "slide-in-right 0.8s ease-out 0.2s both", maxWidth: "420px", justifySelf: "center", width: "100%", display: "flex", flexDirection: "column", gap: "1rem" }}>
+
+            {/* Brand video card */}
+            <div style={{
+              background: "#fff", border: "1.5px solid #e5e5e5", borderRadius: "14px",
+              padding: "1rem", display: "flex", alignItems: "center", gap: "0.875rem",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+            }}>
+              <div style={{
+                width: "56px", height: "56px", borderRadius: "12px", overflow: "hidden",
+                flexShrink: 0, background: "#f5f5f5",
+              }}>
+                <video
+                  src="/clarity_logo2.mp4"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+                />
+              </div>
+              <div>
+                <div style={{ fontSize: "0.8125rem", fontWeight: 800, color: "#000", letterSpacing: "-0.01em" }}>Clarity Engine</div>
+                <div style={{ fontSize: "0.6875rem", color: "#888", marginTop: "2px" }}>Automatización inteligente para eventos</div>
+              </div>
+            </div>
+
+            {/* SPUD preview card */}
             <div style={{
               background: "#111", border: "2.5px solid #000", borderRadius: "16px",
               boxShadow: "6px 6px 0px #000", padding: "1.5rem", overflow: "hidden",
@@ -416,10 +444,6 @@ export default function LocalePage() {
 
       {/* ═══ FOOTER ═══ */}
       <footer style={{ padding: "2.5rem 2rem", textAlign: "center", background: "#FFFDF7" }}>
-        <div style={{ marginBottom: "0.5rem" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/clarity-logo-dark.png" alt="" width={32} height={32} className="spinning-logo" style={{ display: "inline-block", opacity: 0.3 }} />
-        </div>
         <div style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#000" }}>
           Clarity Structures Digital S.L.
         </div>
