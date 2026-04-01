@@ -35,7 +35,7 @@ export const dynamic = "force-dynamic"
 export async function POST(req: Request) {
   // ── Preview/CI guard ──
   if (process.env["VERCEL_ENV"] === "preview") {
-    return NextResponse.json({ disabled: true, message: "Disabled in preview" })
+    return Response.json({ disabled: true, message: "Disabled in preview" })
   }
 
   // ── Dynamic imports (avoid module-load crash in preview) ──
@@ -102,7 +102,7 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   // ── Preview/CI guard ──
   if (process.env["VERCEL_ENV"] === "preview") {
-    return NextResponse.json({ disabled: true, message: "Disabled in preview" })
+    return Response.json({ disabled: true, message: "Disabled in preview" })
   }
 
   // ── Dynamic imports (avoid module-load crash in preview) ──

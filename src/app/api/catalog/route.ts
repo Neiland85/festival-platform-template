@@ -5,12 +5,15 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { createAssetSchema } from "@/contracts/schemas/asset.schema"
+import { log } from "@/lib/logger"
 import type { Asset } from "@/domain/assets/types"
 
 // In-memory catalog store (replace with DB adapter later)
 const catalog: Asset[] = []
 
 export function GET() {
+  log("info", "spud.view_event", { total: catalog.length })
+
   return NextResponse.json({
     assets: catalog,
     total: catalog.length,

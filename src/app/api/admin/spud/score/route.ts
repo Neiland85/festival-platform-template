@@ -13,6 +13,7 @@ import { requireAdmin } from "@/lib/auth/requireAdmin"
 import { safeHandler } from "@/lib/api/safeHandler"
 import { scoreLeadSchema } from "@/contracts/schemas/spud.schema"
 import type { LeadData, ScoringContext } from "@/domain/spud/types"
+import type { getPool } from "@/adapters/db/pool"
 
 export const POST = safeHandler(async (req: NextRequest) => {
   // ── Preview/CI guard ──

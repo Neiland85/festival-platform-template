@@ -70,6 +70,8 @@ export async function POST(req: NextRequest) {
   const quantity = typeof body["quantity"] === "number" ? body["quantity"] : 1
   const locale = typeof body["locale"] === "string" ? body["locale"] : "es"
 
+  log("info", "spud.checkout_attempt", { eventId, quantity, ip })
+
   if (typeof eventId !== "string" || typeof email !== "string") {
     return NextResponse.json(
       { error: "eventId and email are required" },

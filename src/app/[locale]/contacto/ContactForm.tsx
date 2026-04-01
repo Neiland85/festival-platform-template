@@ -122,6 +122,17 @@ export function ContactForm() {
               action={`mailto:${CONTACT_EMAIL}`}
               method="POST"
               encType="text/plain"
+              onSubmit={() => {
+                // Fire-and-forget tracking — does not block form submission
+                fetch("/api/track", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    event: "lead_created",
+                    data: { eventType, size, stage, goal, score },
+                  }),
+                }).catch(() => {})
+              }}
             >
               {/* Section 1: Basics */}
               <div style={{ marginBottom: "2rem" }}>

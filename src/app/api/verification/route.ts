@@ -8,6 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
+import type { VerificationCheck } from "@/domain/assets/run-verification"
 
 // Default checks — extend as needed
 const DEFAULT_CHECKS: VerificationCheck[] = [
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Dynamic imports (avoid module-load crash in preview) ──
-  const { runVerification, type VerificationCheck } = await import("@/domain/assets/run-verification")
+  const { runVerification } = await import("@/domain/assets/run-verification")
 
   try {
     const body = await req.json()
