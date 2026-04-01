@@ -9,10 +9,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAdmin } from "@/lib/auth/requireAdmin"
 import { decideApprovalSchema } from "@/contracts/schemas/spud.schema"
-import { findRunById, updateRun } from "@/adapters/db/spud-run-repository"
-import { canDecide, isApprovalExpired, resolveDecision, resolveExpired } from "@/domain/spud/approvals"
-import { createPlan } from "@/domain/spud/planner"
-import { executeRun } from "@/domain/spud/executor"
 import { buildExecutorDeps } from "../../_deps"
 import type { PlanGoal, ApprovalStatus } from "@/domain/spud/types"
 
@@ -20,6 +16,17 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  // ── Preview/CI guard ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ disabled: true, message: "Disabled in preview" })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { findRunById, updateRun } = await import("@/adapters/db/spud-run-repository")
+  const { canDecide, isApprovalExpired, resolveDecision, resolveExpired } = await import("@/domain/spud/approvals")
+  const { createPlan } = await import("@/domain/spud/planner")
+  const { executeRun } = await import("@/domain/spud/executor")
+
     if (!(await requireAdmin(req))) {
       return NextResponse.json({ error: "unauthorized" }, { status: 403 })
     }

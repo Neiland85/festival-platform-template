@@ -19,9 +19,16 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { requireAdmin } from "@/lib/auth/requireAdmin"
-import { queryAuditEvents } from "@/adapters/db/audit-repository"
 
 export async function GET(req: NextRequest) {
+  // ── Preview/CI guard ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ disabled: true, message: "Disabled in preview" })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { queryAuditEvents } = await import("@/adapters/db/audit-repository")
+
   if (!(await requireAdmin(req))) {
     return NextResponse.json(
       { error: "unauthorized" },

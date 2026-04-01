@@ -12,10 +12,17 @@ import { NextRequest, NextResponse } from "next/server"
 import { requireAdmin } from "@/lib/auth/requireAdmin"
 import { safeHandler } from "@/lib/api/safeHandler"
 import { createPlanSchema } from "@/contracts/schemas/spud.schema"
-import { createPlan } from "@/domain/spud/planner"
-import { getPool } from "@/adapters/db/pool"
 
 export const POST = safeHandler(async (req: NextRequest) => {
+  // ── Preview/CI guard ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ disabled: true, message: "Disabled in preview" })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { getPool } = await import("@/adapters/db/pool")
+  const { createPlan } = await import("@/domain/spud/planner")
+
   if (!(await requireAdmin(req))) {
     return NextResponse.json({ error: "unauthorized" }, { status: 403 })
   }

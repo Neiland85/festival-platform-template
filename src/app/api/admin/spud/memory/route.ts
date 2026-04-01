@@ -9,10 +9,17 @@ import { NextRequest, NextResponse } from "next/server"
 import { requireAdmin } from "@/lib/auth/requireAdmin"
 import { safeHandler } from "@/lib/api/safeHandler"
 import { setMemorySchema, memoryQuerySchema } from "@/contracts/schemas/spud.schema"
-import { setMemory, listMemory } from "@/adapters/db/spud-memory-repository"
-import { computeExpiresAt } from "@/domain/spud/memory"
 
 export const GET = safeHandler(async (req: NextRequest) => {
+  // ── Preview/CI guard ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ disabled: true, message: "Disabled in preview" })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { setMemory, listMemory } = await import("@/adapters/db/spud-memory-repository")
+  const { computeExpiresAt } = await import("@/domain/spud/memory")
+
   if (!(await requireAdmin(req))) {
     return NextResponse.json({ error: "unauthorized" }, { status: 403 })
   }
@@ -42,6 +49,15 @@ export const GET = safeHandler(async (req: NextRequest) => {
 })
 
 export const POST = safeHandler(async (req: NextRequest) => {
+  // ── Preview/CI guard ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ disabled: true, message: "Disabled in preview" })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { setMemory, listMemory } = await import("@/adapters/db/spud-memory-repository")
+  const { computeExpiresAt } = await import("@/domain/spud/memory")
+
   if (!(await requireAdmin(req))) {
     return NextResponse.json({ error: "unauthorized" }, { status: 403 })
   }

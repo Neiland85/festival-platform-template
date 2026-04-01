@@ -8,7 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { runVerification, type VerificationCheck } from "@/domain/assets/run-verification"
+import type { VerificationCheck } from "@/domain/assets/run-verification"
 
 // Default checks — extend as needed
 const DEFAULT_CHECKS: VerificationCheck[] = [
@@ -17,6 +17,14 @@ const DEFAULT_CHECKS: VerificationCheck[] = [
 ]
 
 export async function POST(req: NextRequest) {
+  // ── Preview/CI guard ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ disabled: true, message: "Disabled in preview" })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { runVerification } = await import("@/domain/assets/run-verification")
+
   try {
     const body = await req.json()
     const assetId = body?.assetId

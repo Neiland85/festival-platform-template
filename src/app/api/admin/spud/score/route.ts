@@ -12,12 +12,20 @@ import { NextRequest, NextResponse } from "next/server"
 import { requireAdmin } from "@/lib/auth/requireAdmin"
 import { safeHandler } from "@/lib/api/safeHandler"
 import { scoreLeadSchema } from "@/contracts/schemas/spud.schema"
-import { scoreLead } from "@/domain/spud/scorer"
-import { saveScore, findScoreByLeadId } from "@/adapters/db/spud-score-repository"
-import { getPool } from "@/adapters/db/pool"
 import type { LeadData, ScoringContext } from "@/domain/spud/types"
+import type { getPool } from "@/adapters/db/pool"
 
 export const POST = safeHandler(async (req: NextRequest) => {
+  // ── Preview/CI guard ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ disabled: true, message: "Disabled in preview" })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { saveScore, findScoreByLeadId } = await import("@/adapters/db/spud-score-repository")
+  const { getPool } = await import("@/adapters/db/pool")
+  const { scoreLead } = await import("@/domain/spud/scorer")
+
   if (!(await requireAdmin(req))) {
     return NextResponse.json({ error: "unauthorized" }, { status: 403 })
   }
