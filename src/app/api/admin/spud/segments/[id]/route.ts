@@ -7,17 +7,22 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { requireAdmin } from "@/lib/auth/requireAdmin"
-import {
-  findSegmentById,
-  queryLeadsByFilters,
-  deleteSegment,
-} from "@/adapters/db/spud-segment-repository"
 import type { SegmentFilters } from "@/domain/spud/types"
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  // ── Preview/CI guard ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ disabled: true, message: "Disabled in preview" })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { findSegmentById,
+  queryLeadsByFilters,
+  deleteSegment, } = await import("@/adapters/db/spud-segment-repository")
+
   if (!(await requireAdmin(req))) {
     return NextResponse.json({ error: "unauthorized" }, { status: 403 })
   }
@@ -46,6 +51,16 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  // ── Preview/CI guard ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ disabled: true, message: "Disabled in preview" })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { findSegmentById,
+  queryLeadsByFilters,
+  deleteSegment, } = await import("@/adapters/db/spud-segment-repository")
+
   if (!(await requireAdmin(req))) {
     return NextResponse.json({ error: "unauthorized" }, { status: 403 })
   }

@@ -19,9 +19,6 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { getPool } from "@/adapters/db/pool"
-import { expireOrderById } from "@/domain/orders/cancel-order"
-import { serverEnv } from "@/lib/env"
 import { log } from "@/lib/logger"
 
 /**
@@ -39,75 +36,97 @@ const EXPIRATION_MINUTES = 30
 const BATCH_LIMIT = 100
 
 export async function GET(req: NextRequest) {
-  // ── Auth: Vercel Cron sends Authorization: Bearer <CRON_SECRET> ──
-  // Also allow manual invocation with the same header for debugging.
-  const cronSecret = serverEnv.CRON_SECRET
-  if (cronSecret) {
-    const authHeader = req.headers.get("authorization")
-    if (authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: "unauthorized" }, { status: 401 })
-    }
-  }
-
-  const pool = getPool()
-
-  // ── Find stale reserved orders ──
-  // Uses the partial index idx_orders_reserved_created (WHERE status = 'reserved')
-  const result = await pool.query(
-    `SELECT id
-     FROM orders
-     WHERE status = 'reserved'
-       AND created_at < NOW() - INTERVAL '${EXPIRATION_MINUTES} minutes'
-     ORDER BY created_at ASC
-     LIMIT $1`,
-    [BATCH_LIMIT],
-  )
-
-  const staleOrderIds: string[] = result.rows.map(
-    (r: Record<string, unknown>) => r["id"] as string,
-  )
-
-  if (staleOrderIds.length === 0) {
+  // ── Skip in preview/development — no DB or secrets configured ──
+  if (process.env["VERCEL_ENV"] === "preview") {
     return NextResponse.json({
-      expired: 0,
-      message: "No stale reserved orders found",
+      disabled: true,
+      message: "Cron disabled in preview",
     })
   }
 
-  log("info", "cron_expire_orders_start", {
-    count: staleOrderIds.length,
-    expirationMinutes: EXPIRATION_MINUTES,
-  })
-
-  // ── Expire each order through the domain layer ──
-  let expired = 0
-  const errors: Array<{ orderId: string; error: string }> = []
-
-  for (const orderId of staleOrderIds) {
-    try {
-      await expireOrderById(orderId)
-      expired++
-    } catch (err: unknown) {
-      // Log but continue — one failure shouldn't block others.
-      // The domain layer's WHERE status = 'reserved' guard means
-      // an order that was completed between our SELECT and the
-      // expireOrderById call is a no-op, not an error.
-      const errorMsg = err instanceof Error ? err.message : String(err)
-      errors.push({ orderId, error: errorMsg })
-      log("warn", "cron_expire_order_failed", { orderId, error: errorMsg })
+  try {
+    // ── Auth: Vercel Cron sends Authorization: Bearer <CRON_SECRET> ──
+    // Also allow manual invocation with the same header for debugging.
+    const cronSecret = process.env["CRON_SECRET"]
+    if (cronSecret) {
+      const authHeader = req.headers.get("authorization")
+      if (authHeader !== `Bearer ${cronSecret}`) {
+        return NextResponse.json({ error: "unauthorized" }, { status: 401 })
+      }
     }
+
+    const { getPool } = await import("@/adapters/db/pool")
+    const { expireOrderById } = await import("@/domain/orders/cancel-order")
+
+    const pool = getPool()
+
+    // ── Find stale reserved orders ──
+    // Uses the partial index idx_orders_reserved_created (WHERE status = 'reserved')
+    const result = await pool.query(
+      `SELECT id
+       FROM orders
+       WHERE status = 'reserved'
+         AND created_at < NOW() - INTERVAL '${EXPIRATION_MINUTES} minutes'
+       ORDER BY created_at ASC
+       LIMIT $1`,
+      [BATCH_LIMIT],
+    )
+
+    const staleOrderIds: string[] = result.rows.map(
+      (r: Record<string, unknown>) => r["id"] as string,
+    )
+
+    if (staleOrderIds.length === 0) {
+      return NextResponse.json({
+        expired: 0,
+        message: "No stale reserved orders found",
+      })
+    }
+
+    log("info", "cron_expire_orders_start", {
+      count: staleOrderIds.length,
+      expirationMinutes: EXPIRATION_MINUTES,
+    })
+
+    // ── Expire each order through the domain layer ──
+    let expired = 0
+    const errors: Array<{ orderId: string; error: string }> = []
+
+    for (const orderId of staleOrderIds) {
+      try {
+        await expireOrderById(orderId)
+        expired++
+      } catch (err: unknown) {
+        // Log but continue — one failure shouldn't block others.
+        // The domain layer's WHERE status = 'reserved' guard means
+        // an order that was completed between our SELECT and the
+        // expireOrderById call is a no-op, not an error.
+        const errorMsg = err instanceof Error ? err.message : String(err)
+        errors.push({ orderId, error: errorMsg })
+        log("warn", "cron_expire_order_failed", { orderId, error: errorMsg })
+      }
+    }
+
+    log("info", "cron_expire_orders_done", {
+      expired,
+      errors: errors.length,
+      total: staleOrderIds.length,
+    })
+
+    return NextResponse.json({
+      expired,
+      errors: errors.length,
+      total: staleOrderIds.length,
+      ...(errors.length > 0 && { failedOrders: errors }),
+    })
+  } catch (err: unknown) {
+    // ── Cron must never return 500 — log and return 200 with error info ──
+    const errorMsg = err instanceof Error ? err.message : String(err)
+    log("error", "cron_expire_orders_crash", { error: errorMsg })
+    return NextResponse.json({
+      expired: 0,
+      error: errorMsg,
+      message: "Cron execution failed but returned gracefully",
+    })
   }
-
-  log("info", "cron_expire_orders_done", {
-    expired,
-    errors: errors.length,
-    total: staleOrderIds.length,
-  })
-
-  return NextResponse.json({
-    expired,
-    errors: errors.length,
-    total: staleOrderIds.length,
-    ...(errors.length > 0 && { failedOrders: errors }),
-  })
 }

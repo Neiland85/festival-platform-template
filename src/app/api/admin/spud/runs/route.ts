@@ -10,13 +10,20 @@ import { NextRequest, NextResponse } from "next/server"
 import { requireAdmin } from "@/lib/auth/requireAdmin"
 import { safeHandler } from "@/lib/api/safeHandler"
 import { spudRunsQuerySchema, createPlanSchema } from "@/contracts/schemas/spud.schema"
-import { findRuns, findRunByIdempotencyKey, createRun } from "@/adapters/db/spud-run-repository"
-import { createPlan } from "@/domain/spud/planner"
-import { executeRun } from "@/domain/spud/executor"
-import { requiresApproval } from "@/domain/spud/approvals"
 import { buildExecutorDeps } from "./_deps"
 
 export const GET = safeHandler(async (req: NextRequest) => {
+  // ── Preview/CI guard ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ disabled: true, message: "Disabled in preview" })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { findRuns, findRunByIdempotencyKey, createRun } = await import("@/adapters/db/spud-run-repository")
+  const { createPlan } = await import("@/domain/spud/planner")
+  const { executeRun } = await import("@/domain/spud/executor")
+  const { requiresApproval } = await import("@/domain/spud/approvals")
+
   if (!(await requireAdmin(req))) {
     return NextResponse.json({ error: "unauthorized" }, { status: 403 })
   }
@@ -48,6 +55,17 @@ export const GET = safeHandler(async (req: NextRequest) => {
 })
 
 export const POST = safeHandler(async (req: NextRequest) => {
+  // ── Preview/CI guard ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ disabled: true, message: "Disabled in preview" })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { findRuns, findRunByIdempotencyKey, createRun } = await import("@/adapters/db/spud-run-repository")
+  const { createPlan } = await import("@/domain/spud/planner")
+  const { executeRun } = await import("@/domain/spud/executor")
+  const { requiresApproval } = await import("@/domain/spud/approvals")
+
   if (!(await requireAdmin(req))) {
     return NextResponse.json({ error: "unauthorized" }, { status: 403 })
   }

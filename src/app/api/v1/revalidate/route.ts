@@ -1,6 +1,5 @@
 import { revalidateTag } from "next/cache"
 import { type NextRequest, NextResponse } from "next/server"
-import { serverEnv } from "@/lib/env"
 import { rateLimit, setRateLimitHeaders } from "@/lib/rate-limit"
 import { z } from "zod"
 
@@ -30,6 +29,14 @@ const revalidateBodySchema = z.object({
 })
 
 export async function POST(req: NextRequest) {
+  // ── Preview/CI guard ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ disabled: true, message: "Disabled in preview" })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { serverEnv } = await import("@/lib/env")
+
   // Rate limiting — prevent revalidation DoS
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown"
   const rateLimitResult = await rateLimit(ip)

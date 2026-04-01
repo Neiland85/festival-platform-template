@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server"
-import { getPool } from "@/adapters/db/pool"
-import { serverEnv } from "@/lib/env"
 import { problem } from "@/lib/problem"
 import { captureException } from "@sentry/nextjs"
 
 export async function GET() {
+  // ── Preview: no DB available, return degraded status ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ status: "ready", db: "skipped (preview)", preview: true })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { getPool } = await import("@/adapters/db/pool")
+  const { serverEnv } = await import("@/lib/env")
+
   const instance = "/api/readyz"
 
   try {

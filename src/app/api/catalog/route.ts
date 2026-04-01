@@ -4,7 +4,6 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { createAsset } from "@/domain/assets/create-asset"
 import { createAssetSchema } from "@/contracts/schemas/asset.schema"
 import type { Asset } from "@/domain/assets/types"
 
@@ -19,6 +18,14 @@ export function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  // ── Preview/CI guard ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ disabled: true, message: "Disabled in preview" })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { createAsset } = await import("@/domain/assets/create-asset")
+
   try {
     const body = await req.json()
     const parsed = createAssetSchema.safeParse(body)

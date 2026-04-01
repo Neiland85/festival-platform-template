@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server"
 import { requireStripe } from "@/adapters/payments/stripe/client"
 import { StripeNotConfiguredError } from "@/adapters/payments/stripe/client"
 import { verifyCsrf } from "@/lib/security/verifyCsrf"
-import { clientEnv } from "@/lib/env"
 import { log } from "@/lib/logger"
 
 /**
@@ -38,6 +37,14 @@ function isValidTier(tier: string): tier is Tier {
 }
 
 export async function POST(req: NextRequest) {
+  // ── Preview: no Stripe keys, return safe response ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ error: "Payments disabled in preview environment" }, { status: 503 })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { clientEnv } = await import("@/lib/env")
+
   // ── 0. CSRF ─────────────────────────────────────────────────
   if (!verifyCsrf(req)) {
     return NextResponse.json(

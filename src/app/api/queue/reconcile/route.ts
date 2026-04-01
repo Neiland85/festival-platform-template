@@ -28,12 +28,19 @@
 
 import { reconcileProcessing } from "@/lib/security/redisQueue"
 import { log } from "@/lib/logger"
-import { serverEnv } from "@/lib/env"
 
 export const maxDuration = 60 // 60 second timeout (needed if queue is large)
 export const dynamic = "force-dynamic"
 
 export async function POST(req: Request) {
+  // ── Preview/CI guard ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ disabled: true, message: "Disabled in preview" })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { serverEnv } = await import("@/lib/env")
+
   try {
     // Optional: Verify authorization (API key, IP, etc.)
     const authHeader = req.headers.get("authorization")
@@ -93,6 +100,14 @@ export async function POST(req: Request) {
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(req: Request) {
+  // ── Preview/CI guard ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ disabled: true, message: "Disabled in preview" })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { serverEnv } = await import("@/lib/env")
+
   return Response.json(
     {
       status: "ok",
