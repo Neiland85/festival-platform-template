@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "admin@claritystructures.com"
+const CONTACT_EMAIL = process.env["NEXT_PUBLIC_CONTACT_EMAIL"] ?? "admin@claritystructures.com"
 
 const EVENT_TYPES = [
   { value: "festival", label: "Festival de música" },
