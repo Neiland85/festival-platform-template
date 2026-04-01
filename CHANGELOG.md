@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.23.0](https://github.com/Neiland85/festival-platform-template/compare/v1.22.0...v1.23.0) (2026-04-01)
+
+### Added
+
+* redesign contact form with SPUD LIVE scoring panel ([#63](https://github.com/Neiland85/festival-platform-template/issues/63)) ([7bd02cc](https://github.com/Neiland85/festival-platform-template/commit/7bd02cc8de956ea58acfec73862b15f1bed11be0))
+
 ## [1.22.0](https://github.com/Neiland85/festival-platform-template/compare/v1.21.0...v1.22.0) (2026-03-31)
 
 ### Added
