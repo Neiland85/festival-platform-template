@@ -29,7 +29,7 @@
     "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.2",
     "next": "^15.3.3",
-    "next-intl": "^4.1.4",
+    "next-intl": "^4.9.0",
     "next-sanity": "^9.12.2",
     "openai": "6.33.0",
     "otpauth": "9.5.0",
