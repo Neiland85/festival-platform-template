@@ -54,7 +54,7 @@ jobs:
           fetch-depth: 0       # Full history for commit analysis
           persist-credentials: false
 
-      - uses: pnpm/action-setup@v5
+      - uses: pnpm/action-setup@v6
         with:
           version: "10"
 
