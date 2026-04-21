@@ -15,6 +15,7 @@ import { findByStripeSessionId } from "./order-repository"
 import { OrderNotFoundError } from "./types"
 import { log } from "@/lib/logger"
 import { recordSpudOutcome } from "@/adapters/db/spud-outcome-hook"
+import { createOffchainTicketAsset } from "@/adapters/tickets/ticket-asset-repository"
 
 export async function completeOrder(stripeSessionId: string): Promise<void> {
   const order = await findByStripeSessionId(stripeSessionId)
@@ -64,11 +65,18 @@ export async function completeOrder(stripeSessionId: string): Promise<void> {
     return
   }
 
+  await createOffchainTicketAsset({
+    orderId: order.id,
+    eventId: order.eventId,
+    ownerEmail: order.customerEmail,
+  })
+
   log("info", "order_completed", {
     orderId: order.id,
     eventId: order.eventId,
     quantity: order.quantity,
     amountCents: order.amountCents,
+    ticketAssetProvisioned: true,
   })
 
   // ── SPUD outcome tracking (fire-and-forget, never blocks) ──
