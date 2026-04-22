@@ -43,7 +43,11 @@ export default defineConfig({
       IP_HASH_SALT: "test-ip-salt",
     },
 
-    include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
+    include: [
+      "src/**/*.test.ts",
+      "src/**/*.test.tsx",
+      "platform/**/*.test.ts"
+    ],
     exclude: ["node_modules", "e2e", ".next", "dist"],
 
     coverage: {
