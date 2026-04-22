@@ -1,0 +1,13 @@
+{
+  "event-123": {
+    "allow": ["vip@example.com", "partner.com"],
+    "deny": ["blocked@example.com"],
+    "maxPerUser": 4,
+    "visibility": "unlisted",
+    "tokenRequired": true
+  },
+  "default": {
+    "visibility": "public",
+    "maxPerUser": 10
+  }
+}
