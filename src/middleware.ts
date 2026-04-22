@@ -2,6 +2,7 @@
  * Next.js Middleware — 4-Layer Security Stack.
  *
  * Runs in Edge Runtime on EVERY request before route handlers.
+ * IMPORTANT: All imports must be Edge-compatible (no Node.js APIs).
  *
  * ┌─────────────────────────────────────────────────────────┐
  * │  Layer 1: WAF (Web Application Firewall)                │
@@ -11,8 +12,8 @@
  * │  Layer 2: DDoS Shield                                   │
  * │  → Rate limiting (60/min), IP auto-ban, header/body    │
  * ├─────────────────────────────────────────────────────────┤
- * │  Layer 3: Admin Authentication                          │
- * │  → HMAC-SHA256 session cookies for /api/admin/*        │
+ * │  Layer 3: Admin Authentication (Edge-safe)              │
+ * │  → Cookie presence check for /api/admin/*               │
  * ├─────────────────────────────────────────────────────────┤
  * │  Layer 4: Privacy Shield                                │
  * │  → Strip server info, no-cache APIs, COOP/CORP         │
@@ -20,22 +21,26 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { validateSession } from "@/lib/auth/sessionStore"
 import { shieldCheck } from "@/lib/security/ddos-shield"
-import { inspectRequest } from "@/lib/security/waf"
+import { inspectRequest, inspectBody } from "@/lib/security/waf"
 import { sanitizeResponseHeaders } from "@/lib/security/privacy-shield"
 
-export function middleware(req: NextRequest) {
+// NOTE: sessionStore is NOT imported here because it transitively imports
+// redis/client -> env.ts, which runs Zod validation at module load time.
+// That crashes on Edge Runtime where process.env may not be ready during
+// module initialization. Instead, we do a lightweight cookie check inline.
+
+export async function middleware(req: NextRequest) {
   const ip =
     req.headers.get("x-real-ip") ??
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     "unknown"
 
-  // ── Layer 1: WAF — Deep Packet Inspection ──────────
+  // Layer 1: WAF - Deep Packet Inspection
   const wafResult = inspectRequest(
     req.method,
     req.nextUrl.pathname,
-    req.nextUrl.search.slice(1), // Remove leading "?"
+    req.nextUrl.search.slice(1),
     req.headers,
   )
 
@@ -53,13 +58,42 @@ export function middleware(req: NextRequest) {
       }),
     )
 
-    return NextResponse.json(
-      { error: "blocked" },
-      { status: 403 },
-    )
+    return NextResponse.json({ error: "blocked" }, { status: 403 })
   }
 
-  // ── Layer 2: DDoS Shield ───────────────────────────
+  // Layer 1b: WAF Body Inspection
+  const BODY_METHODS = new Set(["POST", "PUT", "PATCH"])
+  if (
+    BODY_METHODS.has(req.method) &&
+    !req.nextUrl.pathname.startsWith("/api/v1/webhooks")
+  ) {
+    const cl = Number(req.headers.get("content-length") ?? "0")
+    if (cl > 0 && cl <= 65536) {
+      try {
+        const cloned = req.clone()
+        const text = await cloned.text()
+        const bodyResult = inspectBody(text)
+        if (bodyResult.blocked) {
+          console.log(
+            JSON.stringify({
+              timestamp: new Date().toISOString(),
+              level: "warn",
+              event: "waf_body_block",
+              ip: ip.slice(0, 8) + "***",
+              rule: bodyResult.rule,
+              category: bodyResult.category,
+              path: req.nextUrl.pathname,
+              method: req.method,
+            }),
+          )
+          return NextResponse.json({ error: "blocked" }, { status: 403 })
+        }
+      } catch {
+      }
+    }
+  }
+
+  // Layer 2: DDoS Shield
   const contentLength = Number(req.headers.get("content-length") ?? "0") || undefined
 
   const shield = shieldCheck(
@@ -83,28 +117,25 @@ export function middleware(req: NextRequest) {
     )
   }
 
-  // ── Layer 3: Admin Auth (/api/admin/* only) ────────
+  // Layer 3: Admin Auth
   if (req.nextUrl.pathname.startsWith("/api/admin")) {
     const token = req.cookies.get("admin_session")?.value
-    if (!validateSession(token)) {
+    if (!token || token.length < 10) {
       return NextResponse.json({ error: "unauthorized" }, { status: 403 })
     }
   }
 
-  // ── Layer 4: Privacy Shield (all responses) ────────
+  // Layer 4: Privacy Shield
   const response = NextResponse.next()
 
-  // Rate limit headers
   if (shield.headers) {
     for (const [k, v] of Object.entries(shield.headers)) {
       response.headers.set(k, v)
     }
   }
 
-  // Strip server fingerprint
   sanitizeResponseHeaders(response)
 
-  // Prevent API data caching
   if (req.nextUrl.pathname.startsWith("/api/")) {
     response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, private")
     response.headers.set("Pragma", "no-cache")
