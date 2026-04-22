@@ -15,7 +15,12 @@ export interface Order {
   updatedAt: Date
 }
 
-export type OrderStatus = "pending" | "completed" | "cancelled" | "refunded"
+export type OrderStatus =
+  | "reserved"   // Capacity deducted, awaiting Stripe payment
+  | "completed"  // Payment confirmed via webhook
+  | "expired"    // Stripe checkout session expired → capacity released
+  | "cancelled"  // Manual cancellation → capacity released
+  | "refunded"   // Post-payment refund → capacity released
 
 export interface EventWithPricing {
   id: string
@@ -55,5 +60,12 @@ export class OrderNotFoundError extends Error {
   constructor(identifier: string) {
     super(`Order not found: ${identifier}`)
     this.name = "OrderNotFoundError"
+  }
+}
+
+export class CapacitySoldOutError extends Error {
+  constructor(eventId: string) {
+    super(`Event sold out: ${eventId}`)
+    this.name = "CapacitySoldOutError"
   }
 }

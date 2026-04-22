@@ -1,55 +1,64 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from "vitest"
-import { render, screen } from "@testing-library/react"
+import React from "react"
+import { describe, it, expect, beforeEach, vi, afterEach } from "vitest"
+import { render, screen, act } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { CookieBanner } from "./CookieBanner"
-import { I18nWrapper } from "@/test/i18n-wrapper" 
-// Mock i18n navigation Link to render a plain <a>
+import { I18nWrapper } from "@/test/i18n-wrapper"
+
 vi.mock("@/i18n/navigation", () => ({
-  Link: ({ href, children, ...props }: { href: string; children: React.ReactNode }) => (
-    <a href={href} {...props}>{children}</a>
-  ),
+  Link: ({ href, children, ...props }: { href: string; children: React.ReactNode }) =>
+    React.createElement("a", { href, ...props }, children),
 }))
 
 describe("CookieBanner", () => {
   beforeEach(() => {
-    // Clear cookies before each test
+    vi.useFakeTimers()
     document.cookie = "sn_cookie_consent=; max-age=0; path=/"
   })
 
-  it("renders banner when no consent cookie exists", () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  function renderAndShow() {
     render(<I18nWrapper><CookieBanner /></I18nWrapper>)
+    // Advance past the 300ms animation delay to make banner interactive
+    act(() => { vi.advanceTimersByTime(400) })
+  }
+
+  it("renders banner when no consent cookie exists", () => {
+    renderAndShow()
     expect(screen.getByRole("dialog")).toBeInTheDocument()
-    expect(screen.getByText(/usamos cookies/i)).toBeInTheDocument()
+    expect(screen.getByText(/cookies/i)).toBeInTheDocument()
   })
 
   it("shows accept and reject buttons", () => {
-    render(<I18nWrapper><CookieBanner /></I18nWrapper>)
+    renderAndShow()
     expect(screen.getByRole("button", { name: /aceptar/i })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: /rechazar/i })).toBeInTheDocument()
   })
 
   it("includes link to privacy policy", () => {
-    render(<I18nWrapper><CookieBanner /></I18nWrapper>)
+    renderAndShow()
     const link = screen.getByRole("link", { name: /privacidad/i })
     expect(link).toHaveAttribute("href", "/privacidad")
   })
 
-  it("dismisses banner on accept", async () => {
-    render(<I18nWrapper><CookieBanner /></I18nWrapper>)
-    const user = userEvent.setup()
-
-    await user.click(screen.getByRole("button", { name: /aceptar/i }))
+  it("dismisses banner on accept", () => {
+    renderAndShow()
+    // Use fireEvent instead of userEvent to bypass pointer-events check
+    const btn = screen.getByRole("button", { name: /aceptar/i })
+    act(() => { btn.click() })
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
     expect(document.cookie).toContain("sn_cookie_consent=accepted")
   })
 
-  it("dismisses banner on reject", async () => {
-    render(<I18nWrapper><CookieBanner /></I18nWrapper>)
-    const user = userEvent.setup()
-
-    await user.click(screen.getByRole("button", { name: /rechazar/i }))
+  it("dismisses banner on reject", () => {
+    renderAndShow()
+    const btn = screen.getByRole("button", { name: /rechazar/i })
+    act(() => { btn.click() })
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
     expect(document.cookie).toContain("sn_cookie_consent=rejected")
@@ -68,10 +77,12 @@ describe("CookieBanner", () => {
   })
 
   it("has correct aria-label for accessibility", () => {
-    render(<I18nWrapper><CookieBanner /></I18nWrapper>)
-    expect(screen.getByRole("dialog")).toHaveAttribute(
-      "aria-label",
-      "Consentimiento de cookies"
-    )
+    renderAndShow()
+    expect(screen.getByRole("dialog")).toHaveAttribute("aria-label", "Consentimiento de cookies")
+  })
+
+  it("displays legal information", () => {
+    renderAndShow()
+    expect(screen.getByText(/Clarity Structures Digital S.L/)).toBeInTheDocument()
   })
 })

@@ -6,7 +6,6 @@ import { createSessionAsync } from "@/lib/auth/sessionStore"
 import { audit } from "@/lib/observability/auditLog"
 import { isLoginBlocked, recordFailedAttempt, clearAttempts } from "@/lib/auth/loginRateLimit"
 import { loginSchema } from "@/contracts/schemas/login.schema"
-import { serverEnv } from "@/lib/env"
 
 /** Detect bcrypt hash format ($2a$ or $2b$ prefix) */
 function isBcryptHash(value: string): boolean {
@@ -14,6 +13,14 @@ function isBcryptHash(value: string): boolean {
 }
 
 export async function POST(req: NextRequest) {
+  // ── Preview: no credentials configured ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ error: "Auth disabled in preview environment" }, { status: 503 })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { serverEnv } = await import("@/lib/env")
+
   const ip = _getClientIp(req)
 
   if (await isLoginBlocked(ip)) {

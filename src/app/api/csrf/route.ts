@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createCsrfToken } from "@/lib/csrf"
-import { serverEnv } from "@/lib/env"
 
 export async function GET(req: NextRequest) {
+  // ── Preview: return dummy token so forms render without crashing ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ csrfToken: "preview-token", preview: true })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { serverEnv } = await import("@/lib/env")
+
   const secret = serverEnv.CSRF_SECRET
   if (!secret) {
     return NextResponse.json({ error: "CSRF not configured" }, { status: 503 })

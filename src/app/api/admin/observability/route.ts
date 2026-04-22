@@ -18,7 +18,7 @@ import { getMetrics } from "@/lib/observability/metricsCollector"
 
 export async function GET(req: NextRequest) {
 
-  if (!requireAdmin(req)) {
+  if (!(await requireAdmin(req))) {
     return NextResponse.json(
       { error: "unauthorized" },
       { status: 403 }

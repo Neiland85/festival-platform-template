@@ -7,13 +7,58 @@
     "subtitle": "Música, Cultura y Experiencias",
     "cta": "Comprar Entradas"
   },
-  "nav": {},
-  "footer": {},
-  "location": {},
+  "nav": {
+    "events": "Programación",
+    "market": "Marketplace",
+    "location": "Ubicación"
+  },
+  "footer": {
+    "manifesto": "Plataforma de gestión para festivales de música y eventos en directo. Infraestructura lista para producción.",
+    "navEvents": "Programación",
+    "navMarket": "Marketplace",
+    "navLocation": "Ubicación",
+    "navPrivacy": "Privacidad",
+    "locationCity": "Madrid, España",
+    "season": "Temporada 2026",
+    "tagline": "Hecho con pasión por la música",
+    "copyright": "Festival Platform Template. Todos los derechos reservados."
+  },
+  "location": {
+    "heading": "Ubicación",
+    "mapTitle": "Mapa del evento"
+  },
+  "events": {
+    "heading": "Programación",
+    "moreInfo": "Más información"
+  },
+  "eventDescriptions": {
+    "chambao": "Fusión flamenca con electrónica en una noche mágica bajo las estrellas.",
+    "bresh": "La fiesta más viral de Latinoamérica llega con su energía arrolladora.",
+    "ohsee": "Sesiones electrónicas de vanguardia con artistas emergentes.",
+    "goa": "Psytrance y progressive en una experiencia inmersiva nocturna.",
+    "tropicalia": "Ritmos tropicales, reggaeton y latin beats al aire libre.",
+    "tecnoflamenco": "Cuando el compás flamenco se encuentra con los beats electrónicos."
+  },
+  "eventHighlights": {
+    "chambao": "Flamenco-chill · Producción visual · Sonido envolvente",
+    "bresh": "Fiesta viral · Hits globales · Experiencia inmersiva",
+    "ohsee": "Electrónica experimental · Artistas emergentes · Visual art",
+    "goa": "Psytrance · Progressive · Decoración UV · Sesión nocturna",
+    "tropicalia": "Latin beats · Reggaeton · Tropical house · Al aire libre",
+    "tecnoflamenco": "Fusión única · Cajón electrónico · Compás y beats"
+  },
+  "showcase": {
+    "hostLabel": "Presentado por",
+    "tagline": "Infraestructura digital para eventos",
+    "credit": "Construido con Festival Platform Template"
+  },
   "cookie": {
     "ariaLabel": "Consentimiento de cookies",
-    "message": "Usamos cookies para mejorar tu experiencia.",
-    "privacyPolicy": "Política de privacidad",
+    "title": "Privacidad",
+    "message": "Este sitio utiliza cookies t\u00e9cnicas esenciales para su funcionamiento. No utilizamos cookies de seguimiento, publicidad ni anal\u00edtica de terceros.",
+    "legal": "Puedes ejercer tus derechos ARCO contact\u00e1ndonos en admin@claritystructures.com",
+    "controller": "Responsable: Clarity Structures Digital S.L., Madrid, Espa\u00f1a.",
+    "privacyPolicy": "Pol\u00edtica de privacidad",
     "accept": "Aceptar",
     "reject": "Rechazar"
   },
@@ -21,7 +66,6 @@
     "label": "Exclusivo",
     "ctaButton": "Promociones limitadas",
     "ctaDescription": "Accede antes que nadie a ofertas especiales.",
-
     "back": "Volver",
     "rgpdTitle": "Protección de tus datos",
     "rgpdIntro": "Antes de continuar, queremos que sepas cómo tratamos tu información.",
@@ -39,7 +83,6 @@
     "rgpdRightsSuffix": "en cualquier momento escribiéndonos.",
     "rgpdLegal": "Consulta nuestra política completa de privacidad:",
     "rgpdPrivacyLink": "Política de privacidad",
-
     "formTitle": "Reserva tu acceso",
     "formSubtitle": "Completa tus datos para recibir las ofertas.",
     "labelName": "Nombre",
@@ -56,10 +99,8 @@
     "submitConsent": "Al enviar, aceptas nuestra",
     "privacyPolicy": "Política de privacidad",
     "sending": "Enviando...",
-
     "successTitle": "¡Estás dentro!",
     "successDescription": "Te notificaremos con las mejores ofertas antes que a nadie.",
-
     "errorTitle": "Ha ocurrido un error",
     "errorDescription": "No hemos podido procesar tu solicitud. Inténtalo de nuevo.",
     "retry": "Reintentar"

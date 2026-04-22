@@ -19,7 +19,7 @@ import { getAuditStats } from "@/lib/observability/auditLog"
 import { swrCache } from "@/lib/cache/swr"
 
 export async function GET(req: NextRequest) {
-  if (!requireAdmin(req)) {
+  if (!(await requireAdmin(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 

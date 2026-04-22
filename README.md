@@ -1,336 +1,277 @@
-# Festival Platform Template
+```
+ ___         _   _          _   ___  _      _    __
+| __|__ ___ | |_(_)_ ____ _| | | _ \| |__ _| |_ / _|___ _ _ _ __
+| _/ -_|_-<|  _| \ V / _` | | |  _/| / _` |  _|  _/ _ \ '_| '  \
+|_|\___/__/ \__|_|\_/\__,_|_| |_|  |_\__,_|\__|_| \___/_| |_|_|_|
 
-A **production-ready, white-label festival platform** for ticket sales, lead capture, and event operations. Built with Next.js 16, React 19, TypeScript 5, Tailwind 4, PostgreSQL, and Vercel.
+ Ship your festival website in days, not months.
+```
 
-> Fork this template, customize branding and events, and deploy your own festival website in minutes.
-
----
-
-## Why This Template
-
-This is not a starter kit or boilerplate — it's a **production-grade platform** with the engineering depth of a 6-figure SaaS build, available as a white-label template.
-
-**What you get out of the box:**
-
-- Complete ticket sales pipeline: Stripe Checkout with webhooks, capacity validation, idempotent order processing
-- Enterprise-grade observability: metrics collection, distributed tracing, audit logging, surge prediction, pool monitoring
-- Production security: rate limiting, CSRF protection, circuit breaker, burst queue, chaos testing infrastructure
-- Distributed job processing: Redis-backed queue with lease pattern, dead letter queue, automatic reconciliation
-- Load testing suite: k6 scripts with SLO thresholds (p95 < 500ms, p99 < 1500ms, error rate < 1%)
-- CI pipeline: 6 parallel jobs (lint, typecheck, test, audit, build, E2E) with Playwright browser caching
-- Full i18n (ES/EN), GDPR compliance, Sanity CMS, admin dashboard — all optional with graceful degradation
-
-**Tech stack:** Next.js 16 (App Router) · React 19 · TypeScript 5 (strict) · Tailwind 4 · PostgreSQL · Drizzle ORM · Stripe · Upstash Redis · Sentry · Sanity CMS · Playwright · Vitest · k6
+[![CI](https://github.com/Neiland85/festival-platform-template/actions/workflows/ci.yml/badge.svg)](https://github.com/Neiland85/festival-platform-template/actions)
+[![Tests](https://img.shields.io/badge/tests-466%2B%20passing-brightgreen)](#testing--quality)
+[![Security](https://img.shields.io/badge/security-8%20layers%20active-green)](docs/compliance/)
+[![License](https://img.shields.io/badge/license-Custom%20MIT-blue)](#license)
 
 ---
 
-## Features
+## Why This Exists
 
-- **Event lineup** with detail pages, ticket integration (Stripe / Ticketmaster / Universe), and OG metadata
-- **Lead capture** with GDPR/RGPD compliance (consent flow, soft-delete, data portability)
-- **Admin dashboard** with leads management, event CRUD, orders panel, system health, and observability
-- **Internationalization** (i18n) with `next-intl` (ES/EN out of the box)
-- **Sanity CMS** (optional) for managing events, artists, and site config with localized fields
-- **Stripe Checkout** (optional) for ticket sales with capacity validation and order management
-- **Meta Pixel** integration (conditional on cookie consent)
-- **SEO** monitoring, sitemap, robots.txt, Open Graph
-- **Security** middleware: CORS, rate limiting, circuit breaker, burst queue, CSRF
-- **Observability** suite: metrics, tracing, audit log, surge prediction, pool monitoring
-- **Load testing** with k6 (smoke, load, stress profiles)
-- **Cookie banner** with accept/reject (GDPR compliant)
-- **Golden Hour theme** with smooth CSS variable transitions
+Building a festival website with real ticket sales, GDPR compliance, and production security takes months. This template gives you that foundation in days.
+
+**What you get:** A white-label Next.js 15 platform with Stripe payments, admin dashboard, lead capture, and hardened security — tested with 466+ automated tests and deployed on Vercel.
+
+**Who it's for:** Festival operators, event agencies, and developers who need a working product, not a tutorial.
+
+**Stack:** Next.js 15 · React 19 · TypeScript 5 (strict) · Tailwind 4 · PostgreSQL 15 · Drizzle ORM · Stripe · Redis · Sentry · Sanity CMS
+
+---
+
+## What You Get Out of the Box
+
+### Ticket Sales with Stripe
+
+Stripe Checkout integration with atomic capacity reservation. When two customers try to buy the last ticket simultaneously, only one succeeds — guaranteed by PostgreSQL transactions with row-level locking. Webhook verification with dual-layer idempotency ensures every payment is processed exactly once. Failed webhook events are captured in a dead-letter queue for manual review.
+
+### Lead Capture with GDPR Compliance
+
+Consent-first lead capture with soft-delete, IP hashing (SHA-256 for GDPR), and data portability. Leads are never permanently deleted — they're anonymized and recoverable for audit purposes.
+
+### Admin Dashboard
+
+Event management, lead pipeline, order tracking, system health monitoring, and a persistent audit log backed by PostgreSQL. Every admin action is recorded with who, when, what, and from where.
+
+### Security — 8 Active Layers
+
+Not security theater. Every layer is implemented, tested, and enforced in production:
+
+| Layer | What It Does |
+|-------|-------------|
+| **WAF** | Blocks 70+ attack patterns (SQLi, XSS, path traversal, command injection, SSRF) |
+| **Rate Limiting** | Redis-backed sliding window with in-memory fallback. Stricter limits on auth endpoints |
+| **CSRF** | Mandatory in production. Timing-safe token comparison. Deny-by-default |
+| **Authentication** | bcrypt-hashed passwords, HMAC-SHA256 session tokens, session rotation |
+| **Headers** | HSTS, Content-Security-Policy, X-Frame-Options, X-Content-Type-Options |
+| **DDoS Shield** | Connection limiting, request throttling, payload validation, slowloris protection |
+| **Supply Chain** | Hardened `.npmrc`, frozen lockfile, `pnpm audit` in CI, Dependabot, integrity monitoring |
+| **Privacy** | GDPR/RGPD: IP hashing, soft-delete, consent tracking, data portability |
+
+### Automated Testing & CI/CD
+
+466+ unit tests (Vitest), 11 E2E specs (Playwright), load testing (k6), and security scanning (ESLint Security + GitGuardian). 80% coverage threshold enforced. Husky pre-commit hooks run lint + tests on every commit. Semantic-release publishes versions automatically on merge.
 
 ### Graceful Degradation
 
-Every optional feature works independently. The template runs with **zero external services**:
+Core flows run with PostgreSQL only. Optional services such as Redis and OpenTelemetry degrade gracefully when unavailable:
 
-| Feature | Configured | Not configured |
-|---------|-----------|----------------|
-| **Sanity CMS** | Events from CMS with localized fields | Falls back to `src/config/events.ts` |
-| **Stripe** | "Buy Ticket" button with checkout | Falls back to Ticketmaster/Universe links |
-| **PostgreSQL** | Full CRUD, orders, leads | Falls back to config file |
-| **Sentry** | Error tracking + performance | Silent (no errors) |
-| **Redis** | Distributed rate limiting | In-memory rate limiting |
-| **Analytics** | GA + Meta Pixel (after cookie consent) | No tracking |
+| Service | With it | Without it |
+|---------|---------|------------|
+| Stripe | Native checkout with webhooks | Falls back to Ticketmaster/external links |
+| Sanity CMS | Content management at `/studio` | Events from config file |
+| Redis | Distributed rate limiting + circuit breaker | In-memory rate limiting |
+| Sentry | Error tracking + performance | Structured JSON logs to stdout |
+
+### White-Label in Minutes
+
+All branding lives in one file (`src/config/site.ts`) and environment variables. Change the name, logo, colors, and content — deploy your own festival site without touching application code.
+
+---
+
+## What's Prepared for Future Activation
+
+These modules are built and tested but not yet wired to runtime paths. They're ready to activate when your product needs them.
+
+| Module | What's Built | What's Needed to Activate |
+|--------|-------------|--------------------------|
+| **Multi-tenancy** | Tenant registry (PostgreSQL), schema provisioner, request-scoped context via AsyncLocalStorage | Runtime tenant query scoping pending before isolation is active. |
+| **OpenTelemetry** | SDK initialization with OTLP HTTP exporter, Next.js instrumentation hook | Route and query instrumentation — wrapping handlers with `tracer.startActiveSpan()`. |
+| **2FA (TOTP)** | Secret generation, QR code URI, token verification | User enrollment endpoint, login flow integration, recovery codes, database column for secrets. |
+| **Encryption at rest** | AES-256-GCM encrypt/decrypt with Web Crypto API | Decision on which data to encrypt, repository integration, key rotation strategy. |
+| **Webhook auto-recovery** | Dead-letter queue captures failed Stripe events in PostgreSQL | Automated retry and reconciliation pending. |
+| **API documentation** | OpenAPI 3.1 spec at `/api/docs` (auth, checkout, health) | Coverage for remaining ~12 endpoints, response schemas, validation middleware. |
+
+---
+
+## Architecture
+
+```
+                          INTERNET
+                             |
+                    [Vercel Edge Network]
+                             |
+              +--------------+--------------+
+              |         MIDDLEWARE           |
+              |  Rate Limit / CORS / Auth   |
+              |  WAF / Security Headers     |
+              +--------------+--------------+
+                             |
+         +-------------------+-------------------+
+         |                   |                   |
+    [Public API]       [Admin API]         [Webhooks]
+    /api/v1/*          /api/admin/*        Stripe / CMS
+         |                   |                   |
+         +-------------------+-------------------+
+                             |
+              +--------------+--------------+
+              |        DOMAIN LAYER         |
+              |  Events / Orders / Leads    |
+              |  Zod Contracts / Validation |
+              +--------------+--------------+
+                             |
+              +--------------+--------------+
+              |         ADAPTERS            |
+              |  PostgreSQL (Drizzle ORM)   |
+              |  Stripe / Sanity CMS        |
+              |  Redis (Circuit Breaker)    |
+              +--------------+--------------+
+```
+
+**Design principles:**
+
+- **Graceful degradation** — every external service is optional with local fallback
+- **Defense in depth** — security at edge, middleware, application, and data layers
+- **Adapter pattern** — swappable integrations without touching domain logic
+- **Atomic state transitions** — PostgreSQL transactions with status guards prevent overselling
 
 ---
 
 ## Quick Start
 
-**Prerequisites:** Node 20+, pnpm, Docker.
+**Prerequisites:** Node 22+, pnpm, Docker.
 
 ```bash
 git clone <your-repo-url>
 cd festival-platform-template
 pnpm install
-pnpm setup      # ~30 seconds — see below
+pnpm setup      # Docker + DB + schema + seed (~30s)
 pnpm dev        # http://localhost:3000
 ```
 
-That's it. The admin dashboard is at `/dashboard` (password: `ADMIN_PASSWORD` from `.env.local`, default: `admin123`).
+Admin dashboard: `/dashboard` (password from `ADMIN_PASSWORD` in `.env.local`).
 
-> **Note:** Dashboard login uses the `ADMIN_PASSWORD` environment variable, not the seeded users in the database. The `users` table is used for RBAC and audit trails.
-
-### What `pnpm setup` does
-
-1. Copies `.env.example` to `.env.local` (skips if it already exists)
-2. Starts a PostgreSQL 15 container via Docker Compose
-3. Waits for the database to report healthy
-4. Pushes the Drizzle schema to the database
-5. Seeds 7 demo events, 3 users, 8 leads, and 10 orders
-
-To redo everything from scratch: `docker compose down -v && pnpm setup`
+Clean slate: `docker compose down -v && pnpm setup`
 
 ---
 
 ## White-Label Customization
 
-### 1. Branding
-
-All branding is centralized in `src/config/site.ts` and environment variables:
-
 | What to change | Where |
 |---------------|-------|
 | Festival name | `NEXT_PUBLIC_SITE_NAME` in `.env.local` |
 | Site URL | `NEXT_PUBLIC_SITE_URL` in `.env.local` |
-| Tagline | `NEXT_PUBLIC_SITE_TAGLINE` in `.env.local` |
 | Logo | Replace `/public/festival_logo.png` |
 | Hero video | Replace `/public/hero/hero.mp4` |
-| OG image | Replace `/public/og-image.jpg` |
-| Color palette | CSS variables in `src/app/globals.css` |
-| Social links | `NEXT_PUBLIC_SOCIAL_*` in `.env.local` |
+| Colors | CSS variables in `src/app/globals.css` |
+| Events | `src/config/events.ts` or Sanity CMS |
+| Translations | `messages/es.json` and `messages/en.json` |
 
-### 2. Events
+### Payment Priority
 
-- Edit `src/config/events.ts` to add your festival lineup
-- Or configure Sanity CMS and manage events at `/studio`
-- Update ticket URLs with your Ticketmaster/Universe links
-- To enable Stripe checkout, set `price_cents` on events (via DB or Sanity)
-
-### 3. Content & Translations
-
-- Update `messages/es.json` and `messages/en.json` with your copy
-- Customize pages under `src/app/[locale]/` (contact, privacy, location)
-
-### 4. Payment Provider Chain
-
-The ticket widget uses a priority chain:
-
-1. **Stripe** — Event has `price_cents` + `STRIPE_SECRET_KEY` configured
-2. **Ticketmaster/Universe** — Event has `ticketUrl`
-3. **Coming soon** — Neither configured
-
-### 5. Domain & SEO
-
-- Update `NEXT_PUBLIC_SITE_URL` in `.env.local`
-- `src/app/robots.ts` and `src/app/sitemap.ts` read from this env var
-- CORS origins in `src/middleware.ts` use this env var
+```
+1. Stripe      → Event has price + STRIPE_SECRET_KEY set
+2. Ticketmaster → Event has ticketUrl
+3. Coming soon  → Neither configured
+```
 
 ---
 
 ## Environment Variables
 
-See `.env.example` for the complete reference with inline documentation.
+See `.env.example` for complete reference.
 
 ### Required
 
 | Variable | Description |
 |----------|-------------|
 | `DATABASE_URL` | PostgreSQL connection string |
-| `ADMIN_PASSWORD` | Admin dashboard password |
-| `SESSION_SECRET` | Secret for admin session tokens (`openssl rand -hex 32`) |
+| `ADMIN_PASSWORD` | Dashboard password (bcrypt hashed in production) |
+| `SESSION_SECRET` | 32+ character secret (`openssl rand -hex 32`) |
 
-### Branding
+### Optional
 
-| Variable | Description |
-|----------|-------------|
-| `NEXT_PUBLIC_SITE_URL` | Production URL (default: `https://www.your-festival.com`) |
-| `NEXT_PUBLIC_SITE_NAME` | Festival name (default: `Festival Name`) |
-| `NEXT_PUBLIC_SITE_TAGLINE` | Short tagline for hero and meta |
-| `NEXT_PUBLIC_CONTACT_EMAIL` | Contact email address |
-| `NEXT_PUBLIC_SOCIAL_*` | Social media profile URLs |
-
-### Optional Services
-
-| Variable | Service | What it enables |
-|----------|---------|----------------|
-| `NEXT_PUBLIC_SANITY_PROJECT_ID` | Sanity CMS | CMS-driven content at `/studio` |
-| `STRIPE_SECRET_KEY` | Stripe | Native ticket checkout |
-| `SENTRY_DSN` | Sentry | Error tracking + performance |
-| `REDIS_URL` | Redis | Distributed rate limiting |
-| `TM_API_KEY` | Ticketmaster | Embedded ticket widgets |
-| `NEXT_PUBLIC_GA_ID` | Google Analytics | Traffic analytics |
-| `NEXT_PUBLIC_FB_PIXEL_ID` | Meta Pixel | Marketing tracking |
+| Variable | Enables |
+|----------|---------|
+| `STRIPE_SECRET_KEY` | Native ticket checkout |
+| `NEXT_PUBLIC_SANITY_PROJECT_ID` | CMS at `/studio` |
+| `SENTRY_DSN` | Error tracking |
+| `REDIS_URL` | Distributed rate limiting |
 
 ---
 
-## Project Structure
+## Testing & Quality
 
-```
-src/
-├── adapters/
-│   ├── cms/              # Sanity CMS client, queries, image helper
-│   ├── db/               # PostgreSQL repositories (events, leads, orders)
-│   └── payments/stripe/  # Stripe client, checkout, webhook handler
-├── app/                  # Next.js App Router (pages + API routes)
-│   ├── [locale]/         # i18n routes (ES/EN)
-│   ├── api/v1/           # Public API (events, leads, checkout, webhooks)
-│   ├── api/admin/        # Admin API (metrics, orders, forecast)
-│   ├── dashboard/        # Admin dashboard (events, leads, orders)
-│   └── studio/           # Sanity Studio (embedded CMS)
-├── config/
-│   ├── site.ts           # Central white-label configuration
-│   ├── events.ts         # Fallback event data
-│   ├── navigation.ts     # Navigation menu
-│   └── footer.ts         # Footer content
-├── contracts/schemas/    # Zod validation schemas
-├── domain/
-│   ├── events/           # Event domain types
-│   ├── leads/            # Lead creation logic
-│   └── orders/           # Order creation, completion, capacity validation
-├── i18n/                 # Internationalization routing + config
-├── lib/
-│   ├── auth/             # Authentication + RBAC
-│   ├── observability/    # Metrics, audit log, tracing, SEO monitor
-│   └── security/         # Rate limiting, CSRF, circuit breaker
-└── ui/components/        # React components (public + dashboard)
-
-k6/                       # Load testing scripts
-├── config.js             # Shared config, thresholds, stage profiles
-├── homepage.js           # Homepage load test
-├── api-health.js         # Health probe stress test
-├── lead-submission.js    # Lead capture under load
-├── checkout-flow.js      # Checkout API under load
-├── concurrent-users.js   # Mixed traffic ramp (100→500→1000 VUs)
-└── run-all.sh            # Run all tests + JSON report
-
-migrations/               # PostgreSQL migrations (run in order)
-messages/                 # i18n translation files (ES/EN)
-e2e/                      # Playwright E2E tests
-```
-
----
-
-## Scripts
-
-| Command | Description |
-|---------|-------------|
-| `pnpm setup` | One-command bootstrap (env + Docker + schema + seed) |
-| `pnpm dev` | Development server |
-| `pnpm dev:full` | `setup` + `dev` in one command |
-| `pnpm build` | Production build |
-| `pnpm start` | Production server |
-| `pnpm db:seed` | Re-run demo data seed (idempotent) |
-| `pnpm db:push` | Push Drizzle schema to database |
-| `pnpm db:studio` | Open Drizzle Studio (DB browser) |
-| `pnpm lint` | ESLint (zero warnings) |
-| `pnpm typecheck` | TypeScript strict check |
-| `pnpm test` | Unit tests (Vitest, 429+ tests) |
-| `pnpm test:e2e` | E2E tests (Playwright, 7 specs) |
-| `pnpm verify` | lint + typecheck + test + build |
-| `pnpm format` | Prettier |
-
----
-
-## Load Testing (k6)
-
-The `k6/` directory contains performance tests with three profiles:
-
-| Profile | VUs | Duration | Use case |
-|---------|-----|----------|----------|
-| `smoke` | 5-10 | ~1 min | Quick sanity check |
-| `load` | 20-100 | ~5 min | Sustained traffic |
-| `stress` | 100-1000 | ~10 min | Find breaking points |
-
-### Run individual tests
+| Layer | Tool | Coverage |
+|-------|------|----------|
+| Unit | Vitest | 466+ tests, 80% threshold enforced |
+| E2E | Playwright | 11 specs across 3 browsers |
+| Load | k6 | SLO: p95 < 500ms, p99 < 1500ms, errors < 1% |
+| Security | ESLint Security + GitGuardian | Static analysis + secret scanning |
 
 ```bash
-# Install k6: brew install k6 (macOS) or snap install k6 (Linux)
-
-# Against local dev server
-k6 run k6/homepage.js
-
-# Against staging
-k6 run -e BASE_URL=https://staging.example.com k6/api-health.js
-
-# Smoke test
-k6 run -e PROFILE=smoke k6/concurrent-users.js
+pnpm test:unit              # Unit tests
+pnpm test:unit --coverage   # With coverage report
+pnpm test:e2e               # E2E (Chromium, Firefox, Mobile Chrome)
+pnpm lint                   # Zero warnings policy
 ```
-
-### Run all tests
-
-```bash
-# Default profile (load) against localhost
-./k6/run-all.sh
-
-# Against staging with stress profile
-PROFILE=stress ./k6/run-all.sh https://staging.example.com
-```
-
-### SLO Thresholds
-
-All tests enforce these thresholds (configurable in `k6/config.js`):
-
-- **p95 response time < 500ms**
-- **p99 response time < 1500ms**
-- **Error rate < 1%**
-
-Results are saved to `k6/results/` as JSON summaries.
 
 ---
 
-## CI/CD
+## CI/CD Pipeline
 
-GitHub Actions runs on every PR and push to main with **6 parallel jobs**:
+Every push and PR triggers:
 
 ```
-install ──┬── lint ──────┐
-          ├── typecheck ──┤
-          ├── test ────────┼── build ── e2e
-          └── audit ──────┘
+Checkout → Install → Security Audit → Lint → Test + Coverage → Deploy
 ```
 
-- Parallel quality gates with explicit timeouts (5–20 min per job)
-- `pnpm install --frozen-lockfile` with pnpm store cache per job
-- Playwright browser caching by lockfile hash
-- E2E failure artifacts (test-results + playwright-report) auto-uploaded
-- `concurrency.cancel-in-progress` kills stale runs on same branch/PR
-
-Deploy automatically on Vercel when merging to `main`.
+Node 22, pnpm 10, frozen lockfile, minimal CI permissions, GitGuardian scanning, semantic-release versioning, Vercel auto-deploy.
 
 ---
 
-## Stripe Webhook Setup
+## Compliance
 
-1. Go to [Stripe Dashboard > Webhooks](https://dashboard.stripe.com/webhooks)
-2. Add endpoint: `https://your-domain.com/api/v1/webhooks/stripe`
-3. Listen for events: `checkout.session.completed`, `checkout.session.expired`
-4. Copy the webhook signing secret to `STRIPE_WEBHOOK_SECRET`
-
----
-
-## Sanity CMS Setup
-
-1. Create a project at [sanity.io/manage](https://www.sanity.io/manage)
-2. Set `NEXT_PUBLIC_SANITY_PROJECT_ID` and `NEXT_PUBLIC_SANITY_DATASET` in `.env.local`
-3. Generate an API token with write access and set `SANITY_API_TOKEN`
-4. Access the embedded studio at `/studio` (requires admin login)
-5. Optional: Set up a webhook for ISR revalidation pointing to `/api/v1/revalidate`
+| Framework | Status |
+|-----------|--------|
+| GDPR/RGPD | Consent flow, soft-delete, IP hashing, data portability |
+| OWASP Top 10 | WAF, input validation, security headers, CSRF, SQLi prevention |
+| Supply Chain | Hardened `.npmrc`, frozen lockfile, integrity monitoring |
+| Audit Trail | PostgreSQL-backed, structured JSON, tamper-evident |
+| Incident Response | [Documented playbook](docs/compliance/RANSOMWARE-DEFENSE.md) |
 
 ---
 
-## Troubleshooting
+## Maturity Status
 
-**Port 5432 already in use** — Another PostgreSQL instance is running. Stop it (`brew services stop postgresql` on macOS) or change the port in `docker-compose.yml` and `DATABASE_URL`.
+| Capability | Status | Details |
+|-----------|--------|---------|
+| Stripe payments | **Production** | Atomic capacity reservation, webhook verification, idempotency, dead-letter queue |
+| Lead capture | **Production** | GDPR consent, soft-delete, IP hashing, data portability |
+| Admin dashboard | **Production** | CRUD, persistent audit log, system health |
+| Security (8 layers) | **Production** | WAF, rate limiting, CSRF, bcrypt, headers, DDoS, supply chain, privacy |
+| CI/CD + testing | **Production** | 466+ tests, pre-commit hooks, semantic versioning, auto-deploy |
+| i18n | **Production** | ES/EN with locale-aware routing |
+| Multi-tenancy | **Prepared** | Schema provisioning and context propagation built. Query scoping activation pending. |
+| Custom observability | **Production** | Per-route metrics, persistent audit log, request tracing, correlation engine, surge prediction |
+| OpenTelemetry tracing | **Prepared** | SDK initialized with OTLP HTTP exporter. Route and query instrumentation pending. |
+| Webhook resilience | **Production + Pending** | Failed events captured in dead-letter queue today. Automated retry and reconciliation still pending. |
+| 2FA (TOTP) | **Prepared** | Verification library integrated. Login flow and user enrollment pending. |
+| Encryption at rest | **Prepared** | AES-256-GCM utilities available. Not yet applied to stored data. |
+| API documentation | **Partial** | OpenAPI 3.1 spec covers core endpoints. Full coverage in progress. |
 
-**`pnpm setup` fails at "Waiting for PostgreSQL"** — Docker may not be running. Start Docker Desktop (or `systemctl start docker` on Linux) and retry.
+---
 
-**`db:push` fails with connection refused** — The container started but PostgreSQL isn't ready yet. Wait a few seconds and run `pnpm db:push` manually. If it persists, check `docker compose logs postgres`.
+## Support & Contact
 
-**Want a clean slate?** — Run `docker compose down -v && pnpm setup`. The `-v` flag deletes the persistent volume.
+Licensing, custom integrations, and enterprise support:
+
+**admin@claritystructures.com**
+
+Clarity Structures Digital S.L. — Madrid, Spain
 
 ---
 
 ## License
 
-MIT -- see [LICENSE](./LICENSE)
+Custom MIT License — see [LICENSE](./LICENSE).
+
+Permitted for legitimate business use, modification, and distribution.
+Restricted for harmful, surveillance, or privacy-violating applications.

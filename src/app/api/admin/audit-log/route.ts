@@ -12,38 +12,24 @@
  *
  * Response:
  * {
- *   entries: AuditEntry[],
- *   total: number,
- *   bufferSize: number,
- *   stats: { actionCounts, lastEntry }
+ *   entries: AuditEvent[],  // from PostgreSQL audit_events table
+ *   total: number
  * }
  */
 
 import { NextRequest, NextResponse } from "next/server"
 import { requireAdmin } from "@/lib/auth/requireAdmin"
-import {
-  getAuditLog,
-  getAuditStats,
-  type AuditAction,
-} from "@/lib/observability/auditLog"
-
-const VALID_ACTIONS: Set<string> = new Set([
-  "admin.login",
-  "admin.login_failed",
-  "admin.logout",
-  "event.create",
-  "event.update",
-  "event.delete",
-  "leads.view",
-  "leads.export",
-  "leads.delete",
-  "system.config_change",
-  "system.queue_drain",
-  "system.metrics_reset",
-])
 
 export async function GET(req: NextRequest) {
-  if (!requireAdmin(req)) {
+  // ── Preview/CI guard ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ disabled: true, message: "Disabled in preview" })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { queryAuditEvents } = await import("@/adapters/db/audit-repository")
+
+  if (!(await requireAdmin(req))) {
     return NextResponse.json(
       { error: "unauthorized" },
       { status: 403 }
@@ -56,32 +42,19 @@ export async function GET(req: NextRequest) {
   const actorParam = url.searchParams.get("actor")
   const sinceParam = url.searchParams.get("since")
 
-  // Validar action si se proporciona
-  if (actionParam && !VALID_ACTIONS.has(actionParam)) {
-    return NextResponse.json(
-      { error: "invalid_action", validActions: [...VALID_ACTIONS] },
-      { status: 400 }
-    )
-  }
-
   const limit = limitParam ? Math.min(Math.max(1, parseInt(limitParam, 10) || 100), 1000) : 100
 
-  const log = getAuditLog({
+  const entries = await queryAuditEvents({
     limit,
-    action: actionParam as AuditAction | undefined,
+    action: actionParam ?? undefined,
     actor: actorParam ?? undefined,
     since: sinceParam ?? undefined,
   })
 
-  const stats = getAuditStats()
-
   return NextResponse.json(
     {
-      ...log,
-      stats: {
-        actionCounts: stats.actionCounts,
-        lastEntry: stats.lastEntry,
-      },
+      entries,
+      total: entries.length,
     },
     {
       headers: { "Cache-Control": "no-store" },

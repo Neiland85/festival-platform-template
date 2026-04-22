@@ -14,6 +14,7 @@ export interface CreateCheckoutParams {
   eventId: string
   eventTitle: string
   customerEmail: string
+  /** Total amount in cents (priceCents × quantity). Divided by quantity internally to get unit_amount. */
   amountCents: number
   currency: string
   quantity: number
@@ -36,6 +37,11 @@ export async function createCheckoutSession(
 ): Promise<CheckoutResult> {
   const stripe = requireStripe()
 
+  // amountCents is the ORDER total (priceCents × quantity).
+  // Stripe expects unit_amount = price per unit, and multiplies by quantity itself.
+  // Passing amountCents directly as unit_amount would charge price × quantity².
+  const unitAmount = Math.round(params.amountCents / params.quantity)
+
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     payment_method_types: ["card"],
@@ -45,7 +51,7 @@ export async function createCheckoutSession(
       {
         price_data: {
           currency: params.currency.toLowerCase(),
-          unit_amount: params.amountCents,
+          unit_amount: unitAmount,
           product_data: {
             name: params.eventTitle,
             description: `Ticket × ${params.quantity} — ${SITE_NAME}`,

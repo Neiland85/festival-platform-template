@@ -1,5 +1,168 @@
 # Changelog
 
+## [1.24.0](https://github.com/Neiland85/festival-platform-template/compare/v1.23.0...v1.24.0) (2026-04-22)
+
+### Added
+
+* **ticket-assets:** add offchain ticket asset layer ([0284eeb](https://github.com/Neiland85/festival-platform-template/commit/0284eebbd43e60294e2f46a1ba1dd7f69099192f))
+* **ticket-assets:** add wallet binding and mint stub routes ([56e30a9](https://github.com/Neiland85/festival-platform-template/commit/56e30a931653bd7cd0b71264d7f8d0c8d0840631))
+
+## [1.23.0](https://github.com/Neiland85/festival-platform-template/compare/v1.22.0...v1.23.0) (2026-04-01)
+
+### Added
+
+* redesign contact form with SPUD LIVE scoring panel ([#63](https://github.com/Neiland85/festival-platform-template/issues/63)) ([7bd02cc](https://github.com/Neiland85/festival-platform-template/commit/7bd02cc8de956ea58acfec73862b15f1bed11be0))
+
+## [1.22.0](https://github.com/Neiland85/festival-platform-template/compare/v1.21.0...v1.22.0) (2026-03-31)
+
+### Added
+
+* improve landing with SPUD demo + remove hero watermark ([#61](https://github.com/Neiland85/festival-platform-template/issues/61)) ([2df8e58](https://github.com/Neiland85/festival-platform-template/commit/2df8e587fa75c1de0930d25609dd29fc21308635)), closes [#demo](https://github.com/Neiland85/festival-platform-template/issues/demo)
+
+## [1.21.0](https://github.com/Neiland85/festival-platform-template/compare/v1.20.1...v1.21.0) (2026-03-31)
+
+### Added
+
+* **spud:** implement SPUD phases 1-3 — scoring, orchestration, campa… ([#57](https://github.com/Neiland85/festival-platform-template/issues/57)) ([7e9b67d](https://github.com/Neiland85/festival-platform-template/commit/7e9b67d9811c1d7e0c8edfec56f0f80d4088c1b7))
+
+## [1.20.1](https://github.com/Neiland85/festival-platform-template/compare/v1.20.0...v1.20.1) (2026-03-31)
+
+### Fixed
+
+* make Redis alert suppression atomic with SET NX ([ec17472](https://github.com/Neiland85/festival-platform-template/commit/ec1747237aaa9d181bb276cd693706a6798ddf72))
+
+## [1.20.0](https://github.com/Neiland85/festival-platform-template/compare/v1.19.1...v1.20.0) (2026-03-31)
+
+### Added
+
+* Redis-backed alert suppression for distributed deployments ([58df6b5](https://github.com/Neiland85/festival-platform-template/commit/58df6b5121d59b8f98c7d6ee467541426e19661a))
+
+## [1.19.1](https://github.com/Neiland85/festival-platform-template/compare/v1.19.0...v1.19.1) (2026-03-31)
+
+### Fixed
+
+* add TTL-based cleanup to alert suppression to prevent memory leak ([e594f53](https://github.com/Neiland85/festival-platform-template/commit/e594f535c5fa21cb20db486036565e5df3d9d2ba))
+
+## [1.19.0](https://github.com/Neiland85/festival-platform-template/compare/v1.18.0...v1.19.0) (2026-03-31)
+
+### Added
+
+* alert suppression with cooldown, escalation, and incident tracking ([ccc2f48](https://github.com/Neiland85/festival-platform-template/commit/ccc2f484702164d6c20f90931d08be1a12ebf913))
+
+## [1.18.0](https://github.com/Neiland85/festival-platform-template/compare/v1.17.0...v1.18.0) (2026-03-31)
+
+### Added
+
+* **dashboard:** redesign DLQ admin UX for operator efficiency ([0cb8f12](https://github.com/Neiland85/festival-platform-template/commit/0cb8f12110743a7eaad99ed4724c3ac238fe5588))
+
+## [1.17.0](https://github.com/Neiland85/festival-platform-template/compare/v1.16.1...v1.17.0) (2026-03-31)
+
+### Added
+
+* DLQ reliability system — auto-retry, alerting, operator tooling ([53a4b10](https://github.com/Neiland85/festival-platform-template/commit/53a4b10147c84bfd8f55e3b280660ca86ed24636))
+
+## [1.16.1](https://github.com/Neiland85/festival-platform-template/compare/v1.16.0...v1.16.1) (2026-03-27)
+
+### Fixed
+
+* **orders:** 3 critical safety fixes — transactions + status guards ([0b1488c](https://github.com/Neiland85/festival-platform-template/commit/0b1488c3708d04c0d927957ad21dd17f7a4c5889))
+
+## [1.16.0](https://github.com/Neiland85/festival-platform-template/compare/v1.15.2...v1.16.0) (2026-03-27)
+
+### Added
+
+* **ux:** Clarity logo as spinning cursor + shockwave click effect ([660d3e1](https://github.com/Neiland85/festival-platform-template/commit/660d3e161b8cb469d234db26db78ab81bbcea040)), closes [#2563eb](https://github.com/Neiland85/festival-platform-template/issues/2563eb)
+
+## [1.15.2](https://github.com/Neiland85/festival-platform-template/compare/v1.15.1...v1.15.2) (2026-03-27)
+
+### Fixed
+
+* **orders:** atomic capacity reservation — eliminates overselling race condition ([2d78660](https://github.com/Neiland85/festival-platform-template/commit/2d786608fce5c484390e682167f38b97a03a6971))
+
+## [1.15.1](https://github.com/Neiland85/festival-platform-template/compare/v1.15.0...v1.15.1) (2026-03-27)
+
+### Fixed
+
+* move spinning logo to top-right corner, larger, with blend mode ([c413699](https://github.com/Neiland85/festival-platform-template/commit/c4136992cbe89e14e361796e9761f26d46a98167))
+
+## [1.15.0](https://github.com/Neiland85/festival-platform-template/compare/v1.14.0...v1.15.0) (2026-03-27)
+
+### Added
+
+* landing page for non-developers + spinning logo cursor + shockwave click ([8d76815](https://github.com/Neiland85/festival-platform-template/commit/8d76815c0f3c1b23db291be635518cccd577154c))
+
+## [1.14.0](https://github.com/Neiland85/festival-platform-template/compare/v1.13.0...v1.14.0) (2026-03-27)
+
+### Added
+
+* neobrutalism landing page — bold modern UX for product showcase ([52b1448](https://github.com/Neiland85/festival-platform-template/commit/52b1448054f04478537d8f2bed611a07280ec4c5)), closes [#FFFDF7](https://github.com/Neiland85/festival-platform-template/issues/FFFDF7)
+
+## [1.13.0](https://github.com/Neiland85/festival-platform-template/compare/v1.12.0...v1.13.0) (2026-03-27)
+
+### Added
+
+* neobrutalism cookie banner — bold UX, animated gradient, modern design ([25e8a0d](https://github.com/Neiland85/festival-platform-template/commit/25e8a0dae36f2b4d7413f016139eb4a52f455a8d)), closes [#FFFDF7](https://github.com/Neiland85/festival-platform-template/issues/FFFDF7)
+
+## [1.12.0](https://github.com/Neiland85/festival-platform-template/compare/v1.11.0...v1.12.0) (2026-03-27)
+
+### Added
+
+* premium glassmorphism cookie banner with RGPD/LSSI legal text ([6587e2e](https://github.com/Neiland85/festival-platform-template/commit/6587e2e90faca266597368d6890c8d3209510e85))
+
+## [1.11.0](https://github.com/Neiland85/festival-platform-template/compare/v1.10.6...v1.11.0) (2026-03-27)
+
+### Added
+
+* GDPR cookie banner on all public pages ([54d532b](https://github.com/Neiland85/festival-platform-template/commit/54d532b3b6323382baa1b235fe7ee558360543a6))
+
+## [1.10.6](https://github.com/Neiland85/festival-platform-template/compare/v1.10.5...v1.10.6) (2026-03-27)
+
+### Fixed
+
+* homepage is the product landing page, not a festival demo ([7254ae2](https://github.com/Neiland85/festival-platform-template/commit/7254ae21905de6c337c31dc931863b393bd2ed45))
+
+## [1.10.5](https://github.com/Neiland85/festival-platform-template/compare/v1.10.4...v1.10.5) (2026-03-27)
+
+### Fixed
+
+* use correct event IDs in translations (chambao, bresh, ohsee, goa, tropicalia, tecnoflamenco) ([4e69a75](https://github.com/Neiland85/festival-platform-template/commit/4e69a7568f0d31d65a7626e084e5dfd345804673)), closes [#418](https://github.com/Neiland85/festival-platform-template/issues/418)
+
+## [1.10.4](https://github.com/Neiland85/festival-platform-template/compare/v1.10.3...v1.10.4) (2026-03-27)
+
+### Fixed
+
+* return empty object instead of throwing in serverEnv browser Proxy ([242d7f3](https://github.com/Neiland85/festival-platform-template/commit/242d7f3cd2f6ebd4f947fd88d7309dcdc44ca331))
+
+## [1.10.3](https://github.com/Neiland85/festival-platform-template/compare/v1.10.2...v1.10.3) (2026-03-27)
+
+### Fixed
+
+* **critical:** prevent serverEnv from crashing browser hydration ([f42c001](https://github.com/Neiland85/festival-platform-template/commit/f42c001208fa2e0336121a497666354595267f70))
+
+## [1.10.2](https://github.com/Neiland85/festival-platform-template/compare/v1.10.1...v1.10.2) (2026-03-27)
+
+### Fixed
+
+* add missing i18n translations (runtime crash fix) ([#52](https://github.com/Neiland85/festival-platform-template/issues/52)) ([8d22dd4](https://github.com/Neiland85/festival-platform-template/commit/8d22dd4fd7c688f1de9aad137ec2bf279330fb31))
+
+## [1.10.1](https://github.com/Neiland85/festival-platform-template/compare/v1.10.0...v1.10.1) (2026-03-27)
+
+### Fixed
+
+* resolve middleware Edge Runtime crash + assemble landing page ([#51](https://github.com/Neiland85/festival-platform-template/issues/51)) ([5584d86](https://github.com/Neiland85/festival-platform-template/commit/5584d863714e65ccd7ef52db1f93da1af91745a3))
+
+## [1.10.0](https://github.com/Neiland85/festival-platform-template/compare/v1.9.0...v1.10.0) (2026-03-27)
+
+### Added
+
+* Clarity Structures showcase landing page at /showcase ([#50](https://github.com/Neiland85/festival-platform-template/issues/50)) ([4d5f2fe](https://github.com/Neiland85/festival-platform-template/commit/4d5f2fea8a0a0e8a05eebaf31f16d1cedcf3c50b))
+
+## [1.9.0](https://github.com/Neiland85/festival-platform-template/compare/v1.8.0...v1.9.0) (2026-03-27)
+
+### Added
+
+* **security:** WAF + 2FA TOTP + AES-256-GCM + Audit Plan ([#48](https://github.com/Neiland85/festival-platform-template/issues/48)) ([81b792b](https://github.com/Neiland85/festival-platform-template/commit/81b792bf006a623d1774a0909486acc5b233862e))
+
 ## [1.8.0](https://github.com/Neiland85/festival-platform-template/compare/v1.7.0...v1.8.0) (2026-03-27)
 
 ### Added

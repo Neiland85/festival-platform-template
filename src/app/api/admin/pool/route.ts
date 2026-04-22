@@ -15,10 +15,17 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAdmin } from "@/lib/auth/requireAdmin"
 import { getPoolHealth } from "@/lib/observability/poolMonitor"
-import { getPool } from "@/adapters/db/pool"
 
 export async function GET(req: NextRequest) {
-  if (!requireAdmin(req)) {
+  // ── Preview/CI guard ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ disabled: true, message: "Disabled in preview" })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { getPool } = await import("@/adapters/db/pool")
+
+  if (!(await requireAdmin(req))) {
     return NextResponse.json(
       { error: "unauthorized" },
       { status: 403 }

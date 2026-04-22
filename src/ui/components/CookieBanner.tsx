@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { Link } from "@/i18n/navigation"
 import { useTranslations } from "next-intl"
 
@@ -23,7 +23,23 @@ function setConsent(value: "accepted" | "rejected") {
 
 export function CookieBanner() {
   const t = useTranslations("cookie")
-  const [dismissed, setDismissed] = useState(hasConsent)
+  // Initialize as true (dismissed) to match server render — avoids hydration mismatch
+  const [dismissed, setDismissed] = useState(true)
+  const [visible, setVisible] = useState(false)
+
+  // Check cookie consent on client only, after hydration
+  useEffect(() => {
+    if (!hasConsent()) {
+      setDismissed(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!dismissed) {
+      const timer = setTimeout(() => setVisible(true), 500)
+      return () => clearTimeout(timer)
+    }
+  }, [dismissed])
 
   const handleAccept = useCallback(() => {
     setConsent("accepted")
@@ -41,40 +57,117 @@ export function CookieBanner() {
     <div
       role="dialog"
       aria-label={t("ariaLabel")}
-      className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6"
+      style={{
+        position: "fixed",
+        bottom: "1.5rem",
+        left: "1.5rem",
+        right: "1.5rem",
+        zIndex: 9999,
+        display: "flex",
+        justifyContent: "center",
+        animation: visible ? "cookie-slide-up 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards" : "none",
+        opacity: visible ? undefined : 0,
+        pointerEvents: visible ? "auto" : "none",
+      }}
     >
-      <div className="max-w-3xl mx-auto border border-[var(--sn-border-2)]
-        bg-white p-5 md:p-6 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center gap-4">
-          <div className="flex-1">
-            <p className="text-xs text-[var(--sn-muted)] leading-relaxed">
-              {t("message")}{" "}
-              <Link
-                href="/privacidad"
-                className="underline hover:text-[var(--sn-text)] transition-colors"
-              >
-                {t("privacyPolicy")}
-              </Link>
-            </p>
-          </div>
-          <div className="flex gap-3 shrink-0">
-            <button
-              onClick={handleReject}
-              className="px-5 py-2 text-xs font-medium tracking-wide uppercase
-                border border-[var(--sn-border-2)] text-[var(--sn-muted)]
-                hover:text-[var(--sn-text)] hover:border-[var(--sn-text)] transition-colors"
-            >
-              {t("reject")}
-            </button>
-            <button
-              onClick={handleAccept}
-              className="px-5 py-2 text-xs font-medium tracking-wide uppercase
-                bg-[var(--sn-text)] text-white
-                hover:bg-[var(--sn-muted)] transition-colors"
-            >
-              {t("accept")}
-            </button>
-          </div>
+      <div
+        style={{
+          maxWidth: "520px",
+          width: "100%",
+          background: "#FFFDF7",
+          border: "2.5px solid #000",
+          borderRadius: "20px",
+          padding: "1.75rem 2rem",
+          boxShadow: "6px 6px 0px #000",
+          fontFamily: "system-ui, -apple-system, 'Segoe UI', sans-serif",
+        }}
+      >
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginBottom: "1rem" }}>
+          <span style={{ fontSize: "1.5rem" }}>🍪</span>
+          <span style={{
+            fontSize: "1.125rem",
+            fontWeight: 800,
+            color: "#000",
+            letterSpacing: "-0.02em",
+          }}>
+            {t("title")}
+          </span>
+        </div>
+
+        {/* Message */}
+        <p style={{
+          fontSize: "0.9375rem",
+          lineHeight: 1.6,
+          color: "#333",
+          margin: "0 0 0.625rem",
+          fontWeight: 500,
+        }}>
+          {t("message")}
+        </p>
+
+        {/* Legal + Privacy link */}
+        <p style={{
+          fontSize: "0.75rem",
+          lineHeight: 1.5,
+          color: "#888",
+          margin: "0 0 1.5rem",
+        }}>
+          {t("controller")}{" "}
+          <Link
+            href="/privacidad"
+            style={{
+              color: "#6C3AFF",
+              fontWeight: 600,
+              textDecoration: "underline",
+              textUnderlineOffset: "2px",
+              textDecorationThickness: "2px",
+            }}
+          >
+            {t("privacyPolicy")}
+          </Link>
+        </p>
+
+        {/* Buttons */}
+        <div style={{ display: "flex", gap: "0.75rem" }}>
+          <button
+            className="cookie-accept-btn"
+            onClick={handleAccept}
+            style={{
+              flex: 1,
+              padding: "0.875rem 1.5rem",
+              color: "#fff",
+              border: "2.5px solid #000",
+              borderRadius: "12px",
+              fontSize: "0.875rem",
+              fontWeight: 800,
+              letterSpacing: "0.03em",
+              textTransform: "uppercase" as const,
+              cursor: "pointer",
+              boxShadow: "2px 2px 0px #000",
+              transition: "transform 0.15s, box-shadow 0.15s",
+            }}
+          >
+            ✓ {t("accept")}
+          </button>
+          <button
+            className="cookie-reject-btn"
+            onClick={handleReject}
+            style={{
+              padding: "0.875rem 1.25rem",
+              background: "#f5f5f0",
+              color: "#666",
+              border: "2.5px solid #000",
+              borderRadius: "12px",
+              fontSize: "0.8125rem",
+              fontWeight: 700,
+              cursor: "pointer",
+              boxShadow: "2px 2px 0px #000",
+              transition: "all 0.15s",
+            }}
+          >
+            {t("reject")}
+          </button>
         </div>
       </div>
     </div>

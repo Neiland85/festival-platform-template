@@ -18,16 +18,18 @@ export async function createOrder(params: {
   amountCents: number
   currency: string
   quantity: number
+  status?: OrderStatus
 }): Promise<Order> {
   const pool = getPool()
   const id = randomUUID()
   const now = new Date()
+  const status = params.status ?? "reserved"
 
   const result = await pool.query(
     `INSERT INTO orders (id, event_id, customer_email, amount_cents, currency, status, quantity, created_at, updated_at)
-     VALUES ($1, $2, $3, $4, $5, 'pending', $6, $7, $7)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8)
      RETURNING *`,
-    [id, params.eventId, params.customerEmail, params.amountCents, params.currency, params.quantity, now],
+    [id, params.eventId, params.customerEmail, params.amountCents, params.currency, status, params.quantity, now],
   )
 
   return mapRow(result.rows[0])
@@ -49,6 +51,20 @@ export async function setStripeSessionId(
 }
 
 /**
+ * Find an order by ID.
+ */
+export async function findById(
+  orderId: string,
+): Promise<Order | null> {
+  const pool = getPool()
+  const result = await pool.query(
+    `SELECT * FROM orders WHERE id = $1 LIMIT 1`,
+    [orderId],
+  )
+  return result.rows[0] ? mapRow(result.rows[0]) : null
+}
+
+/**
  * Find an order by Stripe session ID (used in webhook handler).
  */
 export async function findByStripeSessionId(
@@ -63,7 +79,18 @@ export async function findByStripeSessionId(
 }
 
 /**
- * Update order status.
+ * Update order status — UNGUARDED. No status transition check.
+ *
+ * @deprecated Use domain functions instead:
+ *   - completeOrder() for reserved → completed (with WHERE status = 'reserved')
+ *   - cancelOrderById() for reserved → cancelled (with atomic capacity release)
+ *   - expireOrderById() for reserved → expired (with atomic capacity release)
+ *
+ * This function bypasses all status guards and can transition any order
+ * to any state without validation. Kept only for potential migration scripts.
+ * DO NOT use in request handlers or webhook processing.
+ *
+ * @internal
  */
 export async function updateOrderStatus(
   orderId: string,
