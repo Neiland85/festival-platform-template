@@ -120,13 +120,16 @@ export async function GET(req: NextRequest) {
       ...(errors.length > 0 && { failedOrders: errors }),
     })
   } catch (err: unknown) {
-    // ── Cron must never return 500 — log and return 200 with error info ──
+    // ── Global failure: surface it as 500 so observability matches reality ──
     const errorMsg = err instanceof Error ? err.message : String(err)
     log("error", "cron_expire_orders_crash", { error: errorMsg })
-    return NextResponse.json({
-      expired: 0,
-      error: errorMsg,
-      message: "Cron execution failed but returned gracefully",
-    })
+    return NextResponse.json(
+      {
+        expired: 0,
+        error: errorMsg,
+        message: "Cron execution failed",
+      },
+      { status: 500 },
+    )
   }
 }
