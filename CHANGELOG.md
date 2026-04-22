@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.24.0](https://github.com/Neiland85/festival-platform-template/compare/v1.23.0...v1.24.0) (2026-04-22)
+
+### Added
+
+* **ticket-assets:** add offchain ticket asset layer ([0284eeb](https://github.com/Neiland85/festival-platform-template/commit/0284eebbd43e60294e2f46a1ba1dd7f69099192f))
+* **ticket-assets:** add wallet binding and mint stub routes ([56e30a9](https://github.com/Neiland85/festival-platform-template/commit/56e30a931653bd7cd0b71264d7f8d0c8d0840631))
+
 ## [1.23.0](https://github.com/Neiland85/festival-platform-template/compare/v1.22.0...v1.23.0) (2026-04-01)
 
 ### Added
