@@ -17,18 +17,23 @@
 import { NextRequest, NextResponse } from "next/server"
 import { rateLimit, setRateLimitHeaders } from "@/lib/rate-limit"
 import { verifyCsrf } from "@/lib/security/verifyCsrf"
-import { createOrderForEvent } from "@/domain/orders/create-order"
-import { setStripeSessionId } from "@/domain/orders/order-repository"
 import { createCheckoutSession } from "@/adapters/payments/stripe/checkout"
 import { StripeNotConfiguredError } from "@/adapters/payments/stripe/client"
-import {
-  EventNotFoundError,
-  EventNoPriceError,
-  InsufficientCapacityError,
-} from "@/domain/orders/types"
 import { log } from "@/lib/logger"
 
 export async function POST(req: NextRequest) {
+  // ── Preview: no Stripe/DB, return safe response ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ error: "Checkout disabled in preview environment" }, { status: 503 })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { createOrderForEvent } = await import("@/domain/orders/create-order")
+  const { setStripeSessionId } = await import("@/domain/orders/order-repository")
+  const { EventNotFoundError,
+  EventNoPriceError,
+  InsufficientCapacityError, } = await import("@/domain/orders/types")
+
   // 1. Rate limit — check BEFORE CSRF (cheaper check first)
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown"
   const rl = await rateLimit(ip)
@@ -64,6 +69,8 @@ export async function POST(req: NextRequest) {
   const email = body["email"]
   const quantity = typeof body["quantity"] === "number" ? body["quantity"] : 1
   const locale = typeof body["locale"] === "string" ? body["locale"] : "es"
+
+  log("info", "spud.checkout_attempt", { eventId, quantity, ip })
 
   if (typeof eventId !== "string" || typeof email !== "string") {
     return NextResponse.json(

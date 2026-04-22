@@ -18,7 +18,7 @@ import { checkQueueHealth } from "@/lib/observability/queueAlert"
 import { queueSize } from "@/lib/security/burstQueue"
 
 export async function GET(req: NextRequest) {
-  if (!requireAdmin(req)) {
+  if (!(await requireAdmin(req))) {
     return NextResponse.json(
       { error: "unauthorized" },
       { status: 403 }

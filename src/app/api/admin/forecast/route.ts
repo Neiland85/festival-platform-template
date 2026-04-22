@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getPool } from "@/adapters/db/pool"
 import { requireAdmin } from "@/lib/auth/requireAdmin"
 import { safeHandler } from "@/lib/api/safeHandler"
 
 const DEFAULT_CONVERSION = 0.22
 
 export const GET = safeHandler(async (req: NextRequest) => {
-  if (!requireAdmin(req)) {
+  // ── Preview/CI guard ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ disabled: true, message: "Disabled in preview" })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { getPool } = await import("@/adapters/db/pool")
+
+  if (!(await requireAdmin(req))) {
     return NextResponse.json({ error: "unauthorized" }, { status: 403 })
   }
 

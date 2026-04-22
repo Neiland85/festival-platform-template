@@ -7,12 +7,57 @@
     "subtitle": "Music, Culture & Experiences",
     "cta": "Get Tickets"
   },
-  "nav": {},
-  "footer": {},
-  "location": {},
+  "nav": {
+    "events": "Lineup",
+    "market": "Marketplace",
+    "location": "Location"
+  },
+  "footer": {
+    "manifesto": "Management platform for music festivals and live events. Production-ready infrastructure.",
+    "navEvents": "Lineup",
+    "navMarket": "Marketplace",
+    "navLocation": "Location",
+    "navPrivacy": "Privacy",
+    "locationCity": "Madrid, Spain",
+    "season": "Season 2026",
+    "tagline": "Made with passion for music",
+    "copyright": "Festival Platform Template. All rights reserved."
+  },
+  "location": {
+    "heading": "Location",
+    "mapTitle": "Event map"
+  },
+  "events": {
+    "heading": "Lineup",
+    "moreInfo": "More info"
+  },
+  "eventDescriptions": {
+    "chambao": "Flamenco fusion with electronic music under the stars.",
+    "bresh": "Latin America's most viral party arrives with unstoppable energy.",
+    "ohsee": "Cutting-edge electronic sessions with emerging artists.",
+    "goa": "Psytrance and progressive in an immersive nighttime experience.",
+    "tropicalia": "Tropical rhythms, reggaeton and latin beats outdoors.",
+    "tecnoflamenco": "When flamenco rhythm meets electronic beats."
+  },
+  "eventHighlights": {
+    "chambao": "Flamenco-chill · Visual production · Surround sound",
+    "bresh": "Viral party · Global hits · Immersive experience",
+    "ohsee": "Experimental electronic · Emerging artists · Visual art",
+    "goa": "Psytrance · Progressive · UV decor · Night session",
+    "tropicalia": "Latin beats · Reggaeton · Tropical house · Outdoors",
+    "tecnoflamenco": "Unique fusion · Electronic cajón · Rhythm and beats"
+  },
+  "showcase": {
+    "hostLabel": "Presented by",
+    "tagline": "Digital infrastructure for events",
+    "credit": "Built with Festival Platform Template"
+  },
   "cookie": {
     "ariaLabel": "Cookie consent",
-    "message": "We use cookies to improve your experience.",
+    "title": "Privacy",
+    "message": "This site uses essential technical cookies only. We do not use tracking, advertising, or third-party analytics cookies.",
+    "legal": "You may exercise your data rights by contacting admin@claritystructures.com",
+    "controller": "Data controller: Clarity Structures Digital S.L., Madrid, Spain.",
     "privacyPolicy": "Privacy policy",
     "accept": "Accept",
     "reject": "Reject"
@@ -21,10 +66,43 @@
     "label": "Exclusive",
     "ctaButton": "Limited promotions",
     "ctaDescription": "Get early access to special offers.",
+    "back": "Back",
     "rgpdTitle": "Data protection",
-    "rgpdAccept": "Accept",
-    "rgpdBack": "Back",
-    "success": "Thanks for signing up!",
-    "error": "Something went wrong. Try again."
+    "rgpdIntro": "Before continuing, we want you to know how we handle your data.",
+    "rgpdDescription": "We will only collect the data you voluntarily provide in this form. We will use it exclusively to send you information about festival promotions and offers.",
+    "rgpdNoSell": "We don't sell your data",
+    "rgpdNoSellDesc": "We never share or sell your information to third parties.",
+    "rgpdCookies": "Minimal cookies",
+    "rgpdCookiesDesc": "We only use technical and consent cookies.",
+    "rgpdSecure": "Secure data",
+    "rgpdSecureDesc": "Your information is stored securely and encrypted.",
+    "rgpdEmail": "Relevant emails only",
+    "rgpdEmailDesc": "You will only receive communications about the offers you requested.",
+    "rgpdRights": "your ARCO rights",
+    "rgpdRightsPrefix": "You can exercise",
+    "rgpdRightsSuffix": "at any time by writing to us.",
+    "rgpdLegal": "Check our full privacy policy:",
+    "rgpdPrivacyLink": "Privacy policy",
+    "formTitle": "Reserve your access",
+    "formSubtitle": "Complete your details to receive the offers.",
+    "labelName": "Name",
+    "labelSurname": "Last name",
+    "labelEmail": "Email",
+    "labelPhone": "Phone",
+    "labelProfession": "Profession",
+    "placeholderName": "Your name",
+    "placeholderSurname": "Your last name",
+    "placeholderEmail": "you@email.com",
+    "placeholderPhone": "+34 600 000 000",
+    "placeholderProfession": "Your profession",
+    "optional": "optional",
+    "submitConsent": "By submitting, you accept our",
+    "privacyPolicy": "Privacy policy",
+    "sending": "Sending...",
+    "successTitle": "You're in!",
+    "successDescription": "We'll notify you with the best offers before anyone else.",
+    "errorTitle": "Something went wrong",
+    "errorDescription": "We couldn't process your request. Please try again.",
+    "retry": "Retry"
   }
 }

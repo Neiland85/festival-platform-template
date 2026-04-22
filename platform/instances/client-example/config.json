@@ -1,0 +1,11 @@
+{
+  "name": "Client Example Event Platform",
+  "domain": "example.events.local",
+  "locale": "es",
+  "currency": "EUR",
+  "branding": {
+    "primaryColor": "#0066ff",
+    "secondaryColor": "#f5a623",
+    "logo": "/public/client-example/logo.png"
+  }
+}

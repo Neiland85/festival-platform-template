@@ -47,7 +47,10 @@ const messages: Record<string, Record<string, string>> = {
   },
   cookie: {
     ariaLabel: "Consentimiento de cookies",
-    message: "Usamos cookies para mejorar tu experiencia.",
+    title: "Privacidad",
+    message: "Este sitio utiliza cookies técnicas esenciales para su funcionamiento. No utilizamos cookies de seguimiento, publicidad ni analítica de terceros.",
+    legal: "Puedes ejercer tus derechos ARCO contactándonos en admin@claritystructures.com",
+    controller: "Responsable: Clarity Structures Digital S.L., Madrid, España.",
     privacyPolicy: "Política de privacidad",
     accept: "Aceptar",
     reject: "Rechazar",

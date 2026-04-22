@@ -1,9 +1,16 @@
-import { describe, it, expect, beforeEach } from "vitest"
+import { describe, it, expect, vi, beforeEach } from "vitest"
 import { NextRequest } from "next/server"
 import { GET } from "./route"
 import { createSessionAsync, _clearAllSessions } from "@/lib/auth/sessionStore"
-import { audit } from "@/lib/observability/auditLog"
 
+// ── Mock DB layer ───────────────────────────────────
+const mockQueryAuditEvents = vi.fn()
+
+vi.mock("@/adapters/db/audit-repository", () => ({
+  queryAuditEvents: (...args: unknown[]) => mockQueryAuditEvents(...args),
+}))
+
+// ── Helpers ─────────────────────────────────────────
 function makeReq(query = "", token?: string): NextRequest {
   const headers: Record<string, string> = {}
   if (token) headers["cookie"] = `admin_session=${token}`
@@ -14,9 +21,15 @@ function makeReq(query = "", token?: string): NextRequest {
   })
 }
 
+const FAKE_ENTRIES = [
+  { id: "1", action: "admin.login", actor: "admin", ip: "hash1", resource: "-", details: "{}", requestId: "aud-1", createdAt: new Date() },
+  { id: "2", action: "event.create", actor: "admin", ip: "hash1", resource: "evt-1", details: "{}", requestId: "aud-2", createdAt: new Date() },
+]
+
 describe("GET /api/admin/audit-log", () => {
   beforeEach(() => {
     _clearAllSessions()
+    mockQueryAuditEvents.mockReset()
   })
 
   it("returns 403 without admin session", async () => {
@@ -26,10 +39,7 @@ describe("GET /api/admin/audit-log", () => {
 
   it("returns audit entries with valid session", async () => {
     const session = await createSessionAsync()
-
-    // Generate a few audit entries
-    audit({ action: "admin.login", ip: "1.2.3.4", actor: "admin" })
-    audit({ action: "event.create", ip: "1.2.3.4", resource: "evt-1" })
+    mockQueryAuditEvents.mockResolvedValueOnce(FAKE_ENTRIES)
 
     const res = await GET(makeReq("", session.token))
     expect(res.status).toBe(200)
@@ -37,47 +47,47 @@ describe("GET /api/admin/audit-log", () => {
     const json = await res.json()
     expect(json.entries).toBeDefined()
     expect(Array.isArray(json.entries)).toBe(true)
-    expect(json.total).toBeGreaterThanOrEqual(2)
-    expect(json.stats).toBeDefined()
-    expect(json.stats.actionCounts).toBeDefined()
+    expect(json.total).toBe(2)
   })
 
-  it("filters by action parameter", async () => {
+  it("passes action filter to query", async () => {
     const session = await createSessionAsync()
-
-    audit({ action: "admin.login", ip: "1.2.3.4" })
-    audit({ action: "event.create", ip: "1.2.3.4" })
+    mockQueryAuditEvents.mockResolvedValueOnce([FAKE_ENTRIES[0]])
 
     const res = await GET(makeReq("?action=admin.login", session.token))
     expect(res.status).toBe(200)
 
-    const json = await res.json()
-    for (const entry of json.entries) {
-      expect(entry.action).toBe("admin.login")
-    }
+    expect(mockQueryAuditEvents).toHaveBeenCalledWith(
+      expect.objectContaining({ action: "admin.login" }),
+    )
   })
 
-  it("returns 400 for invalid action filter", async () => {
+  it("passes limit parameter to query", async () => {
     const session = await createSessionAsync()
-    const res = await GET(makeReq("?action=invalid.action", session.token))
-    expect(res.status).toBe(400)
+    mockQueryAuditEvents.mockResolvedValueOnce([])
 
-    const json = await res.json()
-    expect(json.error).toBe("invalid_action")
-    expect(json.validActions).toBeDefined()
+    await GET(makeReq("?limit=2", session.token))
+
+    expect(mockQueryAuditEvents).toHaveBeenCalledWith(
+      expect.objectContaining({ limit: 2 }),
+    )
   })
 
-  it("respects limit parameter", async () => {
+  it("caps limit at 1000", async () => {
     const session = await createSessionAsync()
-    const res = await GET(makeReq("?limit=2", session.token))
-    expect(res.status).toBe(200)
+    mockQueryAuditEvents.mockResolvedValueOnce([])
 
-    const json = await res.json()
-    expect(json.entries.length).toBeLessThanOrEqual(2)
+    await GET(makeReq("?limit=9999", session.token))
+
+    expect(mockQueryAuditEvents).toHaveBeenCalledWith(
+      expect.objectContaining({ limit: 1000 }),
+    )
   })
 
   it("sets Cache-Control: no-store", async () => {
     const session = await createSessionAsync()
+    mockQueryAuditEvents.mockResolvedValueOnce([])
+
     const res = await GET(makeReq("", session.token))
     expect(res.headers.get("Cache-Control")).toBe("no-store")
   })

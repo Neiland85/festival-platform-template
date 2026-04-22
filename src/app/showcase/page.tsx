@@ -20,6 +20,7 @@ const PRODUCTS = [
     ],
     status: "Production Ready",
     version: "v1.6.0",
+    version: "v1.9.0",
     repo: "https://github.com/Neiland85/festival-platform-template",
     demo: "/es",
   },
@@ -54,6 +55,7 @@ export default function ShowcasePage() {
       }}
     >
       {/* ── HERO ── */}
+      {/* HERO */}
       <header
         style={{
           minHeight: "100vh",
@@ -175,6 +177,7 @@ export default function ShowcasePage() {
       </header>
 
       {/* ── STATS ── */}
+      {/* STATS */}
       <section
         style={{
           borderTop: "1px solid #1a1a1a",
@@ -204,6 +207,7 @@ export default function ShowcasePage() {
       </section>
 
       {/* ── PRODUCTS ── */}
+      {/* PRODUCTS */}
       <section id="products" style={{ padding: "6rem 2rem" }}>
         <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
           <div
@@ -334,6 +338,7 @@ export default function ShowcasePage() {
       </section>
 
       {/* ── SECURITY ── */}
+      {/* SECURITY */}
       <section style={{ padding: "6rem 2rem", borderTop: "1px solid #1a1a1a" }}>
         <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
           <div
@@ -387,6 +392,7 @@ export default function ShowcasePage() {
       </section>
 
       {/* ── CONTACT ── */}
+      {/* CONTACT */}
       <section style={{ padding: "6rem 2rem", borderTop: "1px solid #1a1a1a" }}>
         <div style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center" }}>
           <h2 style={{ fontSize: "2rem", fontWeight: 700, color: "#fff", margin: "0 0 1rem" }}>
@@ -415,6 +421,7 @@ export default function ShowcasePage() {
       </section>
 
       {/* ── FOOTER ── */}
+      {/* FOOTER */}
       <footer
         style={{
           padding: "3rem 2rem",

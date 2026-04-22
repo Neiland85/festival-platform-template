@@ -1,0 +1,8 @@
+{
+  "cms": true,
+  "analytics": false,
+  "qr-checkin": true,
+  "email": true,
+  "crm-lite": false,
+  "reporting": false
+}

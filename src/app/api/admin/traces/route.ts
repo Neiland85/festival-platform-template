@@ -17,7 +17,7 @@ import { requireAdmin } from "@/lib/auth/requireAdmin"
 import { getRecentTraces, getTraceStats } from "@/lib/observability/requestTracer"
 
 export async function GET(req: NextRequest) {
-  if (!requireAdmin(req)) {
+  if (!(await requireAdmin(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 

@@ -32,6 +32,9 @@ export type AuditAction =
   | "system.config_change"
   | "system.queue_drain"
   | "system.metrics_reset"
+  | "dlq.resolve"
+  | "dlq.retry_success"
+  | "dlq.retry_failed"
 
 export type AuditEntry = {
   timestamp: string

@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
+import React from "react"
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import PromoFormSection from "./PromoFormSection"
 
-// Mock i18n navigation Link
+// Mock i18n navigation Link — use createElement to avoid JSX hoisting issues in vi.mock
 vi.mock("@/i18n/navigation", () => ({
-  Link: ({ href, children, ...props }: { href: string; children: React.ReactNode }) => (
-    <a href={href} {...props}>{children}</a>
-  ),
+  Link: ({ href, children, ...props }: { href: string; children: React.ReactNode }) =>
+    React.createElement("a", { href, ...props }, children),
 }))
 
 // Mock tracking

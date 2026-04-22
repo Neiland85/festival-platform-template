@@ -19,7 +19,7 @@ import { requireAdmin } from "@/lib/auth/requireAdmin"
 import { getSurgeStatus, predict15m } from "@/lib/observability/surgePredictor"
 
 export async function GET(req: NextRequest) {
-  if (!requireAdmin(req)) {
+  if (!(await requireAdmin(req))) {
     return NextResponse.json(
       { error: "unauthorized" },
       { status: 403 }

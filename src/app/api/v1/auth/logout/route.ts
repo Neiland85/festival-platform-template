@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server"
-import { destroySession } from "@/lib/auth/sessionStore"
-import { serverEnv } from "@/lib/env"
+import { destroySessionAsync } from "@/lib/auth/sessionStore"
 import { audit } from "@/lib/observability/auditLog"
 
 export async function POST(req: NextRequest) {
+  // ── Preview: no session store configured ──
+  if (process.env["VERCEL_ENV"] === "preview") {
+    return NextResponse.json({ ok: true, preview: true })
+  }
+
+  // ── Dynamic imports (avoid module-load crash in preview) ──
+  const { serverEnv } = await import("@/lib/env")
+
   const token = req.cookies.get("admin_session")?.value
-  destroySession(token)
+  await destroySessionAsync(token)
   audit({ action: "admin.logout", req })
 
   const response = NextResponse.json({ success: true })

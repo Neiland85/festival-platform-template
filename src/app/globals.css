@@ -1,5 +1,3 @@
-@import "tailwindcss";
-
 /* =========================
    Festival Design Tokens
    Editorial — Minimal
@@ -332,4 +330,168 @@ footer:hover .site-credit {
 
 .site-credit::after {
   background: linear-gradient(90deg, currentColor 30%, #FF3300, transparent);
+}
+
+/* ─── CookieBanner animations ─── */
+
+@keyframes cookie-slide-up {
+  from { transform: translateY(120%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes cookie-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.cookie-accept-btn {
+  background: linear-gradient(135deg, #6C3AFF, #3A86FF, #6C3AFF);
+  background-size: 200% 200%;
+  animation: cookie-gradient 3s ease infinite;
+}
+
+.cookie-accept-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0px #000 !important;
+}
+
+.cookie-accept-btn:active {
+  transform: translate(0, 0);
+  box-shadow: 0px 0px 0px #000 !important;
+}
+
+.cookie-reject-btn:hover {
+  background: #1a1a1a !important;
+  color: #fff !important;
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px #000 !important;
+}
+
+.cookie-reject-btn:active {
+  transform: translate(0, 0);
+  box-shadow: 0px 0px 0px #000 !important;
+}
+
+/* ─── SpudMiniDemo animations ─── */
+
+@keyframes spud-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.spud-fade-in {
+  animation: spud-fade-in 0.4s ease forwards;
+}
+
+@keyframes spud-bar-fill {
+  from { width: 0; }
+}
+
+.spud-score-bar {
+  transition: width 0.6s ease;
+}
+
+.spud-lead-row {
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* ─── Landing page animations ─── */
+
+@keyframes hero-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes spin-logo {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shockwave {
+  0% { width: 0; height: 0; opacity: 1; }
+  100% { width: 400px; height: 400px; opacity: 0; }
+}
+
+@keyframes pulse-border {
+  0%, 100% { box-shadow: 4px 4px 0px #000, 0 0 0 0 rgba(108,58,255,0.4); }
+  50% { box-shadow: 4px 4px 0px #000, 0 0 0 6px rgba(108,58,255,0); }
+}
+
+/* Landing card / button classes */
+
+.nb-card { transition: transform 0.2s, box-shadow 0.2s; }
+.nb-card:hover { transform: translate(-3px, -3px); box-shadow: 8px 8px 0px #000; }
+
+.nb-btn-primary { transition: transform 0.15s, box-shadow 0.15s; }
+.nb-btn-primary:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px #000; }
+.nb-btn-primary:active { transform: translate(0, 0); box-shadow: 0 0 0 #000; }
+
+.nb-btn-secondary { transition: all 0.15s; }
+.nb-btn-secondary:hover { background: #000 !important; color: #FFFDF7 !important; transform: translate(-1px, -1px); box-shadow: 4px 4px 0px #000; }
+
+.spinning-logo { animation: spin-logo 8s linear infinite; }
+.spinning-logo:hover { animation-duration: 2s; }
+
+.demo-card { transition: transform 0.2s, box-shadow 0.2s; }
+.demo-card:hover { transform: translate(-3px, -3px); box-shadow: 8px 8px 0px #000; }
+
+/* Hero preview card */
+.hero-preview-row {
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.hero-preview-row:hover {
+  background-color: #1f1f1f !important;
+}
+
+/* Contact page responsive grid */
+.contact-grid-2col {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 900px) {
+  .contact-grid-2col {
+    grid-template-columns: 1fr 340px;
+  }
+}
+
+/* SPUD live panel score transition */
+.spud-live-score {
+  transition: color 0.4s ease;
+}
+
+.spud-live-bar-track {
+  transition: width 0.5s ease, background-color 0.4s ease;
+}
+
+.spud-live-badge {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Hero responsive grid */
+.hero-grid-2col {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 900px) {
+  .hero-grid-2col {
+    grid-template-columns: 1.2fr 1fr;
+  }
 }
