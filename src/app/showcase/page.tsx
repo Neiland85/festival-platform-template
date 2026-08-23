@@ -19,6 +19,7 @@ const PRODUCTS = [
       "k6 load testing with SLO thresholds",
     ],
     status: "Production Ready",
+    version: "v1.6.0",
     version: "v1.9.0",
     repo: "https://github.com/Neiland85/festival-platform-template",
     demo: "/es",
@@ -53,6 +54,7 @@ export default function ShowcasePage() {
         fontFamily: "'Space Mono', 'SF Mono', monospace",
       }}
     >
+      {/* ── HERO ── */}
       {/* HERO */}
       <header
         style={{
@@ -157,6 +159,7 @@ export default function ShowcasePage() {
           </div>
         </div>
 
+        {/* Scroll indicator */}
         <div
           style={{
             position: "absolute",
@@ -173,6 +176,7 @@ export default function ShowcasePage() {
         </div>
       </header>
 
+      {/* ── STATS ── */}
       {/* STATS */}
       <section
         style={{
@@ -202,6 +206,7 @@ export default function ShowcasePage() {
         </div>
       </section>
 
+      {/* ── PRODUCTS ── */}
       {/* PRODUCTS */}
       <section id="products" style={{ padding: "6rem 2rem" }}>
         <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
@@ -259,6 +264,7 @@ export default function ShowcasePage() {
                 {product.description}
               </p>
 
+              {/* Stack */}
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "2rem" }}>
                 {product.stack.map((tech) => (
                   <span
@@ -277,6 +283,7 @@ export default function ShowcasePage() {
                 ))}
               </div>
 
+              {/* Features */}
               <div
                 style={{
                   display: "grid",
@@ -293,6 +300,7 @@ export default function ShowcasePage() {
                 ))}
               </div>
 
+              {/* CTAs */}
               <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
                 <a
                   href={product.repo}
@@ -329,6 +337,7 @@ export default function ShowcasePage() {
         </div>
       </section>
 
+      {/* ── SECURITY ── */}
       {/* SECURITY */}
       <section style={{ padding: "6rem 2rem", borderTop: "1px solid #1a1a1a" }}>
         <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
@@ -382,6 +391,7 @@ export default function ShowcasePage() {
         </div>
       </section>
 
+      {/* ── CONTACT ── */}
       {/* CONTACT */}
       <section style={{ padding: "6rem 2rem", borderTop: "1px solid #1a1a1a" }}>
         <div style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center" }}>
@@ -410,6 +420,7 @@ export default function ShowcasePage() {
         </div>
       </section>
 
+      {/* ── FOOTER ── */}
       {/* FOOTER */}
       <footer
         style={{
