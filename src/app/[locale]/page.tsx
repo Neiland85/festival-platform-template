@@ -1,24 +1,24 @@
 'use client'
 
 import { useEffect, useCallback } from "react"
-import { SpudMiniDemo } from "@/ui/components/demo/SpudMiniDemo"
+function SpudMiniDemo(_props: Record<string, unknown>) { return null }
 
 const FEATURES = [
-  { icon: "🛡️", title: "Tu web blindada", desc: "Protección automática contra hackers, bots y ataques. Más de 70 tipos de amenazas bloqueadas sin que tengas que hacer nada." },
+  { icon: "🛡️", title: "Pago y aforo", desc: "Stripe cobra. El aforo se reserva en la misma transacción. Dos personas no se quedan con la última entrada." },
   { icon: "🎫", title: "Vende entradas al instante", desc: "Pasarela de pago integrada con Stripe. Tus clientes compran en 2 clicks. Tú cobras al momento. Facturas automáticas." },
   { icon: "🏢", title: "Multiples marcas, un solo sistema", desc: "Gestiona varios festivales o clientes desde la misma plataforma. Cada uno con su marca, sus datos y su espacio privado." },
   { icon: "🇪🇺", title: "Legal desde el día 1", desc: "Cumple la ley europea de protección de datos (RGPD) automáticamente. Consentimiento de cookies, derecho al olvido, todo incluido." },
   { icon: "⚡", title: "Rápido. Muy rápido.", desc: "Tu web carga en menos de medio segundo. Tus visitantes no esperan. Google te posiciona mejor. Más ventas." },
-  { icon: "🧪", title: "Probado y garantizado", desc: "Más de 466 tests automáticos verifican que todo funciona. Cada cambio se prueba antes de publicarse. Cero sorpresas." },
+  { icon: "🧪", title: "Lista para la puerta", desc: "Cada entrada lleva nombre y código. El staff valida en segundos. Sin Excel, sin WhatsApp del último minuto." },
   { icon: "📊", title: "Sabes todo lo que pasa", desc: "Panel de control con métricas en tiempo real. Ventas, visitas, rendimiento del servidor. Todo visible, todo medible." },
   { icon: "🎨", title: "Tu marca, tus colores", desc: "Cambia logo, colores, textos e imágenes sin tocar código. Tu festival, tu identidad. Listo para personalizar." },
 ]
 
 const STATS = [
-  { value: "466+", label: "Tests automáticos", color: "#6C3AFF" },
-  { value: "70+", label: "Amenazas bloqueadas", color: "#FF3366" },
-  { value: "99.9%", label: "Disponibilidad", color: "#00CC88" },
-  { value: "<0.5s", label: "Tiempo de carga", color: "#3A86FF" },
+  { value: "3", label: "Tipos de pase", color: "#6C3AFF" },
+  { value: "Stripe", label: "Pago en la web", color: "#FF3366" },
+  { value: "Nominativa", label: "En la entrada", color: "#00CC88" },
+  { value: "Código", label: "En la puerta", color: "#3A86FF" },
 ]
 
 const STACK_SIMPLE = [
@@ -27,41 +27,41 @@ const STACK_SIMPLE = [
   { name: "TypeScript", what: "Código seguro" },
   { name: "PostgreSQL", what: "Base de datos" },
   { name: "Stripe", what: "Pagos" },
-  { name: "Tailwind 4", what: "Diseño" },
+  { name: "Tailwind 3.4", what: "Diseño" },
 ]
 
 const HERO_METRICS = [
-  { value: "+23%", label: "Conversión media", color: "#00CC88" },
-  { value: "-40%", label: "Tiempo manual", color: "#3A86FF" },
-  { value: "3x", label: "ROI en campañas", color: "#6C3AFF" },
+  { value: "3", label: "Pases", color: "#00CC88" },
+  { value: "2 clics", label: "Hasta pagar", color: "#3A86FF" },
+  { value: "Nominativa", label: "En la puerta", color: "#6C3AFF" },
 ]
 
 const HERO_PREVIEW = [
-  { name: "Marta", role: "Founder", score: 91, action: "Oferta premium", color: "#00CC88" },
-  { name: "Ana", role: "Marketer", score: 82, action: "Email nurturing", color: "#3A86FF" },
-  { name: "Luis", role: "Developer", score: 67, action: "Retargeting", color: "#888" },
+  { name: "Fin de semana", role: "Pase completo", score: 95, action: "Nominativa", color: "#00CC88" },
+  { name: "Sábado", role: "Pase de día", score: 72, action: "Quedan plazas", color: "#3A86FF" },
+  { name: "Domingo", role: "Pase de día", score: 61, action: "Acceso recinto", color: "#888" },
 ]
 
 const DEMO_STEPS = [
   {
     step: "01",
-    icon: "🎯",
-    title: "Captas leads",
-    desc: "Formularios integrados capturan visitantes interesados. Cada lead se almacena con contexto: origen, intención y datos de contacto.",
+    icon: "🎫",
+    title: "Eliges el pase",
+    desc: "Fin de semana, sábado o domingo. Precio cerrado. Aforo reservado en el momento de pagar.",
     color: "#6C3AFF",
   },
   {
     step: "02",
-    icon: "🧠",
-    title: "SPUD decide",
-    desc: "El motor de scoring analiza cada lead automáticamente. Segmenta por valor, prioriza los más calientes y descarta bots.",
+    icon: "💳",
+    title: "Pagas con Stripe",
+    desc: "Checkout en dos clics. Nombre en la entrada. Correo con el código. Sin NFT y sin lista de Excel.",
     color: "#3A86FF",
   },
   {
     step: "03",
-    icon: "🚀",
-    title: "Ejecutas campañas",
-    desc: "Emails personalizados generados con IA. Cada segmento recibe el mensaje correcto, en el momento correcto. Tú solo apruebas.",
+    icon: "🚪",
+    title: "Entras con tu código",
+    desc: "El staff valida en la puerta. Una entrada, un nombre. Si no está en la lista, no entra.",
     color: "#00CC88",
   },
 ]
@@ -88,7 +88,7 @@ export default function LocalePage() {
   }, [handleClick])
 
   return (
-    <div style={{ minHeight: "100vh", background: "#FFFDF7", fontFamily: "system-ui, -apple-system, 'Segoe UI', sans-serif", cursor: "url(/clarity-logo-dark.png) 16 16, auto" }}>
+    <div style={{ minHeight: "100vh", background: "#FFFDF7", fontFamily: "system-ui, -apple-system, 'Segoe UI', sans-serif", cursor: "auto" }}>
       {/* ═══ HERO ═══ */}
       <header style={{
         minHeight: "100vh", display: "flex", flexDirection: "column",
@@ -106,21 +106,19 @@ export default function LocalePage() {
           <div style={{ animation: "slide-in 0.8s ease-out" }}>
             {/* Badge */}
             <div style={{ display: "inline-block", padding: "0.5rem 1.25rem", marginBottom: "1.5rem", background: "#000", color: "#FFFDF7", borderRadius: "999px", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.1em" }}>
-              PLATAFORMA DE CONVERSIÓN PARA EVENTOS
+              ENTRADAS PARA FESTIVALES
             </div>
 
             <h1 style={{ fontSize: "clamp(2.25rem, 5vw, 4rem)", fontWeight: 900, lineHeight: 1.05, margin: "0 0 1.25rem", color: "#000", letterSpacing: "-0.03em" }}>
-              Convierte visitantes en compradores{" "}
-              <span style={{ background: "linear-gradient(135deg, #6C3AFF, #3A86FF, #6C3AFF)", backgroundSize: "200% 200%", animation: "hero-gradient 4s ease infinite", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                automáticamente
-              </span>
+              Pases, nombre en la entrada y código en la puerta{" "}
+
             </h1>
 
             <p style={{ fontSize: "1.125rem", color: "#555", maxWidth: "540px", margin: "0 0 0.75rem", lineHeight: 1.7, fontWeight: 500 }}>
-              Captura leads, cualifícalos con inteligencia artificial y ejecuta campañas que convierten — sin intervención manual.
+              Compra el pase, pon el nombre y enseña el código. Stripe cobra. El aforo no se duplica.
             </p>
             <p style={{ fontSize: "0.875rem", color: "#999", maxWidth: "480px", margin: "0 0 1.5rem", lineHeight: 1.6 }}>
-              Para festivales, eventos y experiencias que quieren escalar ventas sin aumentar equipo.
+              Para festivales que venden entradas, no una plataforma de leads.
             </p>
 
             {/* Metrics */}
@@ -136,7 +134,7 @@ export default function LocalePage() {
             {/* CTAs */}
             <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
               <a href="#demo" className="nb-btn-primary" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "1rem 2.5rem", background: "linear-gradient(135deg, #6C3AFF, #3A86FF)", color: "#fff", textDecoration: "none", borderRadius: "14px", fontSize: "1rem", fontWeight: 800, textTransform: "uppercase" as const, border: "2.5px solid #000", boxShadow: "4px 4px 0px #000", letterSpacing: "0.05em", animation: "pulse-border 2s ease-in-out infinite" }}>
-                Ver demo en acción →
+                Ver pases →
               </a>
               <a href="https://github.com/Neiland85/festival-platform-template" target="_blank" rel="noopener noreferrer" className="nb-btn-secondary" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "1rem 2rem", background: "#FFFDF7", color: "#000", textDecoration: "none", borderRadius: "14px", fontSize: "0.9375rem", fontWeight: 700, border: "2.5px solid #000", boxShadow: "3px 3px 0px #000" }}>
                 ⭐ GitHub
@@ -157,23 +155,15 @@ export default function LocalePage() {
                 width: "56px", height: "56px", borderRadius: "12px", overflow: "hidden",
                 flexShrink: 0, background: "#f5f5f5",
               }}>
-                <video
-                  src="/clarity_logo2.mp4"
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  preload="metadata"
-                  style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
-                />
+                <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "1.25rem", color: "#000", background: "#eee" }}>F</div>
               </div>
               <div>
-                <div style={{ fontSize: "0.8125rem", fontWeight: 800, color: "#000", letterSpacing: "-0.01em" }}>Clarity Engine</div>
-                <div style={{ fontSize: "0.6875rem", color: "#888", marginTop: "2px" }}>Automatización inteligente para eventos</div>
+                <div style={{ fontSize: "0.8125rem", fontWeight: 800, color: "#000", letterSpacing: "-0.01em" }}>Control de puerta</div>
+                <div style={{ fontSize: "0.6875rem", color: "#888", marginTop: "2px" }}>Pases, nombres y códigos de acceso</div>
               </div>
             </div>
 
-            {/* SPUD preview card */}
+            {/* Pases */}
             <div style={{
               background: "#111", border: "2.5px solid #000", borderRadius: "16px",
               boxShadow: "6px 6px 0px #000", padding: "1.5rem", overflow: "hidden",
@@ -181,7 +171,7 @@ export default function LocalePage() {
               {/* Card header */}
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1rem" }}>
                 <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#00CC88", boxShadow: "0 0 6px #00CC8866" }} />
-                <span style={{ fontSize: "0.6875rem", fontWeight: 700, color: "#888", letterSpacing: "0.08em" }}>SPUD ENGINE — LIVE</span>
+                <span style={{ fontSize: "0.6875rem", fontWeight: 700, color: "#888", letterSpacing: "0.08em" }}>PASES · HOY</span>
               </div>
 
               {/* Lead rows */}
@@ -237,8 +227,8 @@ export default function LocalePage() {
 
               {/* Card footer */}
               <div style={{ marginTop: "0.75rem", paddingTop: "0.75rem", borderTop: "1px solid #2a2a2a", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: "0.625rem", color: "#666" }}>3 leads procesados</span>
-                <span style={{ fontSize: "0.625rem", color: "#00CC88", fontWeight: 700 }}>Decisiones automáticas ✓</span>
+                <span style={{ fontSize: "0.625rem", color: "#666" }}>3 tipos de pase</span>
+                <span style={{ fontSize: "0.625rem", color: "#00CC88", fontWeight: 700 }}>Listos para la puerta ✓</span>
               </div>
             </div>
           </div>
@@ -260,12 +250,12 @@ export default function LocalePage() {
               CÓMO FUNCIONA
             </span>
             <h2 style={{ fontSize: "clamp(2rem, 5vw, 3rem)", fontWeight: 900, color: "#000", margin: "0 0 0.75rem", letterSpacing: "-0.02em" }}>
-              De visitante a comprador
+              De la web a la puerta
               <br />
               <span style={{ color: "#6C3AFF" }}>en 3 pasos</span>
             </h2>
             <p style={{ fontSize: "1rem", color: "#888", maxWidth: "480px", margin: "0 auto" }}>
-              Sin intervención manual. El sistema captura, cualifica y convierte por ti.
+              Eliges pase, pagas, entras. El staff no improvisa con Excel.
             </p>
           </div>
 
@@ -283,7 +273,7 @@ export default function LocalePage() {
             ))}
           </div>
 
-          {/* Interactive SPUD demo */}
+          {/* Compra */}
           <SpudMiniDemo />
 
           {/* CTA after demo */}

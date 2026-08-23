@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
+import { requireAdmin } from "@/lib/auth/requireAdmin"
+import { verifyCsrf } from "@/lib/security/verifyCsrf"
 import { findById } from "@/domain/orders/order-repository"
 import {
   findTicketAssetByOrderId,
@@ -21,6 +23,19 @@ function isLikelyWallet(value: string): boolean {
 }
 
 export async function POST(req: NextRequest, context: Params) {
+  let isAdmin = false
+  try {
+    isAdmin = await requireAdmin(req)
+  } catch {
+    isAdmin = false
+  }
+  if (!isAdmin) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 })
+  }
+  if (!verifyCsrf(req)) {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 })
+  }
+
   const { id } = await context.params
 
   const order = await findById(id)
