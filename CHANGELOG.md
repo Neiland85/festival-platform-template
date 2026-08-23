@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.25.0](https://github.com/Neiland85/festival-platform-template/compare/v1.24.0...v1.25.0) (2026-04-22)
+
+### Added
+
+* Add offchain ticket asset layer and wallet binding routes ([#71](https://github.com/Neiland85/festival-platform-template/issues/71)) ([944d3e9](https://github.com/Neiland85/festival-platform-template/commit/944d3e91b7c0b0b8a9d3522adf4ff7957740f7b1))
+* **platform:** multi-instance foundation and runtime resolution ([#77](https://github.com/Neiland85/festival-platform-template/issues/77)) ([b35a76c](https://github.com/Neiland85/festival-platform-template/commit/b35a76ce8a1d393d5e35537943aba6ee817ec180))
+
 ## [1.24.0](https://github.com/Neiland85/festival-platform-template/compare/v1.23.0...v1.24.0) (2026-04-22)
 
 ### Added
