@@ -304,10 +304,10 @@ function getServerEnv() {
     if (!isBuildPhase && _serverEnv.NODE_ENV === "production") {
       const warnings: string[] = []
       if (_serverEnv.CSRF_SECRET === "dev-csrf-change-me-in-production") {
-        warnings.push("CSRF_SECRET is using the default dev value in production!")
+        throw new Error("CSRF_SECRET must not use the development default in production")
       }
       if (_serverEnv.IP_HASH_SALT === "dev-salt-change-me") {
-        warnings.push("IP_HASH_SALT is using the default dev value in production!")
+        throw new Error("IP_HASH_SALT must not use the development default in production")
       }
       if (_serverEnv.DATABASE_URL.includes("localhost")) {
         warnings.push("DATABASE_URL points to localhost in production!")
