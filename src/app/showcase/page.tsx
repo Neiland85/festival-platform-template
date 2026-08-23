@@ -9,7 +9,7 @@ const PRODUCTS = [
     tagline: "Production-grade infrastructure for live music events",
     description:
       "Complete ticket sales pipeline, enterprise security, multi-tenancy, GDPR compliance. White-label ready. Fork, customize, deploy.",
-    stack: ["Next.js 15", "React 19", "TypeScript", "PostgreSQL", "Stripe", "Tailwind 4"],
+    stack: ["Next.js 15", "React 19", "TypeScript", "PostgreSQL", "Stripe", "Tailwind 3.4"],
     features: [
       "Stripe checkout with webhooks & dead-letter queue",
       "WAF with 70+ attack patterns",

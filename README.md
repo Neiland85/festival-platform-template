@@ -9,7 +9,6 @@
 
 [![CI](https://github.com/Neiland85/festival-platform-template/actions/workflows/ci.yml/badge.svg)](https://github.com/Neiland85/festival-platform-template/actions)
 [![Tests](https://img.shields.io/badge/tests-466%2B%20passing-brightgreen)](#testing--quality)
-[![Security](https://img.shields.io/badge/security-8%20layers%20active-green)](docs/compliance/)
 [![License](https://img.shields.io/badge/license-Custom%20MIT-blue)](#license)
 
 ---
@@ -22,7 +21,7 @@ Building a festival website with real ticket sales, GDPR compliance, and product
 
 **Who it's for:** Festival operators, event agencies, and developers who need a working product, not a tutorial.
 
-**Stack:** Next.js 15 · React 19 · TypeScript 5 (strict) · Tailwind 4 · PostgreSQL 15 · Drizzle ORM · Stripe · Redis · Sentry · Sanity CMS
+**Stack:** Next.js 15 · React 19 · TypeScript 5 (strict) · Tailwind 3.4 · PostgreSQL 15 · Drizzle ORM · Stripe · Redis · Sentry · Sanity CMS
 
 ---
 
@@ -40,9 +39,7 @@ Consent-first lead capture with soft-delete, IP hashing (SHA-256 for GDPR), and 
 
 Event management, lead pipeline, order tracking, system health monitoring, and a persistent audit log backed by PostgreSQL. Every admin action is recorded with who, when, what, and from where.
 
-### Security — 8 Active Layers
-
-Not security theater. Every layer is implemented, tested, and enforced in production:
+### Security
 
 | Layer | What It Does |
 |-------|-------------|
@@ -246,7 +243,7 @@ Node 22, pnpm 10, frozen lockfile, minimal CI permissions, GitGuardian scanning,
 | Stripe payments | **Production** | Atomic capacity reservation, webhook verification, idempotency, dead-letter queue |
 | Lead capture | **Production** | GDPR consent, soft-delete, IP hashing, data portability |
 | Admin dashboard | **Production** | CRUD, persistent audit log, system health |
-| Security (8 layers) | **Production** | WAF, rate limiting, CSRF, bcrypt, headers, DDoS, supply chain, privacy |
+| Security | **Production** | WAF, rate limiting, CSRF, bcrypt, headers, DDoS, supply chain, privacy |
 | CI/CD + testing | **Production** | 466+ tests, pre-commit hooks, semantic versioning, auto-deploy |
 | i18n | **Production** | ES/EN with locale-aware routing |
 | Multi-tenancy | **Prepared** | Schema provisioning and context propagation built. Query scoping activation pending. |
